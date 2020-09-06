@@ -8,13 +8,27 @@ export class Editor {
 
     constructor(config) {
         this.config = config ?? 'config';
+        this.setListener();
     }
 
     add(toolType) {
-        debugger;
         this.#LAYER_ID++;
-        const layer = new Layer(toolType, this.#LAYER_ID);
+        const layer = new Layer(toolType, this.#LAYER_ID, {
+            x: this.template.clientHeight / 2,
+            y: this.template.clientWidth / 2
+        });
         this.layers.push(layer);
         this.template.appendChild(layer.template);
+    }
+
+    setListener() {
+        document.addEventListener('click', (e) => this.clickListener(e))
+    }
+
+    clickListener(e) {
+        // if(e.target.tagName === 'svg') {
+            // this.layers.forEach(layer => layer.shapes.forEach(shape => shape.setActive(false)))
+        // }
+        console.log(e);
     }
 }

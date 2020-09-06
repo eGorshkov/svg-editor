@@ -29,8 +29,14 @@ function setContainer() {
 function setSelectTool(editor) {
     const selectTool = new SelectTool();
     selectTool.select = (e, tool) => {
-        editor.add(tool.type);
-        console.log('---', 'editor', editor);
+        switch(tool.type) {
+            case 'hand':
+            case 'select':
+                break;
+            default:
+                editor.add(tool.type);
+                break;
+        }
     }
     return selectTool;
 }
