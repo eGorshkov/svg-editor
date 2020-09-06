@@ -21,10 +21,6 @@ body {
   background-image: none;
 }
 
-.editor__container svg > g[draggable] {
-  cursor: grab;
-}
-
 .editor__tools {
   position: fixed;
   max-height: 400px;

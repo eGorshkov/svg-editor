@@ -1,74 +1,98 @@
-import { SHAPES } from './widgets/shapes/index.js';
+import { SHAPES } from "./shapes/index.js";
+import { Resizable } from "./shapes/helpers/resizable.js";
 
 export class Shape {
-    template = null;
-    active = false;
-    draging = false;
-    config = null;
-    dragOffsetX = null;
-    dragOffsetY = null;
+  template = null;
+  active = false;
+  draging = false;
+  config = null;
+  dragOffsetX = null;
+  dragOffsetY = null;
+  resizable = null;
 
-    constructor(toolType, shapeId, config) {
-        [this.template, this.config, this.draw] = this.#getShape(toolType, config);
-        this.template.setAttribute('id', `${toolType}-shape-${shapeId}`);
-        this.draw(this.template, this.config);
-        this.setListeners();
+  constructor(toolType, shapeId, config) {
+    [this.template, this.config, this.draw] = this.#getShape(toolType, config);
+    this.template.setAttribute("id", `${toolType}-shape-${shapeId}`);
+    this.draw(this.template, this.config);
+    this.setListeners();
+  }
+
+  setListeners() {
+    this.template.addEventListener("dblclick", () => this.setActive(true));
+  }
+
+  draw() {}
+
+  setActive(value) {
+    this.active = value;
+    this.draggable(value);
+    this.setResizable(value);
+  }
+
+  //#region DRAG AND DROP
+
+  draggable(value) {
+    value ? this.setDraggable() : this.removeDraggable();
+  }
+
+  setDraggable() {
+    this.template.style.cursor = "grab";
+    this.template.addEventListener("mousedown", (e) => this.start(e));
+    this.template.addEventListener("mouseup", (e) => this.end(e));
+  }
+
+  removeDraggable() {
+    this.template.style.cursor = "default";
+    this.template.removeEventListener("mousedown", (e) => this.start(e));
+    this.template.removeEventListener("mouseup", (e) => this.end(e));
+  }
+
+  start(evt) {
+    this.draging = true;
+    this.dragOffsetX = evt.offsetX - this.config.x;
+    this.dragOffsetY = evt.offsetY - this.config.y;
+    this.template.addEventListener("mousemove", (e) => this.move(e));
+  }
+
+  move(evt) {
+    if (this.active && this.draging) {
+      this.template.style.cursor = "grabbing";
+      this.config.x = evt.offsetX - this.dragOffsetX;
+      this.config.y = evt.offsetY - this.dragOffsetY;
+      this.draw(this.template, this.config);
+      if (this.resizable) {
+        this.resizable.hide();
+      }
     }
+  }
 
-    setListeners() {
-        this.template.addEventListener('dblclick', () => this.setActive(true));
+  end(evt) {
+    this.draw(this.template, this.config);
+    this.template.removeEventListener("mousemove", (e) => this.move(e, ctx));
+    this.dragOffsetX = this.dragOffsetY = null;
+    this.draging = false;
+    if (this.resizable) {
+      this.resizable.show(this.template, this.config);
     }
+  }
 
-    draw() {}
+  //#endregion
 
-    startDrag(evt) {
-        this.draging = true;
-        this.dragOffsetX = evt.offsetX - this.config.x;
-        this.dragOffsetY = evt.offsetY - this.config.y;
-        this.template.addEventListener('mousemove', (e) => this.move(e));
+  setResizable(value) {
+    this.resizable = value ? new Resizable(this.template, this.config) : null;
+    if (this.resizable !== null) {
+      this.template.parentNode.appendChild(this.resizable.template);
+      // this.resizable.draw = (type) => {
+      //     debugger;
+      //     this.draw(this.template, this.config);
+      // }
     }
+  }
 
-    move(evt) {
-        if(this.active && this.draging) {
-            this.config.x = evt.offsetX - this.dragOffsetX;
-            this.config.y = evt.offsetY - this.dragOffsetY;
-            this.draw(this.template, this.config);
-        }
+  #getShape(toolType, config) {
+    if (!SHAPES[toolType]) {
+      return SHAPES.square(config);
     }
-
-    endDrag(evt) {
-        this.draw(this.template, this.config);
-        this.template.removeEventListener('mousemove', (e) => this.move(e));
-        this.dragOffsetX = this.dragOffsetY = null;
-        this.draging = false;
-    }
-
-    setActive(value) {
-        this.active = value;
-        if(value) {
-            this.template.setAttribute('draggable', 'true');
-            this.listen()
-         } else {
-            this.template.removeAttribute('draggable');
-            this.unlisten();
-         }
-    }
-
-    listen() {
-        this.template.addEventListener('mousedown', (e) => this.startDrag(e));
-        this.template.addEventListener('mouseup', (e) => this.endDrag(e));
-    }
-
-    unlisten() {
-        this.template.removeEventListener('mousedown', (e) => this.startDrag(e));
-        this.template.removeEventListener('mouseup', (e) => this.endDrag(e));
-    }
-
-    #getShape(toolType, config) {
-        debugger;
-        if(!SHAPES[toolType]) {
-            return SHAPES.square(config);
-        }
-        return SHAPES[toolType](config)
-    }
+    return SHAPES[toolType](config);
+  }
 }

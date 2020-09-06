@@ -1,4 +1,4 @@
-import { ShapeCreator } from "./shape-creator.js";
+import { ShapeCreator } from "./helpers/shape-creator.js";
 
 export function TriangleShape(config) {
   return ShapeCreator(
