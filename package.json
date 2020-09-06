@@ -23,5 +23,10 @@
   "devDependencies": {
     "prettier": "^2.1.1",
     "pretty-quick": "^3.0.0"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "npx pretty-quick --staged"
+    }
   }
 }
