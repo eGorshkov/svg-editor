@@ -14,24 +14,24 @@ function setContainers() {
 }
 
 function setMain() {
-  const main = document.getElementById("main");
-  main.classList.add("editor");
+  const main = document.getElementById('main');
+  main.classList.add('editor');
   return main;
 }
 
 function setContainer() {
-  const container = document.createElement("section");
-  container.setAttribute("id", "container");
-  container.classList.add("editor__container");
+  const container = document.createElement('section');
+  container.setAttribute('id', 'container');
+  container.classList.add('editor__container');
   return container;
 }
 
 function setSelectTool(editor) {
   const selectTool = new SelectTool();
-  selectTool._select = (toolType) => {
+  selectTool._select = toolType => {
     switch (toolType) {
-      case "hand":
-      case "select":
+      case 'hand':
+      case 'select':
         break;
       default:
         editor.add(toolType);
