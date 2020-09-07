@@ -1,5 +1,5 @@
-import { Editor } from "./components/editor.js";
-import { SelectTool } from "./components/widgets/select-tool/select-tool.js";
+import { Editor } from './components/editor.js';
+import { SelectTool } from './components/widgets/select-tool/select-tool.js';
 
 (() => {
   const [main, editor, container, selectTool] = setContainers();
@@ -28,13 +28,13 @@ function setContainer() {
 
 function setSelectTool(editor) {
   const selectTool = new SelectTool();
-  selectTool.select = (e, tool) => {
-    switch (tool.type) {
+  selectTool._select = (toolType) => {
+    switch (toolType) {
       case "hand":
       case "select":
         break;
       default:
-        editor.add(tool.type);
+        editor.add(toolType);
         break;
     }
   };
