@@ -79,13 +79,21 @@ export class Shape {
   //#endregion
 
   setResizable(value) {
+    if(this.resizable) {
+      this.resizable.remove();
+    }
+
     this.resizable = value ? new Resizable(this.template, this.config) : null;
+
     if (this.resizable !== null) {
       this.template.parentNode.appendChild(this.resizable.template);
-      // this.resizable.draw = (type) => {
-      //     debugger;
-      //     this.draw(this.template, this.config);
-      // }
+      this.resizable._resize = (width, height) => {
+          debugger;
+          this.config.width = width;
+          this.config.height = height;
+          this.draw(this.template, this.config);
+          this.resizable.show(this.template, this.config);
+      }
     }
   }
 
