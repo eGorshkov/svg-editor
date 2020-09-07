@@ -1,7 +1,8 @@
 import { SHAPES } from './shapes/index.js';
-import { Resizable } from './shapes/helpers/resizable.js';
+import { Resizable } from './helpers/resizable.js';
 
 export class Shape {
+  shapeId = 0;
   template = null;
   active = false;
   dragging = false;
@@ -9,10 +10,15 @@ export class Shape {
   dragOffsetX = null;
   dragOffsetY = null;
   resizable = null;
+  type = null;
 
   constructor(toolType, shapeId, config) {
-    [this.template, this.config, this.draw] = this.#getShape(toolType, config);
-    this.template.setAttribute('id', `${toolType}-shape-${shapeId}`);
+    this.type = toolType;
+    this.shapeId = `${this.type}-shape-${shapeId}`;
+    this.config = config;
+
+    [this.template, this.config, this.draw] = this.#getShape(this.type, config);
+    this.template.setAttribute('id', this.shapeId);
     this.draw(this.template, this.config);
     this.setListeners();
   }

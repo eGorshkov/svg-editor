@@ -1,4 +1,4 @@
-import { ShapeCreator } from './helpers/shape-creator.js';
+import { ShapeCreator } from '../helpers/shape-creator.js';
 
 export function squareDraw(template, config) {
   template.setAttributeNS(null, 'x', config.x);

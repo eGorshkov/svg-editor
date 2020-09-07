@@ -1,9 +1,9 @@
-import { ShapeCreator } from './helpers/shape-creator.js';
+import { ShapeCreator } from '../helpers/shape-creator.js';
 
 export function circleDraw(template, config) {
   template.setAttributeNS(null, 'cx', config.x);
   template.setAttributeNS(null, 'cy', config.y);
-  template.setAttributeNS(null, 'r', Math.max(config.width, config.height) / 2);
+  template.setAttributeNS(null, 'r', config.width / 2);
 }
 
 export function CircleShape(config) {

@@ -1,4 +1,4 @@
-import { ShapeCreator } from './helpers/shape-creator.js';
+import { ShapeCreator } from '../helpers/shape-creator.js';
 
 export function triangleDraw(template, config) {
   template.style.transform = `translate(${config.x}px, ${config.y}px)`;
