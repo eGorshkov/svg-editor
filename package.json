@@ -21,12 +21,20 @@
     "express": "^4.17.1"
   },
   "devDependencies": {
+    "husky": "4.2.5",
+    "lint-staged": "10.2.13",
     "prettier": "^2.1.1",
     "pretty-quick": "^3.0.0"
   },
   "husky": {
     "hooks": {
-      "pre-commit": "npx pretty-quick --staged"
+      "pre-commit": "lint-staged"
     }
+  },
+  "lint-staged": {
+    "*.{js,json,css,scss,less,md,ts,html,component.html}": [
+      "prettier --write",
+      "git add"
+    ]
   }
 }
