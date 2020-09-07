@@ -14,8 +14,8 @@ export class Editor {
   add(toolType) {
     this.#LAYER_ID++;
     const layer = new Layer(toolType, this.#LAYER_ID, {
-      x: this.template.clientHeight / 2,
-      y: this.template.clientWidth / 2
+      x: this.template.clientWidth / 2,
+      y: this.template.clientHeight / 2
     });
     this.layers.push(layer);
     this.template.appendChild(layer.template);

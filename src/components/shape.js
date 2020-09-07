@@ -4,7 +4,7 @@ import { Resizable } from './shapes/helpers/resizable.js';
 export class Shape {
   template = null;
   active = false;
-  draging = false;
+  dragging = false;
   config = null;
   dragOffsetX = null;
   dragOffsetY = null;
@@ -48,14 +48,14 @@ export class Shape {
   }
 
   start(evt) {
-    this.draging = true;
+    this.dragging = true;
     this.dragOffsetX = evt.offsetX - this.config.x;
     this.dragOffsetY = evt.offsetY - this.config.y;
     this.template.addEventListener('mousemove', e => this.move(e));
   }
 
   move(evt) {
-    if (this.active && this.draging) {
+    if (this.active && this.dragging) {
       this.template.style.cursor = 'grabbing';
       this.config.x = evt.offsetX - this.dragOffsetX;
       this.config.y = evt.offsetY - this.dragOffsetY;
@@ -70,7 +70,7 @@ export class Shape {
     this.draw(this.template, this.config);
     this.template.removeEventListener('mousemove', e => this.move(e, ctx));
     this.dragOffsetX = this.dragOffsetY = null;
-    this.draging = false;
+    this.dragging = false;
     if (this.resizable) {
       this.resizable.show(this.template, this.config);
     }
