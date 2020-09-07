@@ -102,12 +102,9 @@ export class Resizable {
         return acc;
       }
 
-      let pointTemplate, draw = null;
-
-      [pointTemplate, points[pointKey], draw] = CircleShape(points[pointKey]);
+      const [pointTemplate, config, draw] = CircleShape(points[pointKey]);
       pointTemplate.setAttribute("id", pointKey);
-      points[pointKey].draw = () => draw(pointTemplate, points[pointKey]);
-      points[pointKey].draw();
+      draw(pointTemplate, config);
       this.setDraggable(pointTemplate);
       return [...acc, pointTemplate];
     };
