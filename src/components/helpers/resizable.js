@@ -1,12 +1,13 @@
 import { ShapeCreator } from './shape-creator.js';
-import { circleDraw, CircleShape } from '../circle-shape.js';
-import { squareDraw, SquareShape } from '../square-shape.js';
+import { circleDraw, CircleShape } from '../shapes/circle-shape.js';
+import { squareDraw, SquareShape } from '../shapes/square-shape.js';
 
 export class Resizable {
   points = null;
   template = null;
   dragOffsetX = null;
   dragOffsetY = null;
+  draggable = false;
 
   #defaultPointTemplate = {
     width: 15,
@@ -128,6 +129,7 @@ export class Resizable {
 
   remove() {
     Array.from(this.template).forEach(point => this.removeDraggable(point));
+    this.template.remove();
     this.template = null;
     this.points = null;
   }
@@ -145,6 +147,7 @@ export class Resizable {
   }
 
   start(evt, pointTemplate) {
+    this.draggable = true;
     this.dragOffsetX = evt.offsetX - this.points[pointTemplate.id].x;
     this.dragOffsetY = evt.offsetY - this.points[pointTemplate.id].y;
     pointTemplate.addEventListener('mousemove', e => this.move(e, pointTemplate));
@@ -152,15 +155,18 @@ export class Resizable {
   }
 
   move(evt, pointTemplate) {
-    this.points[pointTemplate.id].x = evt.offsetX - this.dragOffsetX;
-    this.points[pointTemplate.id].y = evt.offsetY - this.dragOffsetY;
-    this.draw(pointTemplate);
-    this.resize();
+    if (this.draggable) {
+      this.points[pointTemplate.id].x = evt.offsetX - this.dragOffsetX;
+      this.points[pointTemplate.id].y = evt.offsetY - this.dragOffsetY;
+      this.draw(pointTemplate);
+      this.resize();
+    }
   }
 
   end(evt, pointTemplate) {
-    pointTemplate.removeEventListener('mousemove', e => this.move(e, pointTemplate));
+    this.draggable = false;
     this.dragOffsetX = this.dragOffsetY = null;
+    pointTemplate.removeEventListener('mousemove', e => this.move(e, pointTemplate));
     this.draw(pointTemplate);
     this.resize();
   }
