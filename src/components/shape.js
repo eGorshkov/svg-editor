@@ -1,5 +1,5 @@
-import { SHAPES } from "./shapes/index.js";
-import { Resizable } from "./shapes/helpers/resizable.js";
+import { SHAPES } from './shapes/index.js';
+import { Resizable } from './shapes/helpers/resizable.js';
 
 export class Shape {
   template = null;
@@ -12,13 +12,13 @@ export class Shape {
 
   constructor(toolType, shapeId, config) {
     [this.template, this.config, this.draw] = this.#getShape(toolType, config);
-    this.template.setAttribute("id", `${toolType}-shape-${shapeId}`);
+    this.template.setAttribute('id', `${toolType}-shape-${shapeId}`);
     this.draw(this.template, this.config);
     this.setListeners();
   }
 
   setListeners() {
-    this.template.addEventListener("dblclick", () => this.setActive(true));
+    this.template.addEventListener('dblclick', () => this.setActive(true));
   }
 
   draw() {}
@@ -36,27 +36,27 @@ export class Shape {
   }
 
   setDraggable() {
-    this.template.style.cursor = "grab";
-    this.template.addEventListener("mousedown", (e) => this.start(e));
-    this.template.addEventListener("mouseup", (e) => this.end(e));
+    this.template.style.cursor = 'grab';
+    this.template.addEventListener('mousedown', e => this.start(e));
+    this.template.addEventListener('mouseup', e => this.end(e));
   }
 
   removeDraggable() {
-    this.template.style.cursor = "default";
-    this.template.removeEventListener("mousedown", (e) => this.start(e));
-    this.template.removeEventListener("mouseup", (e) => this.end(e));
+    this.template.style.cursor = 'default';
+    this.template.removeEventListener('mousedown', e => this.start(e));
+    this.template.removeEventListener('mouseup', e => this.end(e));
   }
 
   start(evt) {
     this.draging = true;
     this.dragOffsetX = evt.offsetX - this.config.x;
     this.dragOffsetY = evt.offsetY - this.config.y;
-    this.template.addEventListener("mousemove", (e) => this.move(e));
+    this.template.addEventListener('mousemove', e => this.move(e));
   }
 
   move(evt) {
     if (this.active && this.draging) {
-      this.template.style.cursor = "grabbing";
+      this.template.style.cursor = 'grabbing';
       this.config.x = evt.offsetX - this.dragOffsetX;
       this.config.y = evt.offsetY - this.dragOffsetY;
       this.draw(this.template, this.config);
@@ -68,7 +68,7 @@ export class Shape {
 
   end(evt) {
     this.draw(this.template, this.config);
-    this.template.removeEventListener("mousemove", (e) => this.move(e, ctx));
+    this.template.removeEventListener('mousemove', e => this.move(e, ctx));
     this.dragOffsetX = this.dragOffsetY = null;
     this.draging = false;
     if (this.resizable) {
@@ -79,7 +79,7 @@ export class Shape {
   //#endregion
 
   setResizable(value) {
-    if(this.resizable) {
+    if (this.resizable) {
       this.resizable.remove();
     }
 
@@ -88,12 +88,12 @@ export class Shape {
     if (this.resizable !== null) {
       this.template.parentNode.appendChild(this.resizable.template);
       this.resizable._resize = (width, height) => {
-          debugger;
-          this.config.width = width;
-          this.config.height = height;
-          this.draw(this.template, this.config);
-          this.resizable.show(this.template, this.config);
-      }
+        debugger;
+        this.config.width = width;
+        this.config.height = height;
+        this.draw(this.template, this.config);
+        this.resizable.show(this.template, this.config);
+      };
     }
   }
 
