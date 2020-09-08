@@ -5,7 +5,7 @@
   "main": "main.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node ./app.js --open"
+    "start": "nodemon ./app.js"
   },
   "repository": {
     "type": "git",
@@ -24,7 +24,8 @@
     "husky": "4.2.5",
     "lint-staged": "10.2.13",
     "prettier": "^2.1.1",
-    "pretty-quick": "^3.0.0"
+    "pretty-quick": "^3.0.0",
+    "nodemon": "2.0.4"
   },
   "husky": {
     "hooks": {
