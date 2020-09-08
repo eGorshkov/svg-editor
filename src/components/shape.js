@@ -17,7 +17,7 @@ export class Shape {
     this.shapeId = `${this.type}-shape-${shapeId}`;
     this.config = config;
 
-    [this.template, this.config, this.draw] = this.#getShape(this.type, config);
+    [this.template, this.config, this.draw] = this.#create(this.type, config);
     this.template.setAttribute('id', this.shapeId);
     this.draw(this.template, this.config);
     this.setListeners();
@@ -103,7 +103,7 @@ export class Shape {
     }
   }
 
-  #getShape(toolType, config) {
+  #create(toolType, config) {
     if (!SHAPES[toolType]) {
       return SHAPES.square(config);
     }
