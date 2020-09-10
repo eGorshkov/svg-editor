@@ -1,15 +1,59 @@
-import { SHAPES } from './shapes/index.js';
+import { SHAPES } from './shapes/base.js';
 import { Resizable } from './helpers/resizable.js';
 
 export class Shape {
-  shapeId = 0;
+  /**
+   * Шаблон фигуры
+   * @type {SVGElement}
+   */
   template = null;
-  active = false;
-  dragging = false;
+  /**
+   *  Конфигурация фигуры
+   * @type {IShapeConfig}
+   */
   config = null;
-  dragOffsetX = null;
-  dragOffsetY = null;
+  /**
+   * Функция рисвоки шаблона
+   * @param template - шаблон фигуры
+   * @param config - конфигурация фигуры
+   */
+  draw = (template, config) => {};
+  /**
+   * Ид фигуры
+   * @type {number}
+   */
+  shapeId = 0;
+  /**
+   * Флаг того, что фигура активна:
+   * 1. Активируется resizable - возможность изменения размера фигуры
+   * 2. Добавляется возможность переноса фигуры
+   * @type {boolean}
+   */
+  _active = false;
+  /**
+   * Флаг того, что фигуру можно переносить
+   * @type {boolean}
+   */
+  dragging = false;
+  /**
+   *
+   * @type {number}
+   */
+  dragOffsetX = 0;
+  /**
+   *
+   * @type {number}
+   */
+  dragOffsetY = 0;
+  /**
+   * Класс изменения размера фигуры
+   * @type {IResizable}
+   */
   resizable = null;
+  /**
+   *  Тип фигуры
+   * @type {ShapesType}
+   */
   type = null;
 
   constructor(toolType, shapeId, config) {
@@ -24,22 +68,32 @@ export class Shape {
   }
 
   setListeners() {
-    this.template.addEventListener('dblclick', () => this.setActive(true));
+    this.template.addEventListener('dblclick', () => this.active(true));
   }
 
-  draw() {}
+  /**
+   * Функция активации фигуры
+   * 1. Активируется resizable - возможность изменения размера фигуры
+   * 2. Добавляется возможность переноса фигуры
+   */
+  active() {
+    this._active = true;
+    this.setDraggable();
+    this.setResizable();
+  }
 
-  setActive(value) {
-    this.active = value;
-    this.draggable(value);
-    this.setResizable(value);
+  /**
+   * Функция деактивации фигуры
+   * 1. Отключает resizable - возможность изменения размера фигуры
+   * 2. Убирает возможность переноса фигуры
+   */
+  deactive() {
+    this._active = false;
+    this.removeDraggable();
+    this.setResizable();
   }
 
   //#region DRAG AND DROP
-
-  draggable(value) {
-    value ? this.setDraggable() : this.removeDraggable();
-  }
 
   setDraggable() {
     this.template.style.cursor = 'grab';
@@ -61,7 +115,7 @@ export class Shape {
   }
 
   move(evt) {
-    if (this.active && this.dragging) {
+    if (this._active && this.dragging) {
       this.template.style.cursor = 'grabbing';
       this.config.x = evt.offsetX - this.dragOffsetX;
       this.config.y = evt.offsetY - this.dragOffsetY;
@@ -84,17 +138,16 @@ export class Shape {
 
   //#endregion
 
-  setResizable(value) {
+  setResizable() {
     if (this.resizable) {
       this.resizable.remove();
     }
 
-    this.resizable = value ? new Resizable(this.template, this.config) : null;
+    this.resizable = this._active ? new Resizable(this.template, this.config) : null;
 
     if (this.resizable !== null) {
       this.template.parentNode.appendChild(this.resizable.template);
       this.resizable._resize = (width, height) => {
-        debugger;
         this.config.width = width;
         this.config.height = height;
         this.draw(this.template, this.config);

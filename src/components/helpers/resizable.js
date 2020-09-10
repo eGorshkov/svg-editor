@@ -118,7 +118,6 @@ export class Resizable {
   }
 
   show(shapeTemplate, shapeConfig) {
-    debugger;
     this.setPoints(this.getShapeCoords(shapeTemplate, shapeConfig));
     Array.from(this.template.children).forEach(point => {
       point.setAttributeNS(null, point.tagName === 'circle' ? 'cx' : 'x', this.points[point.id].x);
