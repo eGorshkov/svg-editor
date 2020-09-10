@@ -4,6 +4,10 @@ import { squareDraw, SquareShape } from '../shapes/square-shape.js';
 
 export class Resizable {
   points = null;
+  /**
+   *
+   * @type {SVGGElement}
+   */
   template = null;
   dragOffsetX = null;
   dragOffsetY = null;
@@ -15,6 +19,14 @@ export class Resizable {
     fill: 'rgb(41, 182, 242)',
     stroke: 'rgb(255, 255, 255)'
   };
+
+  #activePointId = null;
+  get #activePoint() {
+    if (this.template === null) {
+      return null;
+    }
+    return this.template.children.namedItem(this.#activePointId);
+  }
 
   _resize = (width, height) => {};
 
@@ -35,6 +47,9 @@ export class Resizable {
   }
 
   draw(pointTemplate) {
+    if (pointTemplate === null) {
+      return;
+    }
     pointTemplate.id === 'overlay'
       ? squareDraw(pointTemplate, this.points[pointTemplate.id])
       : circleDraw(pointTemplate, this.points[pointTemplate.id]);
@@ -136,38 +151,43 @@ export class Resizable {
   //#region DRAG AND DROP
 
   setDraggable(pointTemplate) {
-    pointTemplate.addEventListener('mousedown', e => this.start(e, pointTemplate));
-    pointTemplate.addEventListener('mouseup', e => this.end(e, pointTemplate));
+    pointTemplate.addEventListener('mousedown', this.start.bind(this), true);
   }
 
   removeDraggable(pointTemplate) {
-    pointTemplate.removeEventListener('mousedown', e => this.start(e, pointTemplate));
-    pointTemplate.removeEventListener('mouseup', e => this.end(e, pointTemplate));
+    pointTemplate.removeEventListener('mousedown', this.start, true);
   }
 
-  start(evt, pointTemplate) {
+  start(evt) {
     this.draggable = true;
-    this.dragOffsetX = evt.offsetX - this.points[pointTemplate.id].x;
-    this.dragOffsetY = evt.offsetY - this.points[pointTemplate.id].y;
-    pointTemplate.addEventListener('mousemove', e => this.move(e, pointTemplate));
-    this.hide(pointTemplate.id);
+    this.#activePointId = evt.target.id;
+    this.dragOffsetX = evt.offsetX - this.points[this.#activePointId].x;
+    this.dragOffsetY = evt.offsetY - this.points[this.#activePointId].y;
+    this.hide(this.#activePointId);
+    document.addEventListener('mousemove', this.move.bind(this), true);
+    document.addEventListener('mouseup', this.end.bind(this), true);
   }
 
-  move(evt, pointTemplate) {
+  move(evt) {
+    console.log('resizable move', evt);
     if (this.draggable) {
-      this.points[pointTemplate.id].x = evt.offsetX - this.dragOffsetX;
-      this.points[pointTemplate.id].y = evt.offsetY - this.dragOffsetY;
-      this.draw(pointTemplate);
+      this.points[this.#activePointId].x = evt.offsetX - this.dragOffsetX;
+      this.points[this.#activePointId].y = evt.offsetY - this.dragOffsetY;
+      this.draw(this.#activePoint);
       this.resize();
     }
   }
 
-  end(evt, pointTemplate) {
+  end(evt) {
+    evt.preventDefault();
+    this.draw(this.#activePoint);
+    this.resize();
+    document.removeEventListener('mousemove', this.move, true);
+    document.removeEventListener('mouseup', this.end, true);
+
     this.draggable = false;
     this.dragOffsetX = this.dragOffsetY = null;
-    pointTemplate.removeEventListener('mousemove', e => this.move(e, pointTemplate));
-    this.draw(pointTemplate);
-    this.resize();
+    this.#activePointId = null;
   }
 
   //#endregion

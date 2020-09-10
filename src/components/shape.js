@@ -56,9 +56,42 @@ export class Shape {
    */
   type = null;
 
-  constructor(toolType, shapeId, config) {
+  listener = {
+    start: evt => {
+      this.dragging = true;
+      this.dragOffsetX = evt.offsetX - this.config.x;
+      this.dragOffsetY = evt.offsetY - this.config.y;
+      document.addEventListener('mousemove', this.listener.move, true);
+      document.addEventListener('mouseup', this.listener.end, true);
+    },
+    move: evt => {
+      console.log('shape move');
+      if (this._active && this.dragging) {
+        this.template.style.cursor = 'grabbing';
+        this.config.x = evt.offsetX - this.dragOffsetX;
+        this.config.y = evt.offsetY - this.dragOffsetY;
+        this.draw(this.template, this.config);
+        if (this.resizable) {
+          this.resizable.hide();
+        }
+      }
+    },
+    end: evt => {
+      this.draw(this.template, this.config);
+      document.removeEventListener('mousemove', this.listener.move, true);
+      document.removeEventListener('mouseup', this.listener.end, true);
+      if (this.resizable) {
+        this.resizable.show(this.template, this.config);
+      }
+
+      this.dragging = false;
+      this.dragOffsetX = this.dragOffsetY = null;
+    }
+  };
+
+  constructor(toolType, shapeId, layerId, config) {
     this.type = toolType;
-    this.shapeId = `${this.type}-shape-${shapeId}`;
+    this.shapeId = `${layerId}-${this.type}-${shapeId}`;
     this.config = config;
 
     [this.template, this.config, this.draw] = this.#create(this.type, config);
@@ -97,44 +130,52 @@ export class Shape {
 
   setDraggable() {
     this.template.style.cursor = 'grab';
-    this.template.addEventListener('mousedown', e => this.start(e));
-    this.template.addEventListener('mouseup', e => this.end(e));
+    this.template.addEventListener('mousedown', this.listener.start, true);
   }
 
   removeDraggable() {
     this.template.style.cursor = 'default';
-    this.template.removeEventListener('mousedown', e => this.start(e));
-    this.template.removeEventListener('mouseup', e => this.end(e));
+    this.template.removeEventListener('mousedown', this.listener.start, true);
   }
 
-  start(evt) {
-    this.dragging = true;
-    this.dragOffsetX = evt.offsetX - this.config.x;
-    this.dragOffsetY = evt.offsetY - this.config.y;
-    this.template.addEventListener('mousemove', e => this.move(e));
-  }
+  // start(ctx) {
+  //   return (evt) => {
+  //     ctx.dragging = true;
+  //     ctx.dragOffsetX = evt.offsetX - ctx.config.x;
+  //     ctx.dragOffsetY = evt.offsetY - ctx.config.y;
+  //     document.addEventListener('mousemove', ctx.move(this), true);
+  //     document.addEventListener('mouseup', ctx.end(this), true);
+  //   }
+  // }
 
-  move(evt) {
-    if (this._active && this.dragging) {
-      this.template.style.cursor = 'grabbing';
-      this.config.x = evt.offsetX - this.dragOffsetX;
-      this.config.y = evt.offsetY - this.dragOffsetY;
-      this.draw(this.template, this.config);
-      if (this.resizable) {
-        this.resizable.hide();
-      }
-    }
-  }
-
-  end(evt) {
-    this.draw(this.template, this.config);
-    this.template.removeEventListener('mousemove', e => this.move(e, ctx));
-    this.dragOffsetX = this.dragOffsetY = null;
-    this.dragging = false;
-    if (this.resizable) {
-      this.resizable.show(this.template, this.config);
-    }
-  }
+  // move(ctx) {
+  //   console.log('shape move');
+  //   return (evt) => {
+  //     if (ctx._active && ctx.dragging) {
+  //       ctx.template.style.cursor = 'grabbing';
+  //       ctx.config.x = evt.offsetX - ctx.dragOffsetX;
+  //       ctx.config.y = evt.offsetY - ctx.dragOffsetY;
+  //       ctx.draw(ctx.template, ctx.config);
+  //       if (ctx.resizable) {
+  //         ctx.resizable.hide();
+  //       }
+  //     }
+  //   }
+  // }
+  //
+  // end(ctx) {
+  //   return (evt) => {
+  //     ctx.draw(ctx.template, ctx.config);
+  //     document.removeEventListener('mousemove', ctx.move(ctx), true);
+  //     document.removeEventListener('mouseup', ctx.end(ctx), true);
+  //     if (ctx.resizable) {
+  //       ctx.resizable.show(ctx.template, ctx.config);
+  //     }
+  //
+  //     ctx.dragging = false;
+  //     ctx.dragOffsetX = ctx.dragOffsetY = null;
+  //   }
+  // }
 
   //#endregion
 

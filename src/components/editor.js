@@ -42,7 +42,7 @@ export class Editor {
   }
 
   setListener() {
-    document.addEventListener('click', e => this.clickListener(e));
+    // document.addEventListener('click', e => this.clickListener(e));
   }
 
   clickListener(e) {
@@ -51,12 +51,7 @@ export class Editor {
     if (e.target.id === this.#EDITOR_TEMPLATE_ID) {
       this.layers.forEach(layer => layer.shapes.forEach(shape => shape.deactive()));
     } else if (layer !== undefined) {
-      for (const shape of layer.shapes) {
-        if (shape.shapeId === e.target.id) {
-          shape.active();
-          return;
-        }
-      }
+      this.setActiveShape(layer, e.target.id);
     }
 
     //TODO REMOVE
@@ -70,5 +65,14 @@ export class Editor {
       this.template.appendChild(layer.template);
       return layer;
     });
+  }
+
+  setActiveShape(layer, id) {
+    for (const shape of layer.shapes) {
+      if (shape.shapeId === id) {
+        shape.active();
+        return;
+      }
+    }
   }
 }
