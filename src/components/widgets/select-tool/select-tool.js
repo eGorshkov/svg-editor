@@ -8,7 +8,8 @@ export class SelectTool {
       { type: 'hand', icon: 'hand' },
       { type: 'triangle', icon: 'triangle' },
       { type: 'square', icon: 'square' },
-      { type: 'circle', icon: 'circle' }
+      { type: 'circle', icon: 'circle' },
+      { type: 'line', icon: 'line' }
     ];
   }
 

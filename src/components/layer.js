@@ -14,7 +14,6 @@ export class Layer {
     if (shapes) {
       this.setByConfig(shapes);
     }
-
   }
 
   add(toolType) {
@@ -26,14 +25,14 @@ export class Layer {
 
   createShape(toolType, config) {
     this.#SHAPE_ID++;
-    return new Shape(toolType, this.#SHAPE_ID, {...this.defaultShapeConfig, ...config});
+    return new Shape(toolType, this.#SHAPE_ID, this.layerId, { ...this.defaultShapeConfig, ...config });
   }
 
   setByConfig(shapes) {
     this.shapes = shapes.map(shape => {
-        shape = this.createShape(shape.type, shape.config);
-        this.template.appendChild(shape.template);
-        return shape;
-      })
+      shape = this.createShape(shape.type, shape.config);
+      this.template.appendChild(shape.template);
+      return shape;
+    });
   }
 }
