@@ -30,6 +30,38 @@ export class Resizable {
 
   _resize = (width, height) => {};
 
+  listener = {
+    start: evt => {
+      this.draggable = true;
+      this.#activePointId = evt.target.id;
+      this.dragOffsetX = evt.offsetX - this.points[this.#activePointId].x;
+      this.dragOffsetY = evt.offsetY - this.points[this.#activePointId].y;
+      this.hide(this.#activePointId);
+      document.addEventListener('mousemove', this.listener.move, true);
+      document.addEventListener('mouseup', this.listener.end, true);
+    },
+    move: evt => {
+      console.log('resizable move', evt);
+      if (this.draggable) {
+        this.points[this.#activePointId].x = evt.offsetX - this.dragOffsetX;
+        this.points[this.#activePointId].y = evt.offsetY - this.dragOffsetY;
+        this.draw(this.#activePoint);
+        this.resize(evt);
+      }
+    },
+    end: evt => {
+      evt.preventDefault();
+      this.draw(this.#activePoint);
+      this.resize(evt);
+      document.removeEventListener('mousemove', this.listener.move, true);
+      document.removeEventListener('mouseup', this.listener.end, true);
+
+      this.draggable = false;
+      this.dragOffsetX = this.dragOffsetY = null;
+      this.#activePointId = null;
+    }
+  };
+
   constructor(shapeTemplate, shapeConfig) {
     [this.template] = ShapeCreator('g', {
       width: shapeConfig.width,
@@ -94,7 +126,7 @@ export class Resizable {
         x: coords.x + coords.width,
         y: coords.y + coords.height,
         cursor: 'se-resize'
-      }
+      },
     };
   }
 
@@ -148,47 +180,12 @@ export class Resizable {
     this.points = null;
   }
 
-  //#region DRAG AND DROP
-
   setDraggable(pointTemplate) {
-    pointTemplate.addEventListener('mousedown', this.start.bind(this), true);
+    pointTemplate.addEventListener('mousedown', this.listener.start, true);
   }
 
   removeDraggable(pointTemplate) {
-    pointTemplate.removeEventListener('mousedown', this.start, true);
+    pointTemplate.removeEventListener('mousedown', this.listener.start, true);
   }
 
-  start(evt) {
-    this.draggable = true;
-    this.#activePointId = evt.target.id;
-    this.dragOffsetX = evt.offsetX - this.points[this.#activePointId].x;
-    this.dragOffsetY = evt.offsetY - this.points[this.#activePointId].y;
-    this.hide(this.#activePointId);
-    document.addEventListener('mousemove', this.move.bind(this), true);
-    document.addEventListener('mouseup', this.end.bind(this), true);
-  }
-
-  move(evt) {
-    console.log('resizable move', evt);
-    if (this.draggable) {
-      this.points[this.#activePointId].x = evt.offsetX - this.dragOffsetX;
-      this.points[this.#activePointId].y = evt.offsetY - this.dragOffsetY;
-      this.draw(this.#activePoint);
-      this.resize();
-    }
-  }
-
-  end(evt) {
-    evt.preventDefault();
-    this.draw(this.#activePoint);
-    this.resize();
-    document.removeEventListener('mousemove', this.move, true);
-    document.removeEventListener('mouseup', this.end, true);
-
-    this.draggable = false;
-    this.dragOffsetX = this.dragOffsetY = null;
-    this.#activePointId = null;
-  }
-
-  //#endregion
 }
