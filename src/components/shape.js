@@ -85,6 +85,7 @@ export class Shape {
       }
 
       this.dragging = false;
+      this._active = false;
       this.dragOffsetX = this.dragOffsetY = null;
     }
   };
@@ -101,7 +102,7 @@ export class Shape {
   }
 
   setListeners() {
-    this.template.addEventListener('dblclick', () => this.active(true));
+    this.template.addEventListener('click', e => (this._active ? this.deactive() : this.active()));
   }
 
   /**
@@ -122,11 +123,10 @@ export class Shape {
    */
   deactive() {
     this._active = false;
+    this.dragging = false;
     this.removeDraggable();
-    this.setResizable();
+    this.removeResizable();
   }
-
-  //#region DRAG AND DROP
 
   setDraggable() {
     this.template.style.cursor = 'grab';
@@ -138,54 +138,9 @@ export class Shape {
     this.template.removeEventListener('mousedown', this.listener.start, true);
   }
 
-  // start(ctx) {
-  //   return (evt) => {
-  //     ctx.dragging = true;
-  //     ctx.dragOffsetX = evt.offsetX - ctx.config.x;
-  //     ctx.dragOffsetY = evt.offsetY - ctx.config.y;
-  //     document.addEventListener('mousemove', ctx.move(this), true);
-  //     document.addEventListener('mouseup', ctx.end(this), true);
-  //   }
-  // }
-
-  // move(ctx) {
-  //   console.log('shape move');
-  //   return (evt) => {
-  //     if (ctx._active && ctx.dragging) {
-  //       ctx.template.style.cursor = 'grabbing';
-  //       ctx.config.x = evt.offsetX - ctx.dragOffsetX;
-  //       ctx.config.y = evt.offsetY - ctx.dragOffsetY;
-  //       ctx.draw(ctx.template, ctx.config);
-  //       if (ctx.resizable) {
-  //         ctx.resizable.hide();
-  //       }
-  //     }
-  //   }
-  // }
-  //
-  // end(ctx) {
-  //   return (evt) => {
-  //     ctx.draw(ctx.template, ctx.config);
-  //     document.removeEventListener('mousemove', ctx.move(ctx), true);
-  //     document.removeEventListener('mouseup', ctx.end(ctx), true);
-  //     if (ctx.resizable) {
-  //       ctx.resizable.show(ctx.template, ctx.config);
-  //     }
-  //
-  //     ctx.dragging = false;
-  //     ctx.dragOffsetX = ctx.dragOffsetY = null;
-  //   }
-  // }
-
-  //#endregion
-
   setResizable() {
-    if (this.resizable) {
-      this.resizable.remove();
-    }
-
+    this.removeResizable();
     this.resizable = this._active ? new Resizable(this.template, this.config) : null;
-
     if (this.resizable !== null) {
       this.template.parentNode.appendChild(this.resizable.template);
       this.resizable._resize = (width, height) => {
@@ -195,6 +150,13 @@ export class Shape {
         this.resizable.show(this.template, this.config);
       };
     }
+  }
+
+  removeResizable() {
+    if (this.resizable) {
+      this.resizable.remove();
+    }
+    this.resizable = null;
   }
 
   #create(toolType, config) {
