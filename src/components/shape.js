@@ -85,7 +85,6 @@ export class Shape {
       }
 
       this.dragging = false;
-      this._active = false;
       this.dragOffsetX = this.dragOffsetY = null;
     }
   };
@@ -102,7 +101,7 @@ export class Shape {
   }
 
   setListeners() {
-    this.template.addEventListener('click', e => (this._active ? this.deactive() : this.active()));
+    this.template.addEventListener('dblclick', e => (this._active ? this.deactive() : this.active()));
   }
 
   /**
