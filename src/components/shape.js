@@ -56,9 +56,43 @@ export class Shape {
    */
   type = null;
 
-  constructor(toolType, shapeId, config) {
+  listener = {
+    start: evt => {
+      this.dragging = true;
+      this.dragOffsetX = evt.offsetX - this.config.x;
+      this.dragOffsetY = evt.offsetY - this.config.y;
+      document.addEventListener('mousemove', this.listener.move, true);
+      document.addEventListener('mouseup', this.listener.end, true);
+    },
+    move: evt => {
+      console.log('shape move');
+      if (this._active && this.dragging) {
+        this.template.style.cursor = 'grabbing';
+        this.config.x = evt.offsetX - this.dragOffsetX;
+        this.config.y = evt.offsetY - this.dragOffsetY;
+        this.draw(this.template, this.config);
+        if (this.resizable) {
+          this.resizable.hide();
+        }
+      }
+    },
+    end: evt => {
+      this.draw(this.template, this.config);
+      document.removeEventListener('mousemove', this.listener.move, true);
+      document.removeEventListener('mouseup', this.listener.end, true);
+      if (this.resizable) {
+        this.resizable.show(this.template, this.config);
+      }
+
+      this.dragging = false;
+      this._active = false;
+      this.dragOffsetX = this.dragOffsetY = null;
+    }
+  };
+
+  constructor(toolType, shapeId, layerId, config) {
     this.type = toolType;
-    this.shapeId = `${this.type}-shape-${shapeId}`;
+    this.shapeId = `${layerId}-${this.type}-${shapeId}`;
     this.config = config;
 
     [this.template, this.config, this.draw] = this.#create(this.type, config);
@@ -68,7 +102,7 @@ export class Shape {
   }
 
   setListeners() {
-    this.template.addEventListener('dblclick', () => this.active(true));
+    this.template.addEventListener('click', e => (this._active ? this.deactive() : this.active()));
   }
 
   /**
@@ -89,62 +123,24 @@ export class Shape {
    */
   deactive() {
     this._active = false;
+    this.dragging = false;
     this.removeDraggable();
-    this.setResizable();
+    this.removeResizable();
   }
-
-  //#region DRAG AND DROP
 
   setDraggable() {
     this.template.style.cursor = 'grab';
-    this.template.addEventListener('mousedown', e => this.start(e));
-    this.template.addEventListener('mouseup', e => this.end(e));
+    this.template.addEventListener('mousedown', this.listener.start, true);
   }
 
   removeDraggable() {
     this.template.style.cursor = 'default';
-    this.template.removeEventListener('mousedown', e => this.start(e));
-    this.template.removeEventListener('mouseup', e => this.end(e));
+    this.template.removeEventListener('mousedown', this.listener.start, true);
   }
-
-  start(evt) {
-    this.dragging = true;
-    this.dragOffsetX = evt.offsetX - this.config.x;
-    this.dragOffsetY = evt.offsetY - this.config.y;
-    this.template.addEventListener('mousemove', e => this.move(e));
-  }
-
-  move(evt) {
-    if (this._active && this.dragging) {
-      this.template.style.cursor = 'grabbing';
-      this.config.x = evt.offsetX - this.dragOffsetX;
-      this.config.y = evt.offsetY - this.dragOffsetY;
-      this.draw(this.template, this.config);
-      if (this.resizable) {
-        this.resizable.hide();
-      }
-    }
-  }
-
-  end(evt) {
-    this.draw(this.template, this.config);
-    this.template.removeEventListener('mousemove', e => this.move(e, ctx));
-    this.dragOffsetX = this.dragOffsetY = null;
-    this.dragging = false;
-    if (this.resizable) {
-      this.resizable.show(this.template, this.config);
-    }
-  }
-
-  //#endregion
 
   setResizable() {
-    if (this.resizable) {
-      this.resizable.remove();
-    }
-
+    this.removeResizable();
     this.resizable = this._active ? new Resizable(this.template, this.config) : null;
-
     if (this.resizable !== null) {
       this.template.parentNode.appendChild(this.resizable.template);
       this.resizable._resize = (width, height) => {
@@ -154,6 +150,13 @@ export class Shape {
         this.resizable.show(this.template, this.config);
       };
     }
+  }
+
+  removeResizable() {
+    if (this.resizable) {
+      this.resizable.remove();
+    }
+    this.resizable = null;
   }
 
   #create(toolType, config) {
