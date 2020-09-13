@@ -6,7 +6,7 @@ import { SelectTool } from './components/widgets/select-tool/select-tool.js';
 
   //TODO remove
   const configTemplate = document.createElement('span');
-  configTemplate.setAttribute('id', 'configJSON')
+  configTemplate.setAttribute('id', 'configJSON');
   main.appendChild(configTemplate);
 
   container.appendChild(editor.template);
