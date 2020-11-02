@@ -21,26 +21,21 @@ export function squareDraw(template, config) {
 export function squareResize(shapeCtx, pointId, event) {
   if (!pointId) return;
   const point = shapeCtx.resizable.points[pointId];
-  function set(pointKey, sizeKey, invert = false) {
-    if (invert) {
-      shapeCtx.config[sizeKey] = point[pointKey] - shapeCtx.template[pointKey].baseVal.value;
-    } else {
-      shapeCtx.config[sizeKey] = (shapeCtx.config[pointKey] - point[pointKey]) + shapeCtx.template[sizeKey].baseVal.value;
-      shapeCtx.config[pointKey] -= (shapeCtx.config[pointKey] - point[pointKey]);
-    }
-  }
+  const _resizer = resizer(point, shapeCtx.template, ['width', 'height', 'x', 'y'])
 
-  switch (pointId) {
-    case 'e': set('x', 'width', true); break;
-    case 'w': set('x', 'width'); break;
-    case 's': set('y', 'height', true); break;
-    case 'n': set('y', 'height'); break;
-    case 'nw': set('x', 'width'); set('y', 'height'); break;
-    case 'ne': set('x', 'width', true); set('y', 'height'); break;
-    case 'se': set('x', 'width', true); set('y', 'height', true); break;
-    case 'sw': set('x', 'width'); set('y', 'height', true); break;
-    default: break;
-  }
+  [shapeCtx.config.width, shapeCtx.config.height,  shapeCtx.config.x,  shapeCtx.config.y] = _resizer(pointId);
+
+  // switch (pointId) {
+  //   case 'e': set('x', 'width', true); break;
+  //   case 'w': set('x', 'width'); break;
+  //   case 's': set('y', 'height', true); break;
+  //   case 'n': set('y', 'height'); break;
+  //   case 'nw': set('x', 'width'); set('y', 'height'); break;
+  //   case 'ne': set('x', 'width', true); set('y', 'height'); break;
+  //   case 'se': set('x', 'width', true); set('y', 'height', true); break;
+  //   case 'sw': set('x', 'width'); set('y', 'height', true); break;
+  //   default: break;
+  // }
 }
 
 export function SquareShape(config) {
