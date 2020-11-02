@@ -10,13 +10,5 @@ export function lineDraw(template, config) {
 }
 
 export function LineShape(config) {
-  return ShapeCreator(
-    'line',
-    config,
-    {
-      width: 80,
-      height: 80
-    },
-    lineDraw
-  )
+  return ShapeCreator('line', config, lineDraw);
 }

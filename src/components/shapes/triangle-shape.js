@@ -6,13 +6,5 @@ export function triangleDraw(template, config) {
 }
 
 export function TriangleShape(config) {
-  return ShapeCreator(
-    'polygon',
-    config,
-    {
-      width: 80,
-      height: 80
-    },
-    triangleDraw
-  );
+  return ShapeCreator('polygon', config, triangleDraw);
 }
