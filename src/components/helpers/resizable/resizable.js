@@ -42,7 +42,7 @@ export class Resizable {
         this.points[this.#activePointId].x = evt.offsetX - this.dragOffsetX;
         this.points[this.#activePointId].y = evt.offsetY - this.dragOffsetY;
         this.draw(this.#activePoint);
-        this._resize.next([this, evt, this.#activePointId]);
+        this._resize.next([this.#activePointId, evt]);
       }
     },
     end: evt => {
@@ -50,7 +50,7 @@ export class Resizable {
       this.draggable = false;
 
       this.draw(this.#activePoint);
-      this._resize.next([this, evt, this.#activePointId]);
+      this._resize.next([this.#activePointId, evt]);
       document.removeEventListener('mousemove', this.listener.move);
       document.removeEventListener('mouseup', this.listener.end);
       this.dragOffsetX = this.dragOffsetY = null;

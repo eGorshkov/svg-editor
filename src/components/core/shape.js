@@ -24,7 +24,7 @@ export class Shape {
    * @param event
    * @param activePoint
    */
-  resize = (shapeCtx, event, activePoint) => {};
+  resize = (shapeCtx, pointId, event) => {};
   /**
    * Ид фигуры
    * @type {string}
@@ -146,13 +146,12 @@ export class Shape {
   }
 
   setResizable() {
-    debugger;
     this.removeResizable();
     this.resizable = this._active ? new Resizable(this.template, this.config) : null;
     if (this.resizable !== null) {
       this.template.parentNode.appendChild(this.resizable.template);
-      this.resizable._resize.subscribe(([ctx, event, activePoint]) => {
-        this.resize(this, event, activePoint);
+      this.resizable._resize.subscribe(([pointId, event]) => {
+        this.resize(this, pointId, event);
         this.draw(this.template, this.config);
         this.resizable.show(this.template, this.config);
       });

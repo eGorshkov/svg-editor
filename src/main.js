@@ -85,7 +85,6 @@ function setContainer() {
 function setSelectTool(editor) {
   const selectTool = new SelectTool();
   selectTool._select.subscribe(toolType => {
-    debugger;
     switch (toolType) {
       case 'hand':
       case 'select':

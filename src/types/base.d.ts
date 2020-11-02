@@ -4,7 +4,7 @@ export interface Base<T = any, I = any> {
   /**
    * Шаблон фигуры
    */
-  template: SVGElement | HTMLElement;
+  template: SVGElement;
   /**
    *  Конфигурация фигуры
    */

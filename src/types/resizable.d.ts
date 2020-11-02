@@ -26,8 +26,9 @@ export interface IResizablePoints {
 export type IResizablePointType = keyof IResizablePoints;
 
 export interface IResizable extends Base<IShapeConfig> {
-  show(template: HTMLElement, config: IShapeConfig): void;
+  show(template: HTMLElement | SVGElement, config: IShapeConfig): void;
   remove(): void;
+  preventPoint: IResizablePoint;
   points: IResizablePoints;
   _resize: ISubject;
 }
