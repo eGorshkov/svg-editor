@@ -1,41 +1,32 @@
 import { Layer } from './layer.js';
+import { Core } from './core.js';
 
-export class Editor {
-  /**
-   *
-   * @type {ILayer[]}
-   */
-  layers = [];
-  template = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-  #LAYER_ID = 0;
+export class Editor extends Core {
   #EDITOR_TEMPLATE_ID = 'editor-template';
 
   get configuration() {
     return {
-      layers: this.layers.map(layer => ({
-        shapes: layer.shapes?.map(shape => ({ type: shape.type, config: shape.config })) ?? null
+      layers: this.items.map(layer => ({
+        shapes: layer.items?.map(shape => ({ type: shape.type, config: shape.config })) ?? null
       }))
     };
   }
 
   constructor(config) {
+    super('svg', config?.layers);
     this.template.setAttribute('id', this.#EDITOR_TEMPLATE_ID);
-    if (config) {
-      this.setByConfig(config);
-    }
     this.setListener();
   }
 
-  add(toolType) {
-    const layer = this.createLayer();
-    layer.add(toolType);
-    this.layers.push(layer);
-    this.template.appendChild(layer.template);
-  }
-
-  createLayer(shapes) {
-    this.#LAYER_ID++;
-    return new Layer(this.#LAYER_ID, shapes, {
+  /**
+   *
+   * @param layer { ILayer }
+   * @param toolType { ShapesType }
+   * @returns {Layer}
+   */
+  create(layer) {
+    this.updateCoreId();
+    return new Layer(this.coreId, layer?.shapes, {
       x: this.template.clientWidth / 2,
       y: this.template.clientHeight / 2
     });
@@ -57,14 +48,6 @@ export class Editor {
     //TODO REMOVE
     document.getElementById('configJSON').innerText = JSON.stringify(this.configuration);
     console.log(e);
-  }
-
-  setByConfig(config) {
-    this.layers = config.layers.map(layer => {
-      layer = this.createLayer(layer.shapes);
-      this.template.appendChild(layer.template);
-      return layer;
-    });
   }
 
   setActiveShape(layer, id) {

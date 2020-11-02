@@ -1,25 +1,15 @@
-import { Editor } from './components/editor.js';
+import { Editor } from './components/core/editor.js';
 import { SelectTool } from './components/widgets/select-tool/select-tool.js';
+import {compose} from './components/helpers/compose.js'
 
-((config) => {
-  const [main, editor, container, selectTool] = setContainers(config);
-
-  //TODO remove
-  const configTemplate = document.createElement('span');
-  configTemplate.setAttribute('id', 'configJSON')
-  main.appendChild(configTemplate);
-
-  container.appendChild(editor.template);
-  main.appendChild(container);
-  main.appendChild(selectTool.template);
-})({
+(compose(setEditor, setContainers, setUI))({
   layers: [
     {
       shapes: [
         {
           type: 'circle',
           config: {
-            x: 100,
+            x: 500,
             y: 200,
             width: 200,
             height: 200,
@@ -34,7 +24,7 @@ import { SelectTool } from './components/widgets/select-tool/select-tool.js';
           type: 'square',
           config: {
             x: 400,
-            y: 200,
+            y: 400,
             width: 200,
             height: 200,
             stroke: 'red'
@@ -59,9 +49,24 @@ import { SelectTool } from './components/widgets/select-tool/select-tool.js';
   ]
 });
 
-function setContainers(config) {
-  const editor = new Editor(config);
+function setUI([main, editor, container, selectTool]) {
+  //TODO remove
+  const configTemplate = document.createElement('span');
+  configTemplate.setAttribute('id', 'configJSON')
+  main.appendChild(configTemplate);
+  //TODO
+
+  container.appendChild(editor.template);
+  main.appendChild(container);
+  main.appendChild(selectTool.template);
+}
+
+function setContainers(editor) {
   return [setMain(), editor, setContainer(), setSelectTool(editor)];
+}
+
+function setEditor(config) {
+  return new Editor(config)
 }
 
 function setMain() {
@@ -79,7 +84,8 @@ function setContainer() {
 
 function setSelectTool(editor) {
   const selectTool = new SelectTool();
-  selectTool._select = toolType => {
+  selectTool._select.subscribe(toolType => {
+    debugger;
     switch (toolType) {
       case 'hand':
       case 'select':
@@ -88,6 +94,6 @@ function setSelectTool(editor) {
         editor.add(toolType);
         break;
     }
-  };
+  });
   return selectTool;
 }

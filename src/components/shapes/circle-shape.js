@@ -7,5 +7,5 @@ export function circleDraw(template, config) {
 }
 
 export function CircleShape(config) {
-  return ShapeCreator('circle', config, { width: 80, height: 80 }, circleDraw);
+  return ShapeCreator('circle', config, circleDraw);
 }
