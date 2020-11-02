@@ -11,13 +11,3 @@ export function resizer(point, template, props) {
     }
   };
 }
-
-
-// function set(pointKey, sizeKey, invert = false) {
-//   if (invert) {
-//     shapeCtx.config[sizeKey] = point[pointKey] - shapeCtx.template[pointKey].baseVal.value;
-//   } else {
-//     shapeCtx.config[sizeKey] = (shapeCtx.config[pointKey] - point[pointKey]) + shapeCtx.template[sizeKey].baseVal.value;
-//     shapeCtx.config[pointKey] -= (shapeCtx.config[pointKey] - point[pointKey]);
-//   }
-// }

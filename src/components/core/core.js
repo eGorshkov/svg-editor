@@ -37,11 +37,11 @@ export class Core {
 
   /**
    *
-   * @param toolType { ShapesType }
+   * @param type { ShapesType }
    */
-  add(toolType) {
-    const item = this.create(null);
-    item.type = toolType;
+  add(type) {
+    const item = this.create({ type });
+    if (item.add) item.add(type);
     this.setToTemplate(item);
     this.set(item);
   }
@@ -55,6 +55,10 @@ export class Core {
   }
 
   setToTemplate(newItems) {
-    newItems.forEach(item => this.template.appendChild(item.template));
+    newItems = Array.isArray(newItems) ? newItems : [newItems];
+    if (newItems.length) {
+      newItems.forEach(item => this.template.appendChild(item.template));
+    }
+    return this.items;
   }
 }
