@@ -1,7 +1,6 @@
 import { ShapeCreator } from '../helpers/shape-creator.js';
 
 export function lineDraw(template, config) {
-  debugger;
   template.setAttributeNS(null, 'stroke-width', '5px');
   template.setAttributeNS(null, 'x1', config.x);
   template.setAttributeNS(null, 'y1', config.y);
