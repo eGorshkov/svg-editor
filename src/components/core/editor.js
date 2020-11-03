@@ -8,7 +8,10 @@ export class Editor extends Core {
     return {
       layers: this.items.map(layer => ({
         shapes: layer.items?.map(shape => ({ type: shape.type, config: shape.config })) ?? null
-      }))
+      })),
+      get json() {
+        return JSON.stringify(this.layers);
+      }
     };
   }
 

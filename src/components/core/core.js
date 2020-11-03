@@ -14,14 +14,13 @@ export class Core {
   }
 
   get #load() {
-    return compose(this.setToTemplate.bind(this), this.set.bind(this));
+    return compose(this.set.bind(this), this.setToTemplate.bind(this));
   }
 
   constructor(elementName, items) {
     this.template = createTemplate(elementName);
     if (items?.length) {
-      this.#coreId = items.length;
-      this.#load(items.map(this.create.bind(this)));
+      this.#load(items.map(item => this.create(item)));
     }
   }
 
@@ -42,14 +41,14 @@ export class Core {
   add(type) {
     const item = this.create({ type });
     if (item.add) item.add(type);
-    this.setToTemplate(item);
     this.set(item);
+    this.setToTemplate(item);
   }
 
   set(newItems) {
     newItems = Array.isArray(newItems) ? newItems : [newItems];
     if (newItems.length) {
-      newItems.forEach(this.items.push.bind(this));
+      newItems.forEach(item => this.items.push(item));
     }
     return this.items;
   }

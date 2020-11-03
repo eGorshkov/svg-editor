@@ -137,12 +137,12 @@ export class Shape {
 
   setDraggable() {
     this.template.style.cursor = 'grab';
-    this.template.addEventListener('mousedown', this.listener.start, true);
+    this.template.addEventListener('mousedown', this.listener.start);
   }
 
   removeDraggable() {
     this.template.style.cursor = 'default';
-    this.template.removeEventListener('mousedown', this.listener.start, true);
+    this.template.removeEventListener('mousedown', this.listener.start);
   }
 
   setResizable() {

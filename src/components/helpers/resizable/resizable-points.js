@@ -39,4 +39,8 @@ export class ResizablePoints {
       cursor: 'se-resize'
     };
   }
+
+  get circlesNames() {
+    return ['nw', 'n', 'ne', 'w', 'e', 'sw', 's', 'se'];
+  }
 }

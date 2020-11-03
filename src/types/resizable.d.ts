@@ -21,9 +21,11 @@ export interface IResizablePoints {
   ne: IResizablePoint;
   sw: IResizablePoint;
   se: IResizablePoint;
+  overlay: IResizablePoint;
+  circlesNames: Array<IResizablePointType>;
 }
 
-export type IResizablePointType = keyof IResizablePoints;
+export type IResizablePointType = 'w' | 'e' | 's' | 'n' | 'nw' | 'ne' | 'sw' | 'se';
 
 export interface IResizable extends Base<IShapeConfig> {
   show(template: HTMLElement | SVGElement, config: IShapeConfig): void;

@@ -5,6 +5,10 @@ import { Subject } from '../subject.js';
 import { ResizablePoints } from './resizable-points.js';
 
 export class Resizable {
+  /**
+   *
+   * @type {IResizablePoints}
+   */
   points = null;
   /**
    *
@@ -89,7 +93,7 @@ export class Resizable {
   }
 
   create() {
-    Object.keys(this.points)
+    this.points.circlesNames
       .reduce(this.createPoint(this.points), [])
       .forEach(point => this.template.appendChild(point));
   }
@@ -128,9 +132,7 @@ export class Resizable {
     }
     this.setPoints(this.getShapeCoords(shapeTemplate, shapeConfig));
     Array.from(this.template.children).forEach(point => {
-      const id = this.#getPointIdentificator(point);
-      point.setAttributeNS(null, point.tagName === 'circle' ? 'cx' : 'x', this.points[id].x);
-      point.setAttributeNS(null, point.tagName === 'circle' ? 'cy' : 'y', this.points[id].y);
+      this.draw(point);
       point.style.visibility = 'visible';
     });
   }

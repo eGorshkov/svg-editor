@@ -52,7 +52,9 @@ import {compose} from './components/helpers/compose.js'
 function setUI([main, editor, container, selectTool]) {
   //TODO remove
   const configTemplate = document.createElement('span');
-  configTemplate.setAttribute('id', 'configJSON')
+  configTemplate.setAttribute('id', 'configJSON');
+  setInterval(() => configTemplate.innerText = editor.configuration.json,1000);
+  configTemplate.innerText = editor.configuration.json;
   main.appendChild(configTemplate);
   //TODO
 

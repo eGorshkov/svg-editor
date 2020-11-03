@@ -24,7 +24,7 @@ body {
 .editor__tools {
   position: fixed;
   max-height: 400px;
-  height: 100%;
+  height: max-content;
   top: 20px;
   left: 20px;
   display: flex;
