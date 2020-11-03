@@ -1,4 +1,5 @@
 import { Subject } from '../../helpers/subject.js';
+import { SHAPES } from '../../shapes/base.js';
 
 export class SelectTool {
   tools = [];
@@ -8,10 +9,7 @@ export class SelectTool {
     this.tools = tools ?? [
       { type: 'select', icon: 'select' },
       { type: 'hand', icon: 'hand' },
-      { type: 'triangle', icon: 'triangle' },
-      { type: 'square', icon: 'square' },
-      { type: 'circle', icon: 'circle' },
-      { type: 'line', icon: 'line' }
+      ...Object.keys(SHAPES).map(type => ({ type, icon: type }))
     ];
   }
 
