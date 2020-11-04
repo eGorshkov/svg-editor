@@ -9,7 +9,7 @@ export function Subject(value, checkFirstChange) {
   this.subscribeFunctions = [];
   this.checkFirstChange = checkFirstChange ?? true;
   this.value = value ?? null;
-  if(this.checkFirstChange) this.next(value);
+  if (this.checkFirstChange) this.next(value);
   return this;
 }
 

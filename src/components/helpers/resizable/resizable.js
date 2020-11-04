@@ -62,7 +62,7 @@ export class Resizable {
   };
 
   constructor(shapeTemplate, shapeConfig) {
-    [this.template] = ShapeCreator('g', {width: shapeConfig.width, height: shapeConfig.height});
+    [this.template] = ShapeCreator('g', { width: shapeConfig.width, height: shapeConfig.height });
     this.setPoints(this.getShapeCoords(shapeTemplate, shapeConfig));
     this.createOverlay();
     this.create();
@@ -150,5 +150,4 @@ export class Resizable {
   removeDraggable(pointTemplate) {
     pointTemplate.removeEventListener('mousedown', this.listener.start, true);
   }
-
 }

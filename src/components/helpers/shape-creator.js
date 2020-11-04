@@ -9,12 +9,7 @@ export function ShapeCreator(elementName, config, drawCallback, resizeCallback) 
   template.setAttributeNS(null, 'cursor', config.cursor ?? 'default');
   template.setAttributeNS(null, 'fill', config.fill ?? 'rgb(255, 255, 255)');
   template.setAttributeNS(null, 'stroke', config.stroke ?? 'rgb(0, 0, 0)');
-  return [
-    template,
-    config,
-    drawCallback || defaultDraw,
-    resizeCallback || defaultResize
-  ];
+  return [template, config, drawCallback || defaultDraw, resizeCallback || defaultResize];
 }
 
 /**
@@ -23,9 +18,7 @@ export function ShapeCreator(elementName, config, drawCallback, resizeCallback) 
  * @param event
  * @param activePointId
  */
-function defaultResize(shapeCtx, event, activePointId) {
-
-}
+function defaultResize(shapeCtx, event, activePointId) {}
 
 /**
  *

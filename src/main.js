@@ -1,14 +1,10 @@
 import { Editor } from './components/core/editor.js';
 import { SelectTool } from './components/widgets/select-tool/select-tool.js';
-import {compose} from './components/helpers/compose.js';
+import { compose } from './components/helpers/compose.js';
 import { createCustomTemplate } from './components/helpers/custom-elements/custom-template.js';
 import { MOCK_DEFAULT_LAYERS } from './mock/mock-default-layers.js';
 
-compose(
-  setEditor,
-  setContainers,
-  setUI
-)(MOCK_DEFAULT_LAYERS);
+compose(setEditor, setContainers, setUI)(MOCK_DEFAULT_LAYERS);
 
 function setUI([main, editor, customTemplate, container, selectTool]) {
   //TODO remove

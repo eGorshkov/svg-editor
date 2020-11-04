@@ -35,7 +35,8 @@ export function circleResize(shapeCtx, pointId, event) {
     case 'w':
       shapeCtx.config.width = shapeCtx.template.cx.baseVal.value + shapeCtx.template.r.baseVal.value - point.x;
       break;
-    default: break;
+    default:
+      break;
   }
 }
 

@@ -8,12 +8,12 @@ export function createCustomTemplate() {
 }
 
 export function getCustomTemplate() {
-  return document.getElementById(TEMPLATE_ID)
+  return document.getElementById(TEMPLATE_ID);
 }
 
 export function restoreCustomTemplate() {
   const element = getCustomTemplate(),
-        parent = element.parentElement;
+    parent = element.parentElement;
   parent.removeChild(element);
   parent.appendChild(createCustomTemplate());
 }
