@@ -1,5 +1,4 @@
 import { ILayer } from './layer';
+import { Base } from './base';
 
-export interface IEditor {
-  layers: ILayer[];
-}
+export interface IEditor extends Base<any, ILayer> {}

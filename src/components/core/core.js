@@ -28,10 +28,6 @@ export class Core {
     this.#coreId++;
   }
 
-  /**
-   * @type { ILayer | IShape }
-   * @returns Base
-   */
   create(item) {}
 
   /**
@@ -41,23 +37,16 @@ export class Core {
   add(type) {
     const item = this.create({ type });
     if (item.add) item.add(type);
-    this.set(item);
-    this.setToTemplate(item);
+    this.items.push(item);
+    this.template.appendChild(item.template);
   }
 
-  set(newItems) {
-    newItems = Array.isArray(newItems) ? newItems : [newItems];
-    if (newItems.length) {
-      newItems.forEach(item => this.items.push(item));
-    }
+  set(_items) {
+    this.items = [...this.items, ..._items];
     return this.items;
   }
 
-  setToTemplate(newItems) {
-    newItems = Array.isArray(newItems) ? newItems : [newItems];
-    if (newItems.length) {
-      newItems.forEach(item => this.template.appendChild(item.template));
-    }
-    return this.items;
+  setToTemplate(_items) {
+    _items.forEach(item => this.template.appendChild(item.template));
   }
 }

@@ -7,7 +7,7 @@ export class Editor extends Core {
   get configuration() {
     return {
       layers: this.items.map(layer => ({
-        shapes: layer.items?.map(shape => ({ type: shape.type, config: shape.config })) ?? null
+        shapes: layer.items.map(shape => ({ type: shape.type, config: shape.config }))
       })),
       get json() {
         return JSON.stringify(this.layers);
@@ -29,36 +29,11 @@ export class Editor extends Core {
    */
   create(layer) {
     this.updateCoreId();
-    return new Layer(this.coreId, layer?.shapes, {
+    return new Layer(this.coreId, layer?.items, {
       x: this.template.clientWidth / 2,
       y: this.template.clientHeight / 2
     });
   }
 
-  setListener() {
-    // document.addEventListener('click', e => this.clickListener(e));
-  }
-
-  clickListener(e) {
-    const layer = this.layers.find(layer => e.target.parentElement.id === layer.layerId);
-
-    if (e.target.id === this.#EDITOR_TEMPLATE_ID) {
-      this.layers.forEach(layer => layer.shapes.forEach(shape => shape.deactive()));
-    } else if (layer !== undefined) {
-      this.setActiveShape(layer, e.target.id);
-    }
-
-    //TODO REMOVE
-    document.getElementById('configJSON').innerText = JSON.stringify(this.configuration);
-    console.log(e);
-  }
-
-  setActiveShape(layer, id) {
-    for (const shape of layer.shapes) {
-      if (shape.shapeId === id) {
-        shape.active();
-        return;
-      }
-    }
-  }
+  setListener() {}
 }

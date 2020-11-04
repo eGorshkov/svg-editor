@@ -73,6 +73,7 @@ export class Shape {
     },
     move: evt => {
       console.log('shape move');
+      evt.preventDefault();
       if (this._active && this.dragging) {
         this.template.style.cursor = 'grabbing';
         this.config.x = evt.offsetX - this.dragOffsetX;
@@ -109,7 +110,7 @@ export class Shape {
   }
 
   setListeners() {
-    this.template.addEventListener('click', e => (this._active ? this.deactive() : this.active()));
+    this.template.addEventListener('click', e => (this._active ? this.deactivate() : this.active()));
   }
 
   /**
@@ -128,7 +129,7 @@ export class Shape {
    * 1. Отключает resizable - возможность изменения размера фигуры
    * 2. Убирает возможность переноса фигуры
    */
-  deactive() {
+  deactivate() {
     this._active = false;
     this.dragging = false;
     this.removeDraggable();
@@ -137,12 +138,12 @@ export class Shape {
 
   setDraggable() {
     this.template.style.cursor = 'grab';
-    this.template.addEventListener('mousedown', this.listener.start);
+    this.template.addEventListener('mousedown', this.listener.start, true);
   }
 
   removeDraggable() {
     this.template.style.cursor = 'default';
-    this.template.removeEventListener('mousedown', this.listener.start);
+    this.template.removeEventListener('mousedown', this.listener.start, true);
   }
 
   setResizable() {

@@ -1,4 +1,3 @@
-import { SHAPES } from '../components/shapes/base.js';
 import { IResizable } from './resizable';
 import { Base } from './base.js';
 
@@ -47,7 +46,7 @@ export interface IShape extends Base<IShapeConfig> {
    * 1. Отключает resizable - возможность изменения размера фигуры
    * 2. Убирает возможность переноса фигуры
    */
-  deactive(): void;
+  deactivate(): void;
 }
 
 export interface IShapeConfig {
@@ -55,4 +54,5 @@ export interface IShapeConfig {
   y: number;
   width: number;
   height: number;
+  value?: string;
 }
