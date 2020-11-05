@@ -29,6 +29,7 @@ export type IResizablePointType = 'w' | 'e' | 's' | 'n' | 'nw' | 'ne' | 'sw' | '
 
 export interface IResizable extends Base<IShapeConfig> {
   show(template: HTMLElement | SVGElement, config: IShapeConfig): void;
+  hide(): void;
   remove(): void;
   preventPoint: IResizablePoint;
   points: IResizablePoints;

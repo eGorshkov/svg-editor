@@ -68,34 +68,41 @@ function textResize(shapeCtx, pointId, event) {
 }
 
 function listenTextTemplate(template, config) {
-  template.addEventListener('dblclick', () =>
-    callContentValue(template, value => {
-      config.value = value;
-      textDraw(template, config);
-    })
-  );
+  template.addEventListener('dblclick', (e) => {
+    e.preventDefault();
+    callContentValue(template, config, textDraw)
+  });
 }
 
-function callContentValue(template, cb) {
-  const custom = getCustomTemplate(),
-    points = template.getBBox();
-  custom.setAttribute('contenteditable', 'true');
-  custom.classList.add('editor__text-element');
-  custom.style.left = points.x + 'px';
-  custom.style.top = points.y + 'px';
-  custom.style.minWidth = points.width + 'px';
-  custom.style.minHeight = points.height + 'px';
-  custom.innerText = template.textContent;
-  template.textContent = '';
+function callContentValue(template, config, cb) {
+  template.innerHTML = '';
 
-  custom.addEventListener('keydown', e => {
-    if (e.key === 'Enter' && e.ctrlKey) {
-      cb(e.target.outerText);
+  const customTemplate = getCustomTemplate();
+  setAttributesToCustomTemplate(customTemplate, config, template.getBBox());
+
+  function callBackListener(e) {
+    if (e.type === 'blur' || e.key === 'Escape' || (e.key === 'Enter' && e.ctrlKey)) {
+      config.value = e.target.outerText;
+      cb(template, config);
       restoreCustomTemplate();
+      customTemplate.removeEventListener('keydown', callBackListener)
+      customTemplate.removeEventListener('blur', callBackListener)
     }
-  });
+  }
+  customTemplate.addEventListener('keydown', callBackListener);
+  customTemplate.addEventListener('blur', callBackListener);
 
-  setTimeout(() => custom.focus());
+  setTimeout(() => customTemplate.focus());
+}
+
+function setAttributesToCustomTemplate(template, config, points) {
+  template.setAttribute('contenteditable', 'true');
+  template.classList.add('editor__text-element');
+  template.style.left = points.x + 'px';
+  template.style.top = points.y + 'px';
+  template.style.minWidth = points.width + 'px';
+  template.style.minHeight = points.height + 'px';
+  template.innerText = config.value;
 }
 
 export function TextShape(config) {

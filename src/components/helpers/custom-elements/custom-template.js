@@ -1,5 +1,9 @@
 const TEMPLATE_ID = 'editor-template-custom';
 
+/**
+ *
+ * @returns {HTMLDivElement}
+ */
 export function createCustomTemplate() {
   const element = document.createElement('div');
   element.id = TEMPLATE_ID;

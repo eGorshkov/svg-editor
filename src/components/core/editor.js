@@ -1,5 +1,6 @@
 import { Layer } from './layer.js';
 import { Core } from './core.js';
+import { RESIZABLE_CONTAINER_ID, RESIZABLE_POINT_ATTRIBUTE } from '../helpers/resizable/resizable.js';
 
 export class Editor extends Core {
   #EDITOR_TEMPLATE_ID = 'editor-template';
@@ -35,5 +36,17 @@ export class Editor extends Core {
     });
   }
 
-  setListener() {}
+  setListener() {
+    this.template.addEventListener(
+      'click',
+      (evt) => {
+        if (evt.target.hasAttribute(RESIZABLE_POINT_ATTRIBUTE)) {
+          return;
+        }
+        const resizableContainer = this.template.getElementById(RESIZABLE_CONTAINER_ID)
+        if (resizableContainer) this.template.removeChild(resizableContainer);
+      },
+      true
+    )
+  }
 }

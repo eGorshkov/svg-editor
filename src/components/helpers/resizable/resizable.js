@@ -4,6 +4,9 @@ import { squareDraw, SquareShape } from '../../shapes/square-shape.js';
 import { Subject } from '../subject.js';
 import { ResizablePoints } from './resizable-points.js';
 
+export const RESIZABLE_CONTAINER_ID = 'resizable-container';
+export const RESIZABLE_POINT_ATTRIBUTE = 'resizable-point';
+
 export class Resizable {
   /**
    *
@@ -63,6 +66,7 @@ export class Resizable {
 
   constructor(shapeTemplate, shapeConfig) {
     [this.template] = ShapeCreator('g', { width: shapeConfig.width, height: shapeConfig.height });
+    this.template.id = RESIZABLE_CONTAINER_ID;
     this.setPoints(this.getShapeCoords(shapeTemplate, shapeConfig));
     this.createOverlay();
     this.create();
@@ -113,6 +117,7 @@ export class Resizable {
 
       const [pointTemplate, config, draw] = CircleShape(points[pointKey]);
       pointTemplate.setAttribute('aria-label', pointKey);
+      pointTemplate.setAttribute(RESIZABLE_POINT_ATTRIBUTE, '');
       draw(pointTemplate, config);
       this.setDraggable(pointTemplate);
       return [...acc, pointTemplate];

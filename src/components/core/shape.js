@@ -150,7 +150,7 @@ export class Shape {
     this.removeResizable();
     this.resizable = this._active ? new Resizable(this.template, this.config) : null;
     if (this.resizable !== null) {
-      this.template.parentNode.appendChild(this.resizable.template);
+      this.template.viewportElement.appendChild(this.resizable.template);
       this.resizable._resize.subscribe(([pointId, event]) => {
         this.resize(this, pointId, event);
         this.draw(this.template, this.config);
