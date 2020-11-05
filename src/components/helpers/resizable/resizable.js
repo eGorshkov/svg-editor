@@ -4,7 +4,14 @@ import { squareDraw, SquareShape } from '../../shapes/square-shape.js';
 import { Subject } from '../subject.js';
 import { ResizablePoints } from './resizable-points.js';
 
+export const RESIZABLE_CONTAINER_ID = 'resizable-container';
+export const RESIZABLE_POINT_ATTRIBUTE = 'resizable-point';
+
 export class Resizable {
+  /**
+   *
+   * @type {IResizablePoints}
+   */
   points = null;
   /**
    *
@@ -37,7 +44,7 @@ export class Resizable {
       document.addEventListener('mouseup', this.listener.end);
     },
     move: evt => {
-      evt.preventDefault();
+      console.log('resize move');
       if (this.draggable) {
         this.points[this.#activePointId].x = evt.offsetX - this.dragOffsetX;
         this.points[this.#activePointId].y = evt.offsetY - this.dragOffsetY;
@@ -46,7 +53,6 @@ export class Resizable {
       }
     },
     end: evt => {
-      evt.preventDefault();
       this.draggable = false;
 
       this.draw(this.#activePoint);
@@ -59,7 +65,8 @@ export class Resizable {
   };
 
   constructor(shapeTemplate, shapeConfig) {
-    [this.template] = ShapeCreator('g', {width: shapeConfig.width, height: shapeConfig.height});
+    [this.template] = ShapeCreator('g', { width: shapeConfig.width, height: shapeConfig.height });
+    this.template.id = RESIZABLE_CONTAINER_ID;
     this.setPoints(this.getShapeCoords(shapeTemplate, shapeConfig));
     this.createOverlay();
     this.create();
@@ -89,7 +96,7 @@ export class Resizable {
   }
 
   create() {
-    Object.keys(this.points)
+    this.points.circlesNames
       .reduce(this.createPoint(this.points), [])
       .forEach(point => this.template.appendChild(point));
   }
@@ -110,6 +117,7 @@ export class Resizable {
 
       const [pointTemplate, config, draw] = CircleShape(points[pointKey]);
       pointTemplate.setAttribute('aria-label', pointKey);
+      pointTemplate.setAttribute(RESIZABLE_POINT_ATTRIBUTE, '');
       draw(pointTemplate, config);
       this.setDraggable(pointTemplate);
       return [...acc, pointTemplate];
@@ -128,9 +136,7 @@ export class Resizable {
     }
     this.setPoints(this.getShapeCoords(shapeTemplate, shapeConfig));
     Array.from(this.template.children).forEach(point => {
-      const id = this.#getPointIdentificator(point);
-      point.setAttributeNS(null, point.tagName === 'circle' ? 'cx' : 'x', this.points[id].x);
-      point.setAttributeNS(null, point.tagName === 'circle' ? 'cy' : 'y', this.points[id].y);
+      this.draw(point);
       point.style.visibility = 'visible';
     });
   }
@@ -149,5 +155,4 @@ export class Resizable {
   removeDraggable(pointTemplate) {
     pointTemplate.removeEventListener('mousedown', this.listener.start, true);
   }
-
 }

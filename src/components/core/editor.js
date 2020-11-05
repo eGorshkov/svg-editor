@@ -1,5 +1,6 @@
 import { Layer } from './layer.js';
 import { Core } from './core.js';
+import { RESIZABLE_CONTAINER_ID, RESIZABLE_POINT_ATTRIBUTE } from '../helpers/resizable/resizable.js';
 
 export class Editor extends Core {
   #EDITOR_TEMPLATE_ID = 'editor-template';
@@ -7,8 +8,11 @@ export class Editor extends Core {
   get configuration() {
     return {
       layers: this.items.map(layer => ({
-        shapes: layer.items?.map(shape => ({ type: shape.type, config: shape.config })) ?? null
-      }))
+        shapes: layer.items.map(shape => ({ type: shape.type, config: shape.config }))
+      })),
+      get json() {
+        return JSON.stringify(this.layers);
+      }
     };
   }
 
@@ -26,36 +30,23 @@ export class Editor extends Core {
    */
   create(layer) {
     this.updateCoreId();
-    return new Layer(this.coreId, layer?.shapes, {
+    return new Layer(this.coreId, layer?.items, {
       x: this.template.clientWidth / 2,
       y: this.template.clientHeight / 2
     });
   }
 
   setListener() {
-    // document.addEventListener('click', e => this.clickListener(e));
-  }
-
-  clickListener(e) {
-    const layer = this.layers.find(layer => e.target.parentElement.id === layer.layerId);
-
-    if (e.target.id === this.#EDITOR_TEMPLATE_ID) {
-      this.layers.forEach(layer => layer.shapes.forEach(shape => shape.deactive()));
-    } else if (layer !== undefined) {
-      this.setActiveShape(layer, e.target.id);
-    }
-
-    //TODO REMOVE
-    document.getElementById('configJSON').innerText = JSON.stringify(this.configuration);
-    console.log(e);
-  }
-
-  setActiveShape(layer, id) {
-    for (const shape of layer.shapes) {
-      if (shape.shapeId === id) {
-        shape.active();
-        return;
-      }
-    }
+    this.template.addEventListener(
+      'click',
+      (evt) => {
+        if (evt.target.hasAttribute(RESIZABLE_POINT_ATTRIBUTE)) {
+          return;
+        }
+        const resizableContainer = this.template.getElementById(RESIZABLE_CONTAINER_ID)
+        if (resizableContainer) this.template.removeChild(resizableContainer);
+      },
+      true
+    )
   }
 }

@@ -73,6 +73,7 @@ export class Shape {
     },
     move: evt => {
       console.log('shape move');
+      evt.preventDefault();
       if (this._active && this.dragging) {
         this.template.style.cursor = 'grabbing';
         this.config.x = evt.offsetX - this.dragOffsetX;
@@ -109,7 +110,7 @@ export class Shape {
   }
 
   setListeners() {
-    this.template.addEventListener('click', e => (this._active ? this.deactive() : this.active()));
+    this.template.addEventListener('click', e => (this._active ? this.deactivate() : this.active()));
   }
 
   /**
@@ -128,7 +129,7 @@ export class Shape {
    * 1. Отключает resizable - возможность изменения размера фигуры
    * 2. Убирает возможность переноса фигуры
    */
-  deactive() {
+  deactivate() {
     this._active = false;
     this.dragging = false;
     this.removeDraggable();
@@ -149,7 +150,7 @@ export class Shape {
     this.removeResizable();
     this.resizable = this._active ? new Resizable(this.template, this.config) : null;
     if (this.resizable !== null) {
-      this.template.parentNode.appendChild(this.resizable.template);
+      this.template.viewportElement.appendChild(this.resizable.template);
       this.resizable._resize.subscribe(([pointId, event]) => {
         this.resize(this, pointId, event);
         this.draw(this.template, this.config);

@@ -2,11 +2,6 @@ import { Shape } from './shape.js';
 import { Core } from './core.js';
 
 export class Layer extends Core {
-  /**
-   *
-   * @type {IShape[]}
-   */
-  items = [];
   defaultShapeConfig = null;
 
   constructor(layerId, shapes, defaultShapeConfig) {

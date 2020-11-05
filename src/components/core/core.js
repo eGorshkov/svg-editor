@@ -14,14 +14,13 @@ export class Core {
   }
 
   get #load() {
-    return compose(this.setToTemplate.bind(this), this.set.bind(this));
+    return compose(this.set.bind(this), this.setToTemplate.bind(this));
   }
 
   constructor(elementName, items) {
     this.template = createTemplate(elementName);
     if (items?.length) {
-      this.#coreId = items.length;
-      this.#load(items.map(this.create.bind(this)));
+      this.#load(items.map(item => this.create(item)));
     }
   }
 
@@ -29,32 +28,25 @@ export class Core {
     this.#coreId++;
   }
 
-  /**
-   * @type { ILayer | IShape }
-   * @returns Base
-   */
   create(item) {}
 
   /**
    *
-   * @param toolType { ShapesType }
+   * @param type { ShapesType }
    */
-  add(toolType) {
-    const item = this.create(null);
-    item.type = toolType;
-    this.setToTemplate(item);
-    this.set(item);
+  add(type) {
+    const item = this.create({ type });
+    if (item.add) item.add(type);
+    this.items.push(item);
+    this.template.appendChild(item.template);
   }
 
-  set(newItems) {
-    newItems = Array.isArray(newItems) ? newItems : [newItems];
-    if (newItems.length) {
-      newItems.forEach(this.items.push.bind(this));
-    }
+  set(_items) {
+    this.items = [...this.items, ..._items];
     return this.items;
   }
 
-  setToTemplate(newItems) {
-    newItems.forEach(item => this.template.appendChild(item.template));
+  setToTemplate(_items) {
+    _items.forEach(item => this.template.appendChild(item.template));
   }
 }
