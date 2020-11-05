@@ -1,5 +1,6 @@
-import { createTemplate, ShapeCreator } from '../helpers/shape-creator.js';
+import { ShapeCreator } from '../helpers/shape-creator.js';
 import { getCustomTemplate, restoreCustomTemplate } from '../helpers/custom-elements/custom-template.js';
+import { Resizer } from '../helpers/resizable/resizer.js';
 /**
  *
  * @param template
@@ -20,51 +21,8 @@ function textDraw(template, config) {
  * @param event {Event}
  */
 function textResize(shapeCtx, pointId, event) {
-  if (!pointId) return;
   shapeCtx.template.classList.toggle('editor__text-element--moved', event.type === 'mousemove');
-  const point = shapeCtx.resizable.points[pointId];
-
-  function set(pointKey, sizeKey, invert = false) {
-    if (invert) {
-      shapeCtx.config[sizeKey] = point[pointKey] - shapeCtx.config[pointKey];
-    } else {
-      shapeCtx.config[sizeKey] += shapeCtx.config[pointKey] - point[pointKey];
-      shapeCtx.config[pointKey] -= shapeCtx.config[pointKey] - point[pointKey];
-    }
-  }
-
-  switch (pointId) {
-    case 'e':
-      set('x', 'width', true);
-      break;
-    case 'w':
-      set('x', 'width');
-      break;
-    case 's':
-      set('y', 'height', true);
-      break;
-    case 'n':
-      set('y', 'height');
-      break;
-    case 'nw':
-      set('x', 'width');
-      set('y', 'height');
-      break;
-    case 'ne':
-      set('x', 'width', true);
-      set('y', 'height');
-      break;
-    case 'se':
-      set('x', 'width', true);
-      set('y', 'height', true);
-      break;
-    case 'sw':
-      set('x', 'width');
-      set('y', 'height', true);
-      break;
-    default:
-      break;
-  }
+  Resizer.defaultStrategy(shapeCtx.config, shapeCtx.resizable.points[pointId], pointId)
 }
 
 function listenTextTemplate(template, config) {
