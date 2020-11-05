@@ -1,6 +1,8 @@
+import { Subject } from '../../helpers/subject.js';
+
 export class SelectTool {
   tools = [];
-  _select = toolType => {};
+  _select = new Subject('hand');
   #TOOL_NAME = 'tool';
   constructor(tools) {
     this.tools = tools ?? [
@@ -27,6 +29,6 @@ export class SelectTool {
   }
 
   select(e, tool) {
-    this._select(tool.type);
+    this._select.next(tool.type);
   }
 }

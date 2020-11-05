@@ -1,15 +1,8 @@
 import { SHAPES } from '../components/shapes/base.js';
 import { IResizable } from './resizable';
+import { Base } from './base.js';
 
-export interface IShape {
-  /**
-   * Шаблон фигуры
-   */
-  template: SVGElement;
-  /**
-   *  Конфигурация фигуры
-   */
-  config: IShapeConfig;
+export interface IShape extends Base<IShapeConfig> {
   /**
    * Ид фигуры
    */
@@ -37,10 +30,6 @@ export interface IShape {
    */
   resizable: IResizable;
   /**
-   *  Тип фигуры
-   */
-  type: ShapesType;
-  /**
    * Функция рисвоки шаблона
    * @param template - шаблон фигуры
    * @param config - конфигурация фигуры
@@ -67,5 +56,3 @@ export interface IShapeConfig {
   width: number;
   height: number;
 }
-
-export type ShapesType = keyof typeof SHAPES;

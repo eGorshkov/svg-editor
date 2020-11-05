@@ -1,5 +1,5 @@
-import { SHAPES } from './shapes/base.js';
-import { Resizable } from './helpers/resizable.js';
+import { SHAPES } from '../shapes/base.js';
+import { Resizable } from '../helpers/resizable/resizable.js';
 
 export class Shape {
   /**
@@ -19,10 +19,17 @@ export class Shape {
    */
   draw = (template, config) => {};
   /**
-   * Ид фигуры
-   * @type {number}
+   *
+   * @param shapeCtx
+   * @param event
+   * @param activePoint
    */
-  shapeId = 0;
+  resize = (shapeCtx, pointId, event) => {};
+  /**
+   * Ид фигуры
+   * @type {string}
+   */
+  shapeId = '';
   /**
    * Флаг того, что фигура активна:
    * 1. Активируется resizable - возможность изменения размера фигуры
@@ -85,6 +92,7 @@ export class Shape {
       }
 
       this.dragging = false;
+      this._active = false;
       this.dragOffsetX = this.dragOffsetY = null;
     }
   };
@@ -94,14 +102,14 @@ export class Shape {
     this.shapeId = `${layerId}-${this.type}-${shapeId}`;
     this.config = config;
 
-    [this.template, this.config, this.draw] = this.#create(this.type, config);
+    [this.template, this.config, this.draw, this.resize] = this.#create(this.type, config);
     this.template.setAttribute('id', this.shapeId);
     this.draw(this.template, this.config);
     this.setListeners();
   }
 
   setListeners() {
-    this.template.addEventListener('dblclick', e => (this._active ? this.deactive() : this.active()));
+    this.template.addEventListener('click', e => (this._active ? this.deactive() : this.active()));
   }
 
   /**
@@ -142,12 +150,11 @@ export class Shape {
     this.resizable = this._active ? new Resizable(this.template, this.config) : null;
     if (this.resizable !== null) {
       this.template.parentNode.appendChild(this.resizable.template);
-      this.resizable._resize = (width, height) => {
-        this.config.width = width;
-        this.config.height = height;
+      this.resizable._resize.subscribe(([pointId, event]) => {
+        this.resize(this, pointId, event);
         this.draw(this.template, this.config);
         this.resizable.show(this.template, this.config);
-      };
+      });
     }
   }
 
@@ -159,6 +166,7 @@ export class Shape {
   }
 
   #create(toolType, config) {
+    config = { width: 80, height: 80, ...config };
     if (!SHAPES[toolType]) {
       return SHAPES.square(config);
     }
