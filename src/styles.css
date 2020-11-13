@@ -81,6 +81,8 @@ body {
 }
 
 .tool__item--color input {
+  min-width: 25px;
+  height: 100%;
 }
 
 .pointer {
