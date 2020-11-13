@@ -6,23 +6,24 @@ import { MOCK_DEFAULT_LAYERS } from './mock/mock-default-layers.js';
 
 compose(setEditor, setContainers, setUI)(MOCK_DEFAULT_LAYERS);
 
-function setUI([main, editor, customTemplate, container, selectTool]) {
+function setUI([main, editor, customTemplate, container, tools]) {
   //TODO remove
-  const configTemplate = document.createElement('span');
+  const configTemplate = document.createElement('div');
+  configTemplate.classList.add('editor__header');
   configTemplate.setAttribute('id', 'configJSON');
-  setInterval(() => (configTemplate.innerText = editor.configuration.json), 1000);
-  configTemplate.innerText = editor.configuration.json;
+  setInterval(() => (configTemplate.innerText = editor.configuration.toJson()), 1000);
+  configTemplate.innerText = editor.configuration.toJson();
   main.appendChild(configTemplate);
   //TODO
 
   container.appendChild(editor.template);
   container.appendChild(customTemplate);
   main.appendChild(container);
-  main.appendChild(selectTool.template);
+  tools.forEach(tool => main.appendChild(tool.template));
 }
 
 function setContainers(editor) {
-  return [setMain(), editor, createCustomTemplate(), setContainer(), setSelectTool(editor)];
+  return [setMain(), editor, createCustomTemplate(), setContainer(), getTools(editor)];
 }
 
 function setEditor(config) {
@@ -42,8 +43,16 @@ function setContainer() {
   return container;
 }
 
+function getTools(editor) {
+  return [
+    setSelectTool(editor),
+    setSettingsTool(editor),
+  ]
+}
+
 function setSelectTool(editor) {
   const selectTool = new SelectTool();
+  selectTool.template.classList.add('editor__tool--left');
   selectTool._select.subscribe(toolType => {
     switch (toolType) {
       case 'hand':
@@ -55,4 +64,11 @@ function setSelectTool(editor) {
     }
   });
   return selectTool;
+}
+
+function setSettingsTool() {
+  const template = document.createElement('aside');
+  template.classList.add('editor__tool');
+  template.classList.add('editor__tool--right');
+  return {template};
 }

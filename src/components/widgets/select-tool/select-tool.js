@@ -1,29 +1,25 @@
 import { Subject } from '../../helpers/subject.js';
-import { SHAPES } from '../../shapes/base.js';
+import { DEFAULT_SELECTS } from '../../../mock/mock-tool.constants.js';
 
 export class SelectTool {
   tools = [];
   _select = new Subject('hand');
+  template = document.createElement('aside');
   #TOOL_NAME = 'tool';
   constructor(tools) {
-    this.tools = tools ?? [
-      { type: 'select', icon: 'select' },
-      { type: 'hand', icon: 'hand' },
-      ...Object.keys(SHAPES).map(type => ({ type, icon: type }))
-    ];
+    this.tools = tools ?? DEFAULT_SELECTS;
+    this.createTools();
   }
 
-  get template() {
-    const template = document.createElement('aside');
-    template.classList.add('editor__tools');
+  createTools() {
+    this.template.classList.add('editor__tool');
     this.tools.forEach(tool => {
       const toolTemplate = document.createElement('button');
       toolTemplate.setAttribute('id', `${tool.type}-${this.#TOOL_NAME}`);
-      toolTemplate.innerText = tool.icon;
-      template.appendChild(toolTemplate);
+      toolTemplate.innerText = tool.alias;
+      this.template.appendChild(toolTemplate);
       toolTemplate.addEventListener('click', e => this.select(e, tool));
     });
-    return template;
   }
 
   select(e, tool) {
