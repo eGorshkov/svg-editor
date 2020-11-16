@@ -83,6 +83,18 @@ body {
 .tool__item--color input {
   min-width: 25px;
   height: 100%;
+  padding: 0 10px;
+}
+
+.tool__item {
+  border: 1px solid grey;
+  padding: 5px;
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+}
+
+.tool__item--color input {
 }
 
 .pointer {

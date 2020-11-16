@@ -171,6 +171,7 @@ export class Shape {
   deactivate() {
     this._active = false;
     this.dragging = false;
+    this.removeSettings();
     this.removeDraggable();
     this.removeResizable();
     globalThis.ACTIVE_ITEM_SUBJECT.next();
