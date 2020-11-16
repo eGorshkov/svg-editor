@@ -37,16 +37,16 @@ export class Editor extends Core {
   }
 
   setListener() {
-    this.template.addEventListener(
+    document.addEventListener(
       'click',
-      (evt) => {
+      evt => {
         if (evt.target.hasAttribute(RESIZABLE_POINT_ATTRIBUTE)) {
           return;
         }
-        const resizableContainer = this.template.getElementById(RESIZABLE_CONTAINER_ID)
+        const resizableContainer = this.template.getElementById(RESIZABLE_CONTAINER_ID);
         if (resizableContainer) this.template.removeChild(resizableContainer);
       },
       true
-    )
+    );
   }
 }

@@ -11,15 +11,15 @@ body {
 .editor {
   display: grid;
   grid-template-areas:
-        "header header header"
-        "left-tool container right-tool";
+    'header header header'
+    'left-tool container right-tool';
   grid-template-rows: max-content 1fr max-content;
-  grid-template-columns: max-content 1fr max-content;
+  grid-template-columns: max-content 1fr minmax(250px, max-content);
   grid-gap: 10px;
 }
 
 .editor > * {
-  box-shadow: 0 0 1px rgba(0,0,0,0.5);
+  box-shadow: 0 0 1px rgba(0, 0, 0, 0.5);
 }
 
 .editor__header {
@@ -61,14 +61,28 @@ body {
   position: absolute;
 }
 
-.editor__tool {
+.editor__tool,
+.tool {
   height: max-content;
   display: flex;
   flex-direction: column;
   /*  TODO REMOVE */
-  min-width: 25px;
+  min-width: 100px;
   height: 100%;
+  padding: 0 10px;
 }
 
-.main-container {
+.tool__item {
+  border: 1px solid grey;
+  padding: 5px;
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+}
+
+.tool__item--color input {
+}
+
+.pointer {
+  cursor: pointer;
 }

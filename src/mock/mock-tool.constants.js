@@ -5,9 +5,3 @@ export const DEFAULT_SELECTS = [
   { alias: 'Хэнд', type: 'hand', value: 'hand', icon: 'hand' },
   ...Object.keys(SHAPES).map(value => ({ alias: value.toUpperCase(), type: value, value, icon: value }))
 ];
-
-export const DEFAULT_COLORS = [
-  {alias: 'TOMATO', type: 'tomato', value: 'tomato', icon: 'tomato'},
-  {alias: 'GREEN', type: 'green', value: '#3fa300', icon: 'green'},
-  {alias: 'RED', type: 'red', value: 'red', icon: 'red'}
-];
