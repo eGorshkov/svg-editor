@@ -3,9 +3,11 @@ import { Core } from './core.js';
 
 export class Layer extends Core {
   defaultShapeConfig = null;
+  layerId = '';
 
   constructor(layerId, shapes, defaultShapeConfig) {
     super('g', shapes);
+
     this.layerId = `layer-${layerId}`;
     this.defaultShapeConfig = defaultShapeConfig;
     this.template.setAttribute('id', this.layerId);

@@ -16,15 +16,21 @@ export class Shape {
    * Функция рисвоки шаблона
    * @param template - шаблон фигуры
    * @param config - конфигурация фигуры
+   * @type {IShape.draw}
    */
   draw = (template, config) => {};
   /**
    *
    * @param shapeCtx
+   * @param pointId
    * @param event
-   * @param activePoint
    */
   resize = (shapeCtx, pointId, event) => {};
+  /**
+   *
+   * @param shapeCtx
+   */
+  setting = shapeCtx => {};
   /**
    * Ид фигуры
    * @type {string}
@@ -82,6 +88,7 @@ export class Shape {
         if (this.resizable) {
           this.resizable.hide();
         }
+        this.setSettings();
       }
     },
     end: evt => {
@@ -91,6 +98,7 @@ export class Shape {
       if (this.resizable) {
         this.resizable.show(this.template, this.config);
       }
+      this.setSettings();
 
       this.dragging = false;
       this._active = false;
@@ -103,7 +111,7 @@ export class Shape {
     this.shapeId = `${layerId}-${this.type}-${shapeId}`;
     this.config = config;
 
-    [this.template, this.config, this.draw, this.resize] = this.#create(this.type, config);
+    [this.template, this.config, this.draw, this.resize, this.setting] = this.#create(this.type, config);
     this.template.setAttribute('id', this.shapeId);
     this.draw(this.template, this.config);
     this.setListeners();
@@ -120,6 +128,7 @@ export class Shape {
    */
   active() {
     this._active = true;
+    this.setSettings();
     this.setDraggable();
     this.setResizable();
   }
@@ -155,6 +164,7 @@ export class Shape {
         this.resize(this, pointId, event);
         this.draw(this.template, this.config);
         this.resizable.show(this.template, this.config);
+        this.setSettings();
       });
     }
   }
@@ -169,8 +179,14 @@ export class Shape {
   #create(toolType, config) {
     config = { width: 80, height: 80, ...config };
     if (!SHAPES[toolType]) {
-      return SHAPES.square(config);
+      return new SHAPES.square(config);
     }
-    return SHAPES[toolType](config);
+    return new SHAPES[toolType](config);
+  }
+
+  setSettings() {
+    if (this.setting) {
+      globalThis.SETTINGS_TOOL_SUBJECT.next(this.setting(this));
+    }
   }
 }

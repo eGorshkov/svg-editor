@@ -8,9 +8,9 @@ export class Editor extends Core {
   get configuration() {
     return {
       layers: this.items.map(layer => ({
-        shapes: layer.items.map(shape => ({ type: shape.type, config: shape.config }))
+        items: layer.items.map(shape => ({ type: shape.type, config: shape.config }))
       })),
-      get json() {
+      toJson() {
         return JSON.stringify(this.layers);
       }
     };
@@ -37,16 +37,16 @@ export class Editor extends Core {
   }
 
   setListener() {
-    this.template.addEventListener(
+    document.addEventListener(
       'click',
-      (evt) => {
+      evt => {
         if (evt.target.hasAttribute(RESIZABLE_POINT_ATTRIBUTE)) {
           return;
         }
-        const resizableContainer = this.template.getElementById(RESIZABLE_CONTAINER_ID)
+        const resizableContainer = this.template.getElementById(RESIZABLE_CONTAINER_ID);
         if (resizableContainer) this.template.removeChild(resizableContainer);
       },
       true
-    )
+    );
   }
 }
