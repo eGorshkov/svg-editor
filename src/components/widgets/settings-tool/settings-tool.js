@@ -1,4 +1,3 @@
-import { Subject } from '../../helpers/subject.js';
 import { SETTINGS_TOOLS } from './tools/base.js';
 
 export class SettingsTool {
@@ -7,7 +6,8 @@ export class SettingsTool {
    * @type {HTMLElement}
    */
   template = document.createElement('aside');
-  _select = (globalThis.SETTINGS_TOOL_SUBJECT = new Subject(null, false));
+  _select = globalThis.SETTINGS_TOOL_SUBJECT;
+  _calls = 0;
 
   constructor() {
     this.template.classList.add('tool', 'editor__tool');
@@ -19,6 +19,8 @@ export class SettingsTool {
    * @param config {ISetting[]}
    */
   changeTemplate(config) {
+    this._calls++;
+    console.log('---', 'SettingsToll call:', this._calls);
     while (this.template.children.length) this.template.removeChild(this.template.children[0]);
 
     if (!config?.length) {

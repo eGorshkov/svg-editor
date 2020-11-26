@@ -2,6 +2,7 @@ import { createCustomTemplate } from './components/helpers/custom-elements/custo
 import { Editor } from './components/core/editor.js';
 import { SelectTool } from './components/widgets/select-tool/select-tool.js';
 import { SettingsTool } from './components/widgets/settings-tool/settings-tool.js';
+import { Subject } from './components/helpers/custom-rx/subject.js';
 
 //#region CREATORS
 
@@ -16,11 +17,12 @@ function createContainers(editor) {
 }
 
 function createHeader(editor) {
-  const headerContainer = document.createElement('div');
+  const headerContainer = document.createElement('div'),
+    configurationButton = document.createElement('button');
   headerContainer.classList.add('editor__header');
-  headerContainer.setAttribute('id', 'configJSON');
-  setInterval(() => (headerContainer.innerText = editor.configuration.toJson()), 1000);
-  headerContainer.innerText = editor.configuration.toJson();
+  configurationButton.innerText = 'Copy configuration';
+  configurationButton.addEventListener('click', e => navigator.clipboard.writeText(editor.configuration.toJson()));
+  headerContainer.appendChild(configurationButton);
   return headerContainer;
 }
 
@@ -68,6 +70,7 @@ function createUI([main, containers, tools]) {
 }
 
 function createTemplates(editor) {
+  globalThis.SETTINGS_TOOL_SUBJECT = new Subject(null, false);
   return [createMain(), createContainers(editor), createTools(editor)];
 }
 

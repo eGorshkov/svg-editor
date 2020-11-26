@@ -8,7 +8,7 @@ export class Editor extends Core {
   get configuration() {
     return {
       layers: this.items.map(layer => ({
-        shapes: layer.items.map(shape => ({ type: shape.type, config: shape.config }))
+        items: layer.items.map(shape => ({ type: shape.type, config: shape.config }))
       })),
       toJson() {
         return JSON.stringify(this.layers);

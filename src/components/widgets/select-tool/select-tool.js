@@ -1,4 +1,4 @@
-import { Subject } from '../../helpers/subject.js';
+import { Subject } from '../../helpers/custom-rx/subject.js';
 import { DEFAULT_SELECTS } from '../../../mock/mock-tool.constants.js';
 
 export class SelectTool {

@@ -11,7 +11,6 @@ export function circleDraw(template, config) {
   template.setAttributeNS(null, 'cy', config.y);
   template.setAttributeNS(null, 'r', config.width / 2);
   template.setAttributeNS(null, 'width', config.width);
-  template.setAttributeNS(null, 'height', config.height);
 }
 
 /**
@@ -39,12 +38,6 @@ export function circleSetting(shapeCtx) {
       label: 'Width: ',
       currentValue: shapeCtx.config.width,
       cb: InputAsNumberChange(shapeCtx, 'width')
-    },
-    {
-      type: 'inputAsNumber',
-      label: 'Height: ',
-      currentValue: shapeCtx.config.height,
-      cb: InputAsNumberChange(shapeCtx, 'height')
     }
   ];
 }

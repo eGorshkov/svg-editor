@@ -16,13 +16,14 @@ export class Shape {
    * Функция рисвоки шаблона
    * @param template - шаблон фигуры
    * @param config - конфигурация фигуры
+   * @type {IShape.draw}
    */
   draw = (template, config) => {};
   /**
    *
    * @param shapeCtx
+   * @param pointId
    * @param event
-   * @param activePoint
    */
   resize = (shapeCtx, pointId, event) => {};
   /**
@@ -87,6 +88,7 @@ export class Shape {
         if (this.resizable) {
           this.resizable.hide();
         }
+        this.setSettings();
       }
     },
     end: evt => {
@@ -96,6 +98,7 @@ export class Shape {
       if (this.resizable) {
         this.resizable.show(this.template, this.config);
       }
+      this.setSettings();
 
       this.dragging = false;
       this._active = false;
@@ -138,7 +141,6 @@ export class Shape {
   deactivate() {
     this._active = false;
     this.dragging = false;
-    this.removeSettings();
     this.removeDraggable();
     this.removeResizable();
   }
@@ -186,9 +188,5 @@ export class Shape {
     if (this.setting) {
       globalThis.SETTINGS_TOOL_SUBJECT.next(this.setting(this));
     }
-  }
-
-  removeSettings() {
-    globalThis.SETTINGS_TOOL_SUBJECT.next(null);
   }
 }
