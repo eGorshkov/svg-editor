@@ -9,6 +9,7 @@ export class SelectTool {
     this.tools = tools ?? [
       { type: 'select', icon: 'select' },
       { type: 'hand', icon: 'hand' },
+      { type: 'layers-widget', icon: 'layers' },
       ...Object.keys(SHAPES).map(type => ({ type, icon: type }))
     ];
   }

@@ -39,7 +39,7 @@ export class Editor extends Core {
   }
 
   replaceOrder(source, target) {
-    if (source === target) return;
+    if (!Number.isInteger(source) || !Number.isInteger(target) || source === target) return;
 
     const sourceLayer = this.items.find(x => x.order === source);
     const targetLayer = this.items.find(x => x.order === target);
