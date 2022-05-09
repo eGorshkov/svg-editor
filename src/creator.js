@@ -2,6 +2,7 @@ import { createCustomTemplate } from './components/helpers/custom-elements/custo
 import { Editor } from './components/core/editor.js';
 import { SelectTool } from './components/widgets/select-tool/select-tool.js';
 import { SettingsTool } from './components/widgets/settings-tool/settings-tool.js';
+import { LayerTool } from './components/widgets/layer-tool/layer-tool.js';
 import { Subject } from './components/helpers/custom-rx/subject.js';
 
 //#region CREATORS
@@ -37,16 +38,29 @@ function createContainer(editor) {
 }
 
 function createTools(editor) {
-  return [createSelectTool(editor), createSettingsTool(editor)];
+  const layerTool = new LayerTool(editor);
+  return [
+    layerTool,
+    createSettingsTool(editor),
+    createSelectTool(editor, layerTool)];
 }
 
-function createSelectTool(editor) {
+/**
+ * 
+ * @param {Editor} editor 
+ * @param {LayerTool} layerTool 
+ * @returns 
+ */
+function createSelectTool(editor, layerTool) {
   const selectTool = new SelectTool();
   selectTool.template.classList.add('editor__tool--left');
   selectTool._select.subscribe(toolType => {
     switch (toolType) {
       case 'hand':
       case 'select':
+        break;
+      case 'layers-widget':
+        layerTool.change();
         break;
       default:
         editor.add(toolType);

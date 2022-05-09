@@ -61,6 +61,7 @@ export class LayerTool {
 
   #init() {
     this.template.classList.add('editor__tools');
+    this.template.style.position = 'absolute';
     this.template.style.backgroundColor = '#fff';
     this.template.style.boxShadow = '0 0 2px rgb(0 0 0 / 30%)';
     this.template.style.width = '300px';
