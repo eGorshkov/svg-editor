@@ -1,5 +1,6 @@
 import { createTemplate } from '../helpers/shape-creator.js';
 import { compose } from '../helpers/compose.js';
+import between from '../helpers/between.js';
 
 export class Core {
   /**
@@ -48,5 +49,34 @@ export class Core {
 
   setToTemplate(_items) {
     _items.forEach(item => this.template.appendChild(item.template));
+  }
+
+  
+
+  replaceOrder(source, target) {
+    if (!Number.isInteger(source) || !Number.isInteger(target) || source === target) return;
+
+    const sourceLayer = this.items.find(x => x.order === source);
+    const targetLayer = this.items.find(x => x.order === target);
+
+    if (!sourceLayer || !targetLayer) return;
+
+    const IS_POSITIVE = sourceLayer.order > target
+    const MIN = Math.min(sourceLayer.order, target);
+    const MAX = Math.max(sourceLayer.order, target);
+    for (let i=0; i<this.items.length; i++) {
+      if(between(this.items[i].order, MIN, MAX)) {
+        this.items[i].updateOrder(
+          this.items[i].order + (IS_POSITIVE ? 1 : -1)
+        )
+      }
+    }
+    sourceLayer.updateOrder(target);
+
+    this.template.removeChild(sourceLayer.template);
+
+    sourceLayer.order === this.items.length - 1
+      ? this.template.appendChild(sourceLayer.template)
+      : this.template.insertBefore(sourceLayer.template, targetLayer.template)
   }
 }

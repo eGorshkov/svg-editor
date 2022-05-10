@@ -2,6 +2,21 @@ export function createTemplate(elementName) {
   return document.createElementNS('http://www.w3.org/2000/svg', elementName);
 }
 
+/**
+ * 
+ * @param {string} elementName 
+ * @param {*} config 
+ * @param {(template, config) => void} drawCallback 
+ * @param {(shapeCtx, pointId, event) => void} resizeCallback 
+ * @param {(shapeCtx) => ISetting[]} settingCallback 
+ * @returns {[
+ *  HTMLElement,
+ *  IShapeConfig,
+ * (template, config) => void,
+ * (shapeCtx, pointId, event) => void,
+ * (shapeCtx) => ISetting[]
+ *  ]}
+ */
 export function ShapeCreator(elementName, config, drawCallback, resizeCallback, settingCallback) {
   const template = createTemplate(elementName);
   template.setAttributeNS(null, 'width', config.width ?? 80);
@@ -14,16 +29,16 @@ export function ShapeCreator(elementName, config, drawCallback, resizeCallback, 
 
 /**
  *
- * @param shapeCtx { IShape }
- * @param event
- * @param activePointId
+ * @param { IShape } shapeCtx 
+ * @param { * } event
+ * @param { string } activePointId
  */
 function defaultResize(shapeCtx, event, activePointId) {}
 
 /**
  *
- * @param template
- * @param config
+ * @param {HTMLElement} template 
+ * @param {IShapeConfig} config
  */
 export function defaultDraw(template, config) {
   template.setAttributeNS(null, 'x', config.x);

@@ -36,21 +36,39 @@ export class LayerTool {
 
     if (this.#isOpen) {
       const mapper = new Map();
-      this.#editor.items.forEach(item => mapper.set(item.order, this.#createItemTemplate(item)));
+      this.#editor.items.forEach(item => {
+        mapper.set(item.order, this.#createItemTemplate(item, 'layer'));
+        item.items.length &&
+          item.items.forEach((shape, i) => {
+            mapper.set(item.order + '-' + i, this.#createItemTemplate(shape, 'shape'));
+          });
+      });
       [...mapper.entries()].sort().forEach(([_, t]) => this.template.appendChild(t));
     }
   }
 
+  /**
+   *
+   * @param {DragEvent} ev
+   */
   #dragstartHandler(ev) {
     ev.dataTransfer.dropEffect = 'copy';
     ev.dataTransfer.setData('text/plain', ev.target.getAttribute('order'));
   }
 
+  /**
+   *
+   * @param {DragEvent} ev
+   */
   #dragoverHandler(ev) {
     ev.preventDefault();
     ev.dataTransfer.dropEffect = 'move';
   }
 
+  /**
+   *
+   * @param {DragEvent} ev
+   */
   #dropHandler(ev) {
     ev.preventDefault();
     const source = ev.dataTransfer.getData('text/plain');
@@ -73,13 +91,20 @@ export class LayerTool {
     this.template.style.visibility = 'hidden';
   }
 
-  #createItemTemplate(item) {
+  /**
+   *
+   * @param {*} item
+   * @param {'layer' | 'shape'} type
+   * @returns
+   */
+  #createItemTemplate(item, type) {
     const itemTemplate = document.createElement('div');
     itemTemplate.innerText = item.layerId + ' order:' + item.order;
     itemTemplate.style.height = '50px';
     itemTemplate.style.border = '1px dashed';
     itemTemplate.setAttribute('draggable', 'true');
     itemTemplate.setAttribute('order', item.order);
+    itemTemplate.setAttribute('type', type);
 
     itemTemplate.addEventListener('dragstart', this.#bindedDragstart);
     itemTemplate.addEventListener('dragover', this.#bindedDragover);

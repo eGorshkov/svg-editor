@@ -68,6 +68,19 @@ export class Shape {
    * @type {ShapesType}
    */
   type = null;
+  /**
+   *  Ссылка на слой
+   * @type {ILayer}
+   */
+  #layer = null;
+
+  get layer() {
+    return this.#layer;
+  }
+
+  set layer(l) {
+    this.#layer = l;
+  }
 
   listener = {
     start: evt => {
@@ -108,7 +121,7 @@ export class Shape {
 
   constructor(toolType, shapeId, layerId, config) {
     this.type = toolType;
-    this.shapeId = `${layerId}-${this.type}-${shapeId}`;
+    this.shapeId = [layerId, toolType, shapeId].join('-');
     this.config = config;
 
     [this.template, this.config, this.draw, this.resize, this.setting] = this.#create(this.type, config);
@@ -186,7 +199,10 @@ export class Shape {
 
   setSettings() {
     if (this.setting) {
-      globalThis.SETTINGS_TOOL_SUBJECT.next(this.setting(this));
+      globalThis.SETTINGS_TOOL_SUBJECT.next({
+        shape: this,
+        settingsConfig: this.setting(this)
+      });
     }
   }
 }
