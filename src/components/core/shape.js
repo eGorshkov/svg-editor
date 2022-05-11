@@ -181,6 +181,11 @@ export class Shape {
     this.layer.killChild(this, 'shapeId');
   }
 
+  kill() {
+    this.deactivate();
+    this.layer.killChild(this, 'shapeId');
+  }
+
   setDraggable() {
     this.template.style.cursor = 'grab';
     this.template.addEventListener('mousedown', this.listener.start, true);
