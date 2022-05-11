@@ -2,6 +2,7 @@ import { Shape } from './shape.js';
 import { Core } from './core.js';
 
 export class Layer extends Core {
+  __type = 'layer';
   defaultShapeConfig = null;
   layerId = '';
   #order = 0;
@@ -24,6 +25,14 @@ export class Layer extends Core {
     return this.#order;
   }
 
+  set order(o) {
+    this.#order = o;
+  }
+
+  get shapes() {
+    return this.items;
+  }
+
   constructor(layerId, shapes, defaultShapeConfig, order) {
     super('g', shapes);
 
@@ -40,12 +49,18 @@ export class Layer extends Core {
    */
   create(shape) {
     this.updateCoreId();
-    const _shape = new Shape(shape?.type, this.coreId, this.layerId, { ...this.defaultShapeConfig, ...shape?.config });
+    const _shape = new Shape(
+      shape?.type,
+      this.coreId,
+      this.layerId,
+      { ...this.defaultShapeConfig, ...shape?.config },
+      shape?.order || this.shapes.length
+    );
     _shape.layer = this;
     return _shape;
   }
 
-  updateOrder(newValue) {
-    this.#order = newValue;
+  kill() {
+    this.editor.killChild(this, 'layerId');
   }
 }

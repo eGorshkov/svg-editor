@@ -2,6 +2,7 @@ import { SHAPES } from '../shapes/base.js';
 import { Resizable } from '../helpers/resizable/resizable.js';
 
 export class Shape {
+  __type = 'shape';
   /**
    * Шаблон фигуры
    * @type {SVGElement}
@@ -82,6 +83,20 @@ export class Shape {
     this.#layer = l;
   }
 
+  #order = null;
+
+  get order() {
+    return this.#order;
+  }
+
+  set order(o) {
+    this.#order = o;
+  }
+
+  get fullOrder() {
+    return [this.layer.order, this.order].join('-');
+  }
+
   listener = {
     start: evt => {
       this.dragging = true;
@@ -119,7 +134,8 @@ export class Shape {
     }
   };
 
-  constructor(toolType, shapeId, layerId, config) {
+  constructor(toolType, shapeId, layerId, config, order) {
+    this.order = order;
     this.type = toolType;
     this.shapeId = [layerId, toolType, shapeId].join('-');
     this.config = config;
@@ -156,6 +172,11 @@ export class Shape {
     this.dragging = false;
     this.removeDraggable();
     this.removeResizable();
+  }
+
+  kill() {
+    this.deactivate();
+    this.layer.killChild(this, 'shapeId');
   }
 
   setDraggable() {

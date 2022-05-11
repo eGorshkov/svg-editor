@@ -3,6 +3,7 @@ import { compose } from '../helpers/compose.js';
 import between from '../helpers/between.js';
 
 export class Core {
+  __type = 'core';
   /**
    *
    * @type {SVGElement}
@@ -31,13 +32,21 @@ export class Core {
 
   create(item) {}
 
+  killChild(child, byKey) {
+    if(!child || !byKey) return;
+
+    this.template.removeChild(child.template);
+    this.items = this.items.filter(x => x[byKey] !== child[byKey]);
+  }
+
   /**
    *
    * @param type { ShapesType }
+   * @param config { * }
    */
-  add(type) {
-    const item = this.create({ type });
-    if (item.add) item.add(type);
+  add(type, config = {}) {
+    const item = this.create({ type, config });
+    if (item.add) item.add(type, config);
     this.items.push(item);
     this.template.appendChild(item.template);
   }
@@ -54,29 +63,27 @@ export class Core {
   
 
   replaceOrder(source, target) {
-    if (!Number.isInteger(source) || !Number.isInteger(target) || source === target) return;
+    if (!Number.isInteger(source) || !Number.isInteger(target) || source === target || target >= this.items.length) return;
 
     const sourceLayer = this.items.find(x => x.order === source);
-    const targetLayer = this.items.find(x => x.order === target);
-
-    if (!sourceLayer || !targetLayer) return;
 
     const IS_POSITIVE = sourceLayer.order > target
     const MIN = Math.min(sourceLayer.order, target);
     const MAX = Math.max(sourceLayer.order, target);
     for (let i=0; i<this.items.length; i++) {
-      if(between(this.items[i].order, MIN, MAX)) {
-        this.items[i].updateOrder(
-          this.items[i].order + (IS_POSITIVE ? 1 : -1)
-        )
+      const ITEM = this.items[i];
+      if(between(ITEM.order, MIN, MAX)) {
+        ITEM.order = ITEM.order + (IS_POSITIVE ? 1 : -1)
       }
     }
-    sourceLayer.updateOrder(target);
+    sourceLayer.order = target;
 
     this.template.removeChild(sourceLayer.template);
 
-    sourceLayer.order === this.items.length - 1
-      ? this.template.appendChild(sourceLayer.template)
-      : this.template.insertBefore(sourceLayer.template, targetLayer.template)
+    const targetLayer = this.items.find(x => x.order === target + 1);
+    targetLayer
+      ? this.template.insertBefore(sourceLayer.template, targetLayer.template)
+      : this.template.appendChild(sourceLayer.template);
+      
   }
 }

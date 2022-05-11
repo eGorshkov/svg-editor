@@ -3,6 +3,7 @@ import { Core } from './core.js';
 import { RESIZABLE_CONTAINER_ID, RESIZABLE_POINT_ATTRIBUTE } from '../helpers/resizable/resizable.js';
 
 export class Editor extends Core {
+  __type = 'editor';
   #EDITOR_TEMPLATE_ID = 'editor-template';
 
   get configuration() {

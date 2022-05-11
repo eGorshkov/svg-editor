@@ -50,22 +50,22 @@ export class SettingsTool {
     containerTemplate.style.alignItems = 'center';
 
     const infoTemplate = document.createElement('p');
-    infoTemplate.innerText = 'Layer: ' + shape.layer.layerId + ' | Layer Order: ' + shape.layer.order;
+    infoTemplate.innerText = 'Layer: ' + shape.layer.layerId + ' | Layer Order: ' + shape.order;
     containerTemplate.appendChild(infoTemplate);
 
     const addOrderTemplate = document.createElement('button');
     addOrderTemplate.innerText = '+';
     addOrderTemplate.addEventListener('click', () => {
-      shape.layer.editor.replaceOrder(shape.layer.order, shape.layer.order + 1);
-      infoTemplate.innerText = 'Layer: ' + shape.layer.layerId + ' | Order: ' + shape.layer.order;
+      shape.layer.replaceOrder(shape.order, shape.order + 1);
+      infoTemplate.innerText = 'Layer: ' + shape.layer.layerId + ' | Layer Order: ' + shape.order;
     });
     containerTemplate.appendChild(addOrderTemplate);
 
     const removeOrderTemplate = document.createElement('button');
     removeOrderTemplate.innerText = '-';
     removeOrderTemplate.addEventListener('click', () => {
-      shape.layer.editor.replaceOrder(shape.layer.order, shape.layer.order - 1);
-      infoTemplate.innerText = 'Layer: ' + shape.layer.layerId + ' | Layer  Order: ' + shape.layer.order;
+      shape.layer.replaceOrder(shape.order, shape.order - 1);
+      infoTemplate.innerText = 'Layer: ' + shape.layer.layerId + ' | Layer  Order: ' + shape.order;
     });
     containerTemplate.appendChild(removeOrderTemplate);
 

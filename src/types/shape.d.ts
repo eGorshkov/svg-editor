@@ -1,7 +1,7 @@
 import { IResizable } from './resizable';
 import { Base } from './base.js';
 
-export interface IShape extends Base<IShapeConfig> {
+export interface IShape extends Base<IShapeConfig, null, 'shape'> {
   /**
    * Ид фигуры
    */
@@ -28,6 +28,10 @@ export interface IShape extends Base<IShapeConfig> {
    * Класс изменения размера фигуры
    */
   resizable: IResizable;
+  /**
+   * Тип фигуры
+   */
+  type: ShapesType;
   /**
    * Функция рисвоки шаблона
    * @param template - шаблон фигуры
