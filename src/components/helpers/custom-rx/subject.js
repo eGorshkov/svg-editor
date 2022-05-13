@@ -9,10 +9,17 @@ import { compose } from '../compose.js';
 
 export function Subject(value, checkFirstChange) {
   this.subscribeFunctions = [];
-  this.pipeFunctions = [];
+  this.pipeFunctions = {};
   this.checkFirstChange = checkFirstChange ?? true;
   this.canSubscribe = true;
   this.value = value ?? null;
+
+  Object.defineProperty(this, 'subscribeCount', {
+    get: function() {
+      return this.subscribeFunctions.length;
+    }
+  });
+
   if (this.checkFirstChange) {
     this.next(value);
   }
@@ -20,6 +27,7 @@ export function Subject(value, checkFirstChange) {
 }
 
 Subject.prototype.subscribe = function (cb) {
+  if (!this.pipeFunctions[this.subscribeCount]) this.pipe();
   this.subscribeFunctions.push(cb);
   if (this.checkFirstChange) {
     cb(this.value);
@@ -28,20 +36,19 @@ Subject.prototype.subscribe = function (cb) {
 
 Subject.prototype.next = function (v) {
   this.value = v;
-  if (this.pipeFunctions?.length) {
-    const _compose = compose.call(this, ...this.pipeFunctions);
-    _compose(this);
-  }
-  for (let fn of this.subscribeFunctions) {
-    if (this.canSubscribe) {
-      fn(this.value);
-    }
+  if(!this.canSubscribe) return;
+
+  for (let i = 0; i < this.subscribeCount; i++) {
+    const pipeFns = this.pipeFunctions[i];
+    const subcribeFn = this.subscribeFunctions[i];
+
+    const nextFn = pipeFns ? compose.call(this, ...pipeFns, subcribeFn) : subcribeFn;
+    nextFn(this.value);
   }
 };
 
 Subject.prototype.pipe = function (...pipeFns) {
-  debugger;
-  (pipeFns || []).forEach(fn => this.pipeFunctions.push(fn));
+  this.pipeFunctions[this.subscribeCount] = pipeFns.length ? pipeFns : null;
   return this;
 };
 

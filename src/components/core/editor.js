@@ -1,6 +1,7 @@
 import { Layer } from './layer.js';
 import { Core } from './core.js';
-import { RESIZABLE_CONTAINER_ID, RESIZABLE_POINT_ATTRIBUTE } from '../helpers/resizable/resizable.js';
+import { RESIZABLE_POINT_ATTRIBUTE } from '../helpers/resizable/resizable.js';
+import { Subject } from '../helpers/custom-rx/subject.js';
 
 export class Editor extends Core {
   __type = 'editor';
@@ -18,10 +19,13 @@ export class Editor extends Core {
     };
   }
 
+  onChange = new Subject(null, false);
+
   constructor(config) {
     super('svg', config?.layers.sort((a, b) => a.order - b.order ? 1 : -1));
     this.template.setAttribute('id', this.#EDITOR_TEMPLATE_ID);
-    this.setListener();
+    this.#setListener();
+    this.#initObserver();
   }
 
   /**
@@ -40,7 +44,7 @@ export class Editor extends Core {
     return _layer;
   }
 
-  setListener() {
+  #setListener() {
     document.addEventListener(
       'click',
       evt => {
@@ -50,6 +54,7 @@ export class Editor extends Core {
         const active = globalThis.ACTIVE_ITEM_SUBJECT.getValue();
         if (active && evt.target !== active?.template) {
           active.deactivate();
+          globalThis.SETTINGS_TOOL_SUBJECT.next();
         }
       },
       true
@@ -67,6 +72,7 @@ export class Editor extends Core {
             case 'Delete':
               active?.kill();
               if (!active?.layer.shapes.length) active?.layer?.kill();
+              globalThis.SETTINGS_TOOL_SUBJECT.next();
               break;
             default:
               break;
@@ -75,5 +81,23 @@ export class Editor extends Core {
       },
       true
     );
+  }
+
+  #initObserver() {
+    const observer = new MutationObserver(entries => {
+      let added = [];
+      let removed = [];
+
+      console.log(entries);
+
+      entries.forEach(entry => {
+        added = [...added, ...entry.addedNodes];
+        removed = [...removed, ...entry.removedNodes];
+      });
+
+      if(added.length || removed.length) this.onChange.next({added, removed});
+      
+    });
+    observer.observe(this.template, {subtree: true, childList: true});
   }
 }
