@@ -19,15 +19,12 @@ export class LayerTool {
   #bindedDragleave = this.#dragleaveHandler.bind(this);
   #bindedDragover = this.#dragoverHandler.bind(this);
   #bindedDrop = this.#dropHandler.bind(this);
+  #bindedDblClick = this.#dblClick.bind(this);
 
   constructor(editor) {
     this.#init();
     this.#editor = editor;
-    this.#editor.onChange
-    .pipe(
-      map(({added = [], removed = []} = {}) => Boolean([...added, ...removed].filter(x => x.id !== RESIZABLE_CONTAINER_ID).length))
-    )
-    .subscribe((isChanged) => {
+    this.#editor.onChange.subscribe((isChanged) => {
       isChanged && this.#isOpen && this.draw();
     });
   }
@@ -74,7 +71,7 @@ export class LayerTool {
    */
   #dragstartHandler(ev) {
     ev.dataTransfer.dropEffect = 'copy';
-    const [layerOrder, shapeOrder] = ev.target.getAttribute('order').split('-');
+    const [layerOrder, shapeOrder] = this.#splitOrderFromTemplate(ev.target);
     ev.dataTransfer.setData(
       'text/plain',
       JSON.stringify({
@@ -110,8 +107,7 @@ export class LayerTool {
    */
   #dropHandler(ev) {
     ev.preventDefault();
-    const targetType = ev.target.getAttribute('type');
-    const [targetLayerOrder, targetShapeOrder] = ev.target.getAttribute('order').split('-');
+    const [targetLayerOrder, targetShapeOrder] = this.#splitOrderFromTemplate(ev.target);
 
     const source = JSON.parse(ev.dataTransfer.getData('text/plain'));
 
@@ -121,17 +117,34 @@ export class LayerTool {
 
     this.draw();
   }
+  
+  #dblClick(ev) {
+    ev.preventDefault();
+    const type = ev.target.getAttribute('type');
+    const orders = this.#splitOrderFromTemplate(ev.target);
+
+    switch (type) {
+      case 'shape':
+        const active = globalThis.ACTIVE_ITEM_SUBJECT.getValue();
+        active?.deactivate();
+        const shape = this.#editor.get(orders, 'order');
+        shape?.active();
+        break;  
+      default:
+        break;
+    }
+  }
 
   #shapeToShape(sourceLayerOrder, sourceShapeOrder, targetLayerOrder, targetShapeOrder) {
-    console.log(sourceLayerOrder, sourceShapeOrder, targetLayerOrder, targetShapeOrder);
     if (sourceLayerOrder === targetLayerOrder) {
-      const LAYER = this.#editor.items.find(x => x.order === sourceLayerOrder);
+      const LAYER = this.#editor.get(sourceLayerOrder, 'order');
       LAYER.replaceOrder(sourceShapeOrder, targetShapeOrder);
     } else {
-      const SOURCE_LAYER = this.#editor.items.find(x => x.order === sourceLayerOrder);
-      const TARGET_LAYER = this.#editor.items.find(x => x.order === targetLayerOrder);
+      const SOURCE_LAYER = this.#editor.get(sourceLayerOrder, 'order');
+      const TARGET_LAYER = this.#editor.get(targetLayerOrder, 'order');
 
-      const SOURCE_SHAPE = SOURCE_LAYER.shapes.find(x => x.order === sourceShapeOrder);
+      const SOURCE_SHAPE = SOURCE_LAYER.get(sourceShapeOrder, 'order');
+      const SOURCE_SHAPE_WAS_ACTIVE = SOURCE_SHAPE._active;
 
       TARGET_LAYER.add(SOURCE_SHAPE.type, SOURCE_SHAPE.config);
       Number.isInteger(targetShapeOrder) && TARGET_LAYER.replaceOrder(TARGET_LAYER.shapes.length - 1, targetShapeOrder);
@@ -141,6 +154,11 @@ export class LayerTool {
       if (!SOURCE_LAYER.shapes.length) {
         SOURCE_LAYER.kill();
         this.#mapperSelector.delete(SOURCE_LAYER.layerId);
+      }
+
+      if (SOURCE_SHAPE_WAS_ACTIVE) {
+        const NEW_SHAPE = TARGET_LAYER.get(Number.isInteger(targetShapeOrder) ? targetShapeOrder : (TARGET_LAYER.shapes.length - 1), 'order');
+        SOURCE_SHAPE_WAS_ACTIVE && NEW_SHAPE.active();
       }
     }
   }
@@ -152,8 +170,8 @@ export class LayerTool {
     this.template.style.boxShadow = '0 0 2px rgb(0 0 0 / 30%)';
     this.template.style.width = '200px';
     this.template.style.top = '100%';
-    this.template.style.left = '100%';
-    this.template.style.transform = 'translate(-100%, -100%)';
+    this.template.style.left = '0';
+    this.template.style.transform = 'translate(-0, -100%)';
     this.template.style.border = '1px dashed rgb(0 0 0 / 30%)';
     this.template.style.padding = '24px';
     this.template.style.visibility = 'hidden';
@@ -176,6 +194,8 @@ export class LayerTool {
     itemTemplate.addEventListener('dragover', this.#bindedDragover);
     itemTemplate.addEventListener('dragleave', this.#bindedDragleave);
     itemTemplate.addEventListener('drop', this.#bindedDrop);
+    itemTemplate.addEventListener('dblclick', this.#bindedDblClick.bind(this));
+
     return item.__type === 'layer' ? this.#setLayer(item, itemTemplate) : this.#setShape(item, itemTemplate);
   }
 
@@ -188,6 +208,9 @@ export class LayerTool {
   #setLayer(item, itemTemplate) {
     itemTemplate.innerText = item.layerId + ' order:' + item.order;
     itemTemplate.setAttribute('order', item.order);
+    
+    if (item.shapes.some(x => x._active))
+      itemTemplate.style.backgroundColor = 'lightgray';
     return itemTemplate;
   }
 
@@ -200,8 +223,10 @@ export class LayerTool {
   #setShape(item, itemTemplate) {
     itemTemplate.style.width = '90%';
     itemTemplate.style.marginLeft = 'auto';
+    if (item._active) itemTemplate.style.backgroundColor = 'lightgray';
     itemTemplate.innerText = item.shapeId + ' order:' + item.fullOrder;
     itemTemplate.setAttribute('order', item.fullOrder);
+
     return itemTemplate;
   }
 
@@ -209,6 +234,11 @@ export class LayerTool {
     child.removeEventListener('dragstart', this.#bindedDragstart);
     child.removeEventListener('dragover', this.#bindedDragover);
     child.removeEventListener('drop', this.#bindedDrop);
+    child.removeEventListener('dblclick', this.#bindedDrop);
     this.template.removeChild(child);
+  }
+
+  #splitOrderFromTemplate(template) {
+    return template.getAttribute('order').split('-').map(Number)
   }
 }

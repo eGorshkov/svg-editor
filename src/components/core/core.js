@@ -51,6 +51,19 @@ export class Core {
     this.template.appendChild(item.template);
   }
 
+  get(values, key) {
+    values = Array.isArray(values) ? values : [values];
+    const [value, ...other] = values;
+    const find = this.items.find(x => x[key] === value);
+    
+    if(!find) {
+      console.error('Not find', value, 'by', key, 'in items');
+      return null;
+    }
+
+    return other.length && find.get ? find.get(other, key) : find;
+  }
+
   set(_items) {
     this.items = [...this.items, ..._items];
     return this.items;

@@ -11,7 +11,8 @@ export class Editor extends Core {
     return {
       items: this.items,
       layers: this.items.map(layer => ({
-        items: layer.items.map(shape => ({ type: shape.type, config: shape.config }))
+        order: layer.order,
+        items: layer.items.map(shape => ({ order: shape.order, type: shape.type, config: shape.config }))
       })),
       toJson() {
         return JSON.stringify(this.layers);
@@ -45,9 +46,10 @@ export class Editor extends Core {
   }
 
   #setListener() {
-    document.addEventListener(
+    this.template.addEventListener(
       'click',
       evt => {
+        console.log(evt.target);
         if (evt.target.hasAttribute(RESIZABLE_POINT_ATTRIBUTE)) {
           return;
         }
@@ -59,6 +61,7 @@ export class Editor extends Core {
       },
       true
     );
+
     document.addEventListener(
       'keydown',
       evt => {
