@@ -1,6 +1,6 @@
 import { Layer } from './layer.js';
 import { Core } from './core.js';
-import { RESIZABLE_CONTAINER_ID, RESIZABLE_POINT_ATTRIBUTE } from '../helpers/resizable/resizable.js';
+import { RESIZABLE_POINT_ATTRIBUTE } from '../helpers/resizable/resizable.js';
 import { Subject } from '../helpers/custom-rx/subject.js';
 
 export class Editor extends Core {
@@ -91,14 +91,12 @@ export class Editor extends Core {
       console.log(entries);
 
       entries.forEach(entry => {
-        const {addedNodes, removedNodes} = entry;
-        added = [...added, ...[...addedNodes].filter(x => x.id !== RESIZABLE_CONTAINER_ID)];
-        removed = [...removed, ...[...removedNodes].filter(x => x.id !== RESIZABLE_CONTAINER_ID)];
-      })
+        added = [...added, ...entry.addedNodes];
+        removed = [...removed, ...entry.removedNodes];
+      });
 
-      if(added.length || removed.length) {
-        this.onChange.next();
-      }
+      if(added.length || removed.length) this.onChange.next({added, removed});
+      
     });
     observer.observe(this.template, {subtree: true, childList: true});
   }

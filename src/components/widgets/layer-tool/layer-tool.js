@@ -1,4 +1,5 @@
-import { createTemplate } from '../../helpers/shape-creator.js';
+import { map } from '../../helpers/custom-rx/map.js';
+import { RESIZABLE_CONTAINER_ID } from '../../helpers/resizable/resizable.js';
 
 export class LayerTool {
   /**
@@ -22,8 +23,12 @@ export class LayerTool {
   constructor(editor) {
     this.#init();
     this.#editor = editor;
-    this.#editor.onChange.subscribe(() => {
-      this.#isOpen && this.draw();
+    this.#editor.onChange
+    .pipe(
+      map(({added = [], removed = []} = {}) => Boolean([...added, ...removed].filter(x => x.id !== RESIZABLE_CONTAINER_ID).length))
+    )
+    .subscribe((isChanged) => {
+      isChanged && this.#isOpen && this.draw();
     });
   }
 
