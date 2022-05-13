@@ -11,7 +11,7 @@ export class SettingsTool {
 
   constructor() {
     this.template.classList.add('tool', 'editor__tool');
-    this._select.subscribe(({ shape, settingsConfig }) => this.changeTemplate(shape, settingsConfig));
+    this._select.subscribe(({ shape, settingsConfig } = {}) => this.changeTemplate(shape, settingsConfig));
   }
 
   /**

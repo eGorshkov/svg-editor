@@ -22,6 +22,9 @@ export class LayerTool {
   constructor(editor) {
     this.#init();
     this.#editor = editor;
+    this.#editor.onChange.subscribe(() => {
+      this.#isOpen && this.draw();
+    });
   }
 
   change() {

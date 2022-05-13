@@ -42,7 +42,8 @@ function createTools(editor) {
   return [
     layerTool,
     createSettingsTool(editor),
-    createSelectTool(editor, layerTool)];
+    createSelectTool(editor, layerTool)
+  ];
 }
 
 /**
