@@ -160,6 +160,7 @@ export class Shape {
     this.setSettings();
     this.setDraggable();
     this.setResizable();
+    globalThis.ACTIVE_ITEM_SUBJECT.next(this);
   }
 
   /**
@@ -172,6 +173,7 @@ export class Shape {
     this.dragging = false;
     this.removeDraggable();
     this.removeResizable();
+    globalThis.ACTIVE_ITEM_SUBJECT.next();
   }
 
   kill() {

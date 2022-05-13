@@ -47,8 +47,31 @@ export class Editor extends Core {
         if (evt.target.hasAttribute(RESIZABLE_POINT_ATTRIBUTE)) {
           return;
         }
-        const resizableContainer = this.template.getElementById(RESIZABLE_CONTAINER_ID);
-        if (resizableContainer) this.template.removeChild(resizableContainer);
+        const active = globalThis.ACTIVE_ITEM_SUBJECT.getValue();
+        if (active && evt.target !== active?.template) {
+          active.deactivate();
+        }
+      },
+      true
+    );
+    document.addEventListener(
+      'keydown',
+      evt => {
+        const active = globalThis.ACTIVE_ITEM_SUBJECT.getValue();
+        if (active) {
+          switch (evt.key) {
+            case 'Escape':
+              active?.deactivate();
+              globalThis.SETTINGS_TOOL_SUBJECT.next();
+              break;
+            case 'Delete':
+              active?.kill();
+              if (!active?.layer.shapes.length) active?.layer?.kill();
+              break;
+            default:
+              break;
+          }
+        };
       },
       true
     );
