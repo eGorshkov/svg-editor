@@ -85,6 +85,7 @@ function createUI([main, containers, tools]) {
 
 function createTemplates(editor) {
   globalThis.SETTINGS_TOOL_SUBJECT = new Subject(null, false);
+  globalThis.ACTIVE_ITEM_SUBJECT = new Subject(null, false);
   return [createMain(), createContainers(editor), createTools(editor)];
 }
 
