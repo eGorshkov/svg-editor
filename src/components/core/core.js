@@ -1,7 +1,9 @@
 import { createTemplate } from '../helpers/shape-creator.js';
 import { compose } from '../helpers/compose.js';
+import between from '../helpers/between.js';
 
 export class Core {
+  __type = 'core';
   /**
    *
    * @type {SVGElement}
@@ -30,13 +32,21 @@ export class Core {
 
   create(item) {}
 
+  killChild(child, byKey) {
+    if(!child || !byKey) return;
+
+    this.template.removeChild(child.template);
+    this.items = this.items.filter(x => x[byKey] !== child[byKey]);
+  }
+
   /**
    *
    * @param type { ShapesType }
+   * @param config { * }
    */
-  add(type) {
-    const item = this.create({ type });
-    if (item.add) item.add(type);
+  add(type, config = {}) {
+    const item = this.create({ type, config });
+    if (item.add) item.add(type, config);
     this.items.push(item);
     this.template.appendChild(item.template);
   }
@@ -48,5 +58,32 @@ export class Core {
 
   setToTemplate(_items) {
     _items.forEach(item => this.template.appendChild(item.template));
+  }
+
+  
+
+  replaceOrder(source, target) {
+    if (!Number.isInteger(source) || !Number.isInteger(target) || source === target || target >= this.items.length) return;
+
+    const sourceLayer = this.items.find(x => x.order === source);
+
+    const IS_POSITIVE = sourceLayer.order > target
+    const MIN = Math.min(sourceLayer.order, target);
+    const MAX = Math.max(sourceLayer.order, target);
+    for (let i=0; i<this.items.length; i++) {
+      const ITEM = this.items[i];
+      if(between(ITEM.order, MIN, MAX)) {
+        ITEM.order = ITEM.order + (IS_POSITIVE ? 1 : -1)
+      }
+    }
+    sourceLayer.order = target;
+
+    this.template.removeChild(sourceLayer.template);
+
+    const targetLayer = this.items.find(x => x.order === target + 1);
+    targetLayer
+      ? this.template.insertBefore(sourceLayer.template, targetLayer.template)
+      : this.template.appendChild(sourceLayer.template);
+      
   }
 }

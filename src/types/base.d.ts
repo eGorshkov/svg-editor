@@ -1,6 +1,8 @@
 import { SHAPES } from '../components/shapes/base';
 
-export interface Base<T = any, I = any> {
+export interface Base<C = any, I = any, T = string> {
+  __type: T;
+  order: number;
   /**
    * Шаблон фигуры
    */
@@ -8,15 +10,11 @@ export interface Base<T = any, I = any> {
   /**
    *  Конфигурация фигуры
    */
-  config: T;
+  config: C;
   /**
    *  Конфигурация фигуры
    */
-  items: I;
-  /**
-   * Тип фигуры
-   */
-  type: ShapesType;
+  items: I[];
 
   add(toolType: ShapesType): void;
 }

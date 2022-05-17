@@ -2,6 +2,7 @@ import { SHAPES } from '../shapes/base.js';
 import { Resizable } from '../helpers/resizable/resizable.js';
 
 export class Shape {
+  __type = 'shape';
   /**
    * Шаблон фигуры
    * @type {SVGElement}
@@ -16,15 +17,21 @@ export class Shape {
    * Функция рисвоки шаблона
    * @param template - шаблон фигуры
    * @param config - конфигурация фигуры
+   * @type {IShape.draw}
    */
   draw = (template, config) => {};
   /**
    *
    * @param shapeCtx
+   * @param pointId
    * @param event
-   * @param activePoint
    */
   resize = (shapeCtx, pointId, event) => {};
+  /**
+   *
+   * @param shapeCtx
+   */
+  setting = shapeCtx => {};
   /**
    * Ид фигуры
    * @type {string}
@@ -62,6 +69,33 @@ export class Shape {
    * @type {ShapesType}
    */
   type = null;
+  /**
+   *  Ссылка на слой
+   * @type {ILayer}
+   */
+  #layer = null;
+
+  get layer() {
+    return this.#layer;
+  }
+
+  set layer(l) {
+    this.#layer = l;
+  }
+
+  #order = null;
+
+  get order() {
+    return this.#order;
+  }
+
+  set order(o) {
+    this.#order = o;
+  }
+
+  get fullOrder() {
+    return [this.layer.order, this.order].join('-');
+  }
 
   listener = {
     start: evt => {
@@ -82,6 +116,7 @@ export class Shape {
         if (this.resizable) {
           this.resizable.hide();
         }
+        this.setSettings();
       }
     },
     end: evt => {
@@ -91,6 +126,7 @@ export class Shape {
       if (this.resizable) {
         this.resizable.show(this.template, this.config);
       }
+      this.setSettings();
 
       this.dragging = false;
       this._active = false;
@@ -98,12 +134,13 @@ export class Shape {
     }
   };
 
-  constructor(toolType, shapeId, layerId, config) {
+  constructor(toolType, shapeId, layerId, config, order) {
+    this.order = order;
     this.type = toolType;
-    this.shapeId = `${layerId}-${this.type}-${shapeId}`;
+    this.shapeId = [layerId, toolType, shapeId].join('-');
     this.config = config;
 
-    [this.template, this.config, this.draw, this.resize] = this.#create(this.type, config);
+    [this.template, this.config, this.draw, this.resize, this.setting] = this.#create(this.type, config);
     this.template.setAttribute('id', this.shapeId);
     this.draw(this.template, this.config);
     this.setListeners();
@@ -120,8 +157,10 @@ export class Shape {
    */
   active() {
     this._active = true;
+    this.setSettings();
     this.setDraggable();
     this.setResizable();
+    globalThis.ACTIVE_ITEM_SUBJECT.next(this);
   }
 
   /**
@@ -134,6 +173,12 @@ export class Shape {
     this.dragging = false;
     this.removeDraggable();
     this.removeResizable();
+    globalThis.ACTIVE_ITEM_SUBJECT.next();
+  }
+
+  kill() {
+    this.deactivate();
+    this.layer.killChild(this, 'shapeId');
   }
 
   setDraggable() {
@@ -155,6 +200,7 @@ export class Shape {
         this.resize(this, pointId, event);
         this.draw(this.template, this.config);
         this.resizable.show(this.template, this.config);
+        this.setSettings();
       });
     }
   }
@@ -169,8 +215,17 @@ export class Shape {
   #create(toolType, config) {
     config = { width: 80, height: 80, ...config };
     if (!SHAPES[toolType]) {
-      return SHAPES.square(config);
+      return new SHAPES.square(config);
     }
-    return SHAPES[toolType](config);
+    return new SHAPES[toolType](config);
+  }
+
+  setSettings() {
+    if (this.setting) {
+      globalThis.SETTINGS_TOOL_SUBJECT.next({
+        shape: this,
+        settingsConfig: this.setting(this)
+      });
+    }
   }
 }
