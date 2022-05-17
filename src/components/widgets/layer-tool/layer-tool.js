@@ -159,16 +159,17 @@ export class LayerTool {
     if (IS_ORDERS_IN_SAME_LAYER) {
       TARGET.parent.replaceOrder.call(TARGET.parent, ...sourceOrders, ...targetOrders);
     } else {
+      const SOURCE_IS_ACTIVE = SOURCE.isShape && SOURCE.active
       const TARGET_LAST_ORDER = targetOrders[targetOrders.length - 1];
       const LAYER = TARGET.__type === 'layer' ? TARGET : TARGET.parent;
 
-      SOURCE.parent.killChild(SOURCE);
+      SOURCE.kill();
       SOURCE.order = LAYER.items.length;
 
       LAYER.load([SOURCE]);
       LAYER.items.length > 1 && LAYER.replaceOrder(LAYER.items.length - 1, IS_ORDERS_IN_SAME_LAYER ? 0 : TARGET_LAST_ORDER);
 
-      SOURCE.__type === 'shape' && SOURCE.active && LAYER.get(SOURCE.uniqueId).activate();
+      SOURCE_IS_ACTIVE && LAYER.get(SOURCE.uniqueId).activate();
     }
   }
 

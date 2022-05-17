@@ -12,7 +12,7 @@ export class Core extends Prototype {
   }
 
   get load() {
-    return compose(this.#createChild.bind(this), this.#setParent.bind(this), this.#set.bind(this), this.#setToTemplate.bind(this));
+    return compose(this.#createChild.bind(this), this.#set.bind(this), this.#setToTemplate.bind(this));
   }
 
   constructor(elementName) {
@@ -86,16 +86,9 @@ export class Core extends Prototype {
     return _items.map(x => {
       const created = this.create(x);
       created.uniqueId = x.uniqueId || created.uniqueId;
+      created.parent = this;
       return created;
     });
-  }
-
-  #setParent(_items) {
-    for (let i = 0; i < _items.length; i++) {
-      const element = _items[i];
-      element.parent = this;
-    }
-    return _items;
   }
 
   #set(_items) {

@@ -48,6 +48,10 @@ export default class Prototype {
     return this.__type === 'editor';
   }
 
+  get isShape() {
+    return this.__type === 'shape';
+  }
+
   /**
    *
    * @type {SVGElement}
