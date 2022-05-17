@@ -8,7 +8,9 @@ export class LayerTool {
   #editor = null;
   #isOpen = false;
   #TOOL_NAME = 'layer-tool';
-  #mapperSelector = new Map();
+  #mapper = new Map();
+  #mapperSelector = new Map(); 
+  #prevMapperSelector = new Map(); 
   /**
    *
    * @type {HTMLElement}
@@ -42,27 +44,37 @@ export class LayerTool {
     }
 
     if (this.#isOpen) {
-      const mapper = new Map();
-      this.#editor.items.forEach(item => {
-        const detailsEl = document.createElement('details');
-        this.#mapperSelector.get(item.layerId) && detailsEl.setAttribute('open', '');
-        const summaryEl = document.createElement('summary');
-        summaryEl.style.listStyle = 'none';
-        summaryEl.addEventListener('click', () =>
-          this.#mapperSelector.set(item.layerId, !this.#mapperSelector.get(item.layerId))
-        );
+      this.#prevMapperSelector = new Map([...this.#mapperSelector.entries()]);
+      this.#mapperSelector.clear();
+      this.#mapper.clear();
 
-        summaryEl.appendChild(this.#createItemTemplate(item, 'layer'));
-        detailsEl.appendChild(summaryEl);
-        item.shapes
-          ?.sort((a, b) => a.order - b.order)
-          .forEach((shape, i) => detailsEl.appendChild(this.#createItemTemplate(shape, 'shape')));
-
-        mapper.set(item.order, detailsEl);
-        this.#mapperSelector.set(item.layerId, this.#mapperSelector.get(item.layerId) || false);
-      });
-      [...mapper.entries()].sort().forEach(([_, t]) => this.template.appendChild(t));
+      this.#editor.items.forEach(item => this.#createLayerList(item));
+      [...this.#mapper.entries()].sort().forEach(([_, t]) => this.template.appendChild(t));
     }
+  }
+
+  #createLayerList(item) {
+    const detailsEl = document.createElement('details');
+    this.#prevMapperSelector.get(item.uniqueId) && detailsEl.setAttribute('open', '');
+    const summaryEl = document.createElement('summary');
+    summaryEl.style.listStyle = 'none';
+
+    summaryEl.appendChild(this.#createItemTemplate(item));
+    summaryEl.addEventListener('click', () => this.#mapperSelector.set(item.uniqueId, !this.#mapperSelector.get(item.uniqueId)));
+    detailsEl.appendChild(summaryEl);
+
+    item.items
+      ?.sort((a, b) => a.order - b.order)
+      .forEach(child =>  {
+        const childEl = child.__type === 'layer' ? this.#createLayerList(child) : this.#createItemTemplate(child);
+        detailsEl.appendChild(childEl);
+      });
+
+
+    if (item.level === 1) this.#mapper.set(item.order, detailsEl);
+    this.#mapperSelector.set(item.uniqueId, this.#prevMapperSelector.get(item.uniqueId) || false);
+    
+    return detailsEl;
   }
 
   /**
@@ -71,13 +83,12 @@ export class LayerTool {
    */
   #dragstartHandler(ev) {
     ev.dataTransfer.dropEffect = 'copy';
-    const [layerOrder, shapeOrder] = this.#splitOrderFromTemplate(ev.target);
+    const orders = this.#splitOrderFromTemplate(ev.target);
     ev.dataTransfer.setData(
       'text/plain',
       JSON.stringify({
         type: ev.target.getAttribute('type'),
-        layerOrder,
-        shapeOrder
+        orders
       })
     );
   }
@@ -107,19 +118,18 @@ export class LayerTool {
    */
   #dropHandler(ev) {
     ev.preventDefault();
-    const [targetLayerOrder, targetShapeOrder] = this.#splitOrderFromTemplate(ev.target);
+    const targetOrders = this.#splitOrderFromTemplate(ev.target);
 
     const source = JSON.parse(ev.dataTransfer.getData('text/plain'));
-
-    if (source.type === 'layer') this.#editor.replaceOrder(+source.layerOrder, +targetLayerOrder);
-    else if (source.type === 'shape')
-      this.#shapeToShape(+source.layerOrder, +source.shapeOrder, +targetLayerOrder, +targetShapeOrder);
+    this.#replaceItems(source.orders, targetOrders);
 
     this.draw();
   }
-  
+
   #dblClick(ev) {
     ev.preventDefault();
+    ev.stopPropagation();
+    console.log(ev);
     const type = ev.target.getAttribute('type');
     const orders = this.#splitOrderFromTemplate(ev.target);
 
@@ -128,38 +138,37 @@ export class LayerTool {
         const active = globalThis.ACTIVE_ITEM_SUBJECT.getValue();
         active?.deactivate();
         const shape = this.#editor.get(orders, 'order');
-        shape?.active();
+        shape?.activate();
         break;  
       default:
         break;
     }
   }
 
-  #shapeToShape(sourceLayerOrder, sourceShapeOrder, targetLayerOrder, targetShapeOrder) {
-    if (sourceLayerOrder === targetLayerOrder) {
-      const LAYER = this.#editor.get(sourceLayerOrder, 'order');
-      LAYER.replaceOrder(sourceShapeOrder, targetShapeOrder);
+  #replaceItems(sourceOrders, targetOrders) {
+    const SOURCE = this.#editor.get(sourceOrders, 'order');
+    const TARGET = this.#editor.get(targetOrders, 'order');
+
+    if(!SOURCE || !TARGET) {
+      conosle.error('Not found source or target item', {SOURCE, TARGET});
+      return;
+    }
+
+    const IS_ORDERS_IN_SAME_LAYER = sourceOrders.splice(0, sourceOrders.length - 1).toString() === targetOrders.splice(0, targetOrders.length - 1).toString()
+
+    if (IS_ORDERS_IN_SAME_LAYER) {
+      TARGET.parent.replaceOrder.call(TARGET.parent, ...sourceOrders, ...targetOrders);
     } else {
-      const SOURCE_LAYER = this.#editor.get(sourceLayerOrder, 'order');
-      const TARGET_LAYER = this.#editor.get(targetLayerOrder, 'order');
+      const TARGET_LAST_ORDER = targetOrders[targetOrders.length - 1];
+      const LAYER = TARGET.__type === 'layer' ? TARGET : TARGET.parent;
 
-      const SOURCE_SHAPE = SOURCE_LAYER.get(sourceShapeOrder, 'order');
-      const SOURCE_SHAPE_WAS_ACTIVE = SOURCE_SHAPE._active;
+      SOURCE.parent.killChild(SOURCE);
+      SOURCE.order = LAYER.items.length;
 
-      TARGET_LAYER.add(SOURCE_SHAPE.type, SOURCE_SHAPE.config);
-      Number.isInteger(targetShapeOrder) && TARGET_LAYER.replaceOrder(TARGET_LAYER.shapes.length - 1, targetShapeOrder);
+      LAYER.load([SOURCE]);
+      LAYER.items.length > 1 && LAYER.replaceOrder(LAYER.items.length - 1, IS_ORDERS_IN_SAME_LAYER ? 0 : TARGET_LAST_ORDER);
 
-      SOURCE_SHAPE.kill();
-
-      if (!SOURCE_LAYER.shapes.length) {
-        SOURCE_LAYER.kill();
-        this.#mapperSelector.delete(SOURCE_LAYER.layerId);
-      }
-
-      if (SOURCE_SHAPE_WAS_ACTIVE) {
-        const NEW_SHAPE = TARGET_LAYER.get(Number.isInteger(targetShapeOrder) ? targetShapeOrder : (TARGET_LAYER.shapes.length - 1), 'order');
-        SOURCE_SHAPE_WAS_ACTIVE && NEW_SHAPE.active();
-      }
+      SOURCE.__type === 'shape' && SOURCE.active && LAYER.get(SOURCE.uniqueId).activate();
     }
   }
 
@@ -185,10 +194,14 @@ export class LayerTool {
    */
   #createItemTemplate(item) {
     const itemTemplate = document.createElement('div');
-    itemTemplate.style.height = '50px';
+    itemTemplate.style.height = '30px';
     itemTemplate.style.border = '1px dashed';
+    itemTemplate.style.width = 'calc(' + (100 - item.level * 5) + '% - 20px)';
+    itemTemplate.style.marginLeft = 'auto';
+    itemTemplate.style.padding ='10px';
     itemTemplate.setAttribute('draggable', 'true');
     itemTemplate.setAttribute('type', item.__type);
+    itemTemplate.setAttribute('order', item.fullOrder);
 
     itemTemplate.addEventListener('dragstart', this.#bindedDragstart);
     itemTemplate.addEventListener('dragover', this.#bindedDragover);
@@ -206,10 +219,8 @@ export class LayerTool {
    * @returns
    */
   #setLayer(item, itemTemplate) {
-    itemTemplate.innerText = item.layerId + ' order:' + item.order;
-    itemTemplate.setAttribute('order', item.order);
-    
-    if (item.shapes.some(x => x._active))
+    itemTemplate.innerText = '↳ Layer ' + item.uniqueId + ' order:' + item.fullOrder;
+    if (this.#editor.activeUniqueIds.includes(item.uniqueId))
       itemTemplate.style.backgroundColor = 'lightgray';
     return itemTemplate;
   }
@@ -221,11 +232,8 @@ export class LayerTool {
    * @returns
    */
   #setShape(item, itemTemplate) {
-    itemTemplate.style.width = '90%';
-    itemTemplate.style.marginLeft = 'auto';
-    if (item._active) itemTemplate.style.backgroundColor = 'lightgray';
-    itemTemplate.innerText = item.shapeId + ' order:' + item.fullOrder;
-    itemTemplate.setAttribute('order', item.fullOrder);
+    if (item.active) itemTemplate.style.backgroundColor = 'lightgray';
+    itemTemplate.innerText = 'Shape ' + item.uniqueId + ' order:' + item.fullOrder;
 
     return itemTemplate;
   }
@@ -234,7 +242,7 @@ export class LayerTool {
     child.removeEventListener('dragstart', this.#bindedDragstart);
     child.removeEventListener('dragover', this.#bindedDragover);
     child.removeEventListener('drop', this.#bindedDrop);
-    child.removeEventListener('dblclick', this.#bindedDrop);
+    child.removeEventListener('dblclick', this.#bindedDblClick);
     this.template.removeChild(child);
   }
 

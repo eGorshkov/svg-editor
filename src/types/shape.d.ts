@@ -3,16 +3,6 @@ import { Base } from './base.js';
 
 export interface IShape extends Base<IShapeConfig, null, 'shape'> {
   /**
-   * Ид фигуры
-   */
-  shapeId: number;
-  /**
-   * Флаг того, что фигура активна:
-   * 1. Активируется resizable - возможность изменения размера фигуры
-   * 2. Добавляется возможность переноса фигуры
-   */
-  _active: boolean;
-  /**
    * Флаг того, что фигуру можно переносить
    */
   dragging: boolean;

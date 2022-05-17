@@ -4,8 +4,6 @@ import { Core } from './core.js';
 export class Layer extends Core {
   __type = 'layer';
   defaultShapeConfig = null;
-  layerId = '';
-  #order = 0;
 
   /**
    * Ссылка на редактор
@@ -21,46 +19,46 @@ export class Layer extends Core {
     return (this.#editor = e);
   }
 
-  get order() {
-    return this.#order;
-  }
-
-  set order(o) {
-    this.#order = o;
-  }
-
   get shapes() {
     return this.items;
   }
 
-  constructor(layerId, shapes, defaultShapeConfig, order) {
-    super('g', shapes);
+  constructor(shapes, defaultShapeConfig, order) {
+    super('g');
 
-    this.#order = order;
-    this.layerId = `layer-${layerId}`;
+    this.order = order;
     this.defaultShapeConfig = defaultShapeConfig;
-    this.template.setAttribute('id', this.layerId);
+
+    if (shapes?.length) this.load(shapes);
   }
 
   /**
    *
-   * @param shape { IShape }
-   * @returns {Shape}
+   * @param item { IShape | ILayer }
+   * @returns {Shape | Layer}
    */
-  create(shape) {
+  create(item) {
     this.updateCoreId();
-    const _shape = new Shape(
-      shape?.type,
-      this.coreId,
-      this.layerId,
-      { ...this.defaultShapeConfig, ...shape?.config },
-      shape?.order || this.shapes.length
+
+    if (this.#isShape(item)) {
+      return new Shape(item, { ...this.defaultShapeConfig, ...item?.config });
+    }
+
+    return new Layer(
+      item?.items,
+      {
+        x: this.template.clientWidth / 2,
+        y: this.template.clientHeight / 2
+      },
+      item?.order || this.items.length
     );
-    _shape.layer = this;
-    return _shape;
   }
 
   kill() {
-    this.editor.killChild(this, 'layerId');
+    this.parent.killChild(this);
+  }
+
+  #isShape(item) {
+    return 'config' in item;
   }
 }

@@ -6,6 +6,11 @@ import { Subject } from '../helpers/custom-rx/subject.js';
 export class Editor extends Core {
   __type = 'editor';
   #EDITOR_TEMPLATE_ID = 'editor-template';
+  #activeUniqueIds = [];
+
+  get activeUniqueIds() {
+    return this.#activeUniqueIds;
+  }
 
   get configuration() {
     return {
@@ -23,10 +28,12 @@ export class Editor extends Core {
   onChange = new Subject(null, false);
 
   constructor(config) {
-    super('svg', config?.layers.sort((a, b) => a.order - b.order ? 1 : -1));
+    super('svg');
+    
     this.template.setAttribute('id', this.#EDITOR_TEMPLATE_ID);
     this.#setListener();
     this.#initObserver();
+    if (config?.layers?.length) this.load(config?.layers.sort((a, b) => a.order - b.order ? 1 : -1));
   }
 
   /**
@@ -37,12 +44,10 @@ export class Editor extends Core {
    */
   create(layer) {
     this.updateCoreId();
-    const _layer = new Layer(this.coreId, layer?.items, {
+    return new Layer(layer?.items, {
       x: this.template.clientWidth / 2,
       y: this.template.clientHeight / 2
     }, layer?.order || this.items.length);
-    _layer.editor = this;
-    return _layer;
   }
 
   #setListener() {
@@ -74,7 +79,6 @@ export class Editor extends Core {
               break;
             case 'Delete':
               active?.kill();
-              if (!active?.layer.shapes.length) active?.layer?.kill();
               globalThis.SETTINGS_TOOL_SUBJECT.next();
               break;
             default:
@@ -84,6 +88,10 @@ export class Editor extends Core {
       },
       true
     );
+
+    globalThis.ACTIVE_ITEM_SUBJECT.subscribe((activeItem) => {
+      this.#setActiveUniqueIds(activeItem?.orders);
+    })
   }
 
   #initObserver() {
@@ -102,5 +110,17 @@ export class Editor extends Core {
       
     });
     observer.observe(this.template, {subtree: true, childList: true});
+  }
+
+  #setActiveUniqueIds(orders) {
+    let child = null;
+    this.#activeUniqueIds = [];
+
+    while (orders?.length) {
+      const [first, ...other] = orders;
+      child = (child || this).get(first, 'order')
+      this.#activeUniqueIds.push(child.uniqueId);
+      orders = other;
+    }
   }
 }

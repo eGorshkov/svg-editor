@@ -1,13 +1,9 @@
+import Prototype from './prototype.js';
 import { SHAPES } from '../shapes/base.js';
 import { Resizable } from '../helpers/resizable/resizable.js';
 
-export class Shape {
+export class Shape extends Prototype {
   __type = 'shape';
-  /**
-   * Шаблон фигуры
-   * @type {SVGElement}
-   */
-  template = null;
   /**
    *  Конфигурация фигуры
    * @type {IShapeConfig}
@@ -33,18 +29,6 @@ export class Shape {
    */
   setting = shapeCtx => {};
   /**
-   * Ид фигуры
-   * @type {string}
-   */
-  shapeId = '';
-  /**
-   * Флаг того, что фигура активна:
-   * 1. Активируется resizable - возможность изменения размера фигуры
-   * 2. Добавляется возможность переноса фигуры
-   * @type {boolean}
-   */
-  _active = false;
-  /**
    * Флаг того, что фигуру можно переносить
    * @type {boolean}
    */
@@ -69,33 +53,6 @@ export class Shape {
    * @type {ShapesType}
    */
   type = null;
-  /**
-   *  Ссылка на слой
-   * @type {ILayer}
-   */
-  #layer = null;
-
-  get layer() {
-    return this.#layer;
-  }
-
-  set layer(l) {
-    this.#layer = l;
-  }
-
-  #order = null;
-
-  get order() {
-    return this.#order;
-  }
-
-  set order(o) {
-    this.#order = o;
-  }
-
-  get fullOrder() {
-    return [this.layer.order, this.order].join('-');
-  }
 
   listener = {
     start: evt => {
@@ -108,7 +65,7 @@ export class Shape {
     move: evt => {
       console.log('shape move');
       evt.preventDefault();
-      if (this._active && this.dragging) {
+      if (this.active && this.dragging) {
         this.template.style.cursor = 'grabbing';
         this.config.x = evt.offsetX - this.dragOffsetX;
         this.config.y = evt.offsetY - this.dragOffsetY;
@@ -129,25 +86,30 @@ export class Shape {
       this.setSettings();
 
       this.dragging = false;
-      this._active = false;
+      this.active = false;
       this.dragOffsetX = this.dragOffsetY = null;
     }
   };
 
-  constructor(toolType, shapeId, layerId, config, order) {
-    this.order = order;
-    this.type = toolType;
-    this.shapeId = [layerId, toolType, shapeId].join('-');
+  /**
+   * 
+   * @param { Partial<IShape> } item 
+   * @param { IShapeConfig } config 
+   */
+  constructor(item, config) {
+    super(null);
+    this.order = item?.order;
+    this.type = item?.type;
     this.config = config;
 
     [this.template, this.config, this.draw, this.resize, this.setting] = this.#create(this.type, config);
-    this.template.setAttribute('id', this.shapeId);
+    this.template.setAttribute('id', this.uniqueId);
     this.draw(this.template, this.config);
     this.setListeners();
   }
 
   setListeners() {
-    this.template.addEventListener('click', e => (this._active ? this.deactivate() : this.active()));
+    this.template.addEventListener('click', e => (this.active ? this.deactivate() : this.activate()));
   }
 
   /**
@@ -155,8 +117,8 @@ export class Shape {
    * 1. Активируется resizable - возможность изменения размера фигуры
    * 2. Добавляется возможность переноса фигуры
    */
-  active() {
-    this._active = true;
+  activate() {
+    this.active = true;
     this.setSettings();
     this.setDraggable();
     this.setResizable();
@@ -169,7 +131,7 @@ export class Shape {
    * 2. Убирает возможность переноса фигуры
    */
   deactivate() {
-    this._active = false;
+    this.active = false;
     this.dragging = false;
     this.removeDraggable();
     this.removeResizable();
@@ -178,7 +140,7 @@ export class Shape {
 
   kill() {
     this.deactivate();
-    this.layer.killChild(this, 'shapeId');
+    this.parent.killChild(this);
   }
 
   kill() {
@@ -198,7 +160,7 @@ export class Shape {
 
   setResizable() {
     this.removeResizable();
-    this.resizable = this._active ? new Resizable(this.template, this.config) : null;
+    this.resizable = this.active ? new Resizable(this.template, this.config) : null;
     if (this.resizable !== null) {
       this.template.viewportElement.appendChild(this.resizable.template);
       this.resizable._resize.subscribe(([pointId, event]) => {
