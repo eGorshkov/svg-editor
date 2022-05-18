@@ -17,13 +17,20 @@ function createContainers(editor) {
   return [createHeader(editor), createContainer(editor)];
 }
 
+/**
+ * 
+ * @param {Editor} editor 
+ * @returns 
+ */
 function createHeader(editor) {
-  const headerContainer = document.createElement('div'),
-    configurationButton = document.createElement('button');
+  const headerContainer = document.createElement('div');
   headerContainer.classList.add('editor__header');
-  configurationButton.innerText = 'Copy configuration';
-  configurationButton.addEventListener('click', e => navigator.clipboard.writeText(editor.configuration.toJson()));
-  headerContainer.appendChild(configurationButton);
+
+  [
+    getCopyConfigurationButton(editor),
+    getExportButton(editor)
+  ].forEach(template => headerContainer.appendChild(template));
+
   return headerContainer;
 }
 
@@ -92,6 +99,71 @@ function createTemplates(editor) {
 
 function createEditor(config) {
   return new Editor(config);
+}
+
+/**
+ * 
+ * @param {Editor} editor 
+ * @returns {HTMLElement}
+ */
+function getCopyConfigurationButton(editor) {
+  const  configurationButton = document.createElement('button')
+
+  configurationButton.innerText = 'Copy configuration';
+  configurationButton.addEventListener('click', e => navigator.clipboard.writeText(editor.configuration.toJson()));
+  
+  return configurationButton;
+}
+
+
+/**
+ * 
+ * @param {Editor} editor 
+ * @returns {HTMLElement}
+ */
+function getExportButton(editor) {
+  const exportButton = document.createElement('button');
+
+  exportButton.innerText = 'Export as svg';
+  exportButton.addEventListener('click', handleExport(editor))
+
+  return exportButton;
+
+}
+
+/**
+ * 
+ * @param {Editor} editor 
+ * @returns {void}
+ */
+function handleExport(editor) {
+  return () => {
+    const data = editor.template.innerHTML;
+    let _x, _y, _w, _h;
+    _x = _y = Infinity; 
+    _w = _h = -Infinity;
+
+    editor.items.forEach(item => {
+      const {x,y,width,height} = item.template.getBoundingClientRect();
+      _x = Math.min(_x, x);
+      _y = Math.min(_y, y);
+      _w = Math.max(_w, x + width);
+      _h = Math.max(_h, y + height);
+    });
+
+    const blob = new Blob([
+      `<svg title="graph" version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${Math.ceil(_w)} ${Math.ceil(_h)}">`,
+      `<style>.editor__text-element {white-space: pre; text-align: center;}</style>`,
+      data,
+      '</svg>'
+    ], {type:"image/svg+xml;charset=utf-8"});
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.document = 'exported.svg';
+    link.href = url;
+    link.target = '__blank';
+    link.click();
+  }
 }
 
 export { createEditor, createTemplates, createUI };
