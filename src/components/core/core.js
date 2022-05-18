@@ -7,12 +7,21 @@ export class Core extends Prototype {
   __type = 'core';
   items = [];
   #coreId = 0;
+  #bindCreateChilds = this.#createChilds.bind(this);
+  #bindSet = this.#set.bind(this);
+  #bindSetToTemplate = this.#setToTemplate.bind(this);
+  #bindWithParent = this.#withParent.bind(this);
+
   get coreId() {
     return this.#coreId;
   }
 
   get load() {
-    return compose(this.#createChild.bind(this), this.#set.bind(this), this.#setToTemplate.bind(this));
+    return compose(this.#bindCreateChilds, this.#bindSet, this.#bindSetToTemplate);
+  }
+
+  get #add() {
+    return compose(this.#bindWithParent, this.#bindSet, this.#bindSetToTemplate);
   }
 
   constructor(elementName) {
@@ -38,11 +47,9 @@ export class Core extends Prototype {
    * @param config { * }
    */
   add(type, config = {}) {
-    const item = this.create({ type, config });
-    item.parent = this;
-    if (item.add) item.add(type, config);
-    this.items.push(item);
-    this.template.appendChild(item.template);
+    const item = this.create({type, config});
+    if (item.isLayer) item.add(type, config);
+    this.#add(item);
   }
 
   get(values, key = 'uniqueId') {
@@ -82,16 +89,33 @@ export class Core extends Prototype {
       
   }
 
-  #createChild(_items) {
+  reorder() {
+    this.items.forEach((x, i) => x.order = i)
+  }
+
+  killAll() {
+    this.items.forEach(x => x.isLayer ? x.killAll() : x.kill());
+    this.kill();
+  }
+
+  #createChilds(_items) {
     return _items.map(x => {
       const created = this.create(x);
       created.uniqueId = x.uniqueId || created.uniqueId;
-      created.parent = this;
-      return created;
+      return this.#withParent(created);
     });
   }
 
+  #withParent(child) {
+    child.parent = this;
+    return child;
+  }
+
   #set(_items) {
+    _items = Array.isArray(_items) ? _items : [_items];
+
+    if (!_items?.length) return [];
+
     this.items = [...this.items, ..._items];
     return this.items;
   }

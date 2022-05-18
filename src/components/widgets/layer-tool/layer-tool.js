@@ -150,7 +150,7 @@ export class LayerTool {
     const TARGET = this.#editor.get(targetOrders, 'order');
 
     if(!SOURCE || !TARGET) {
-      conosle.error('Not found source or target item', {SOURCE, TARGET});
+      console.error('Not found source or target item', {SOURCE, TARGET});
       return;
     }
 
@@ -161,13 +161,13 @@ export class LayerTool {
     } else {
       const SOURCE_IS_ACTIVE = SOURCE.isShape && SOURCE.active
       const TARGET_LAST_ORDER = targetOrders[targetOrders.length - 1];
-      const LAYER = TARGET.__type === 'layer' ? TARGET : TARGET.parent;
+      const LAYER = TARGET.parent.isEditor ? TARGET : TARGET.parent;
 
       SOURCE.kill();
       SOURCE.order = LAYER.items.length;
 
       LAYER.load([SOURCE]);
-      LAYER.items.length > 1 && LAYER.replaceOrder(LAYER.items.length - 1, IS_ORDERS_IN_SAME_LAYER ? 0 : TARGET_LAST_ORDER);
+      LAYER.replaceOrder(LAYER.items.length - 1, TARGET_LAST_ORDER);
 
       SOURCE_IS_ACTIVE && LAYER.get(SOURCE.uniqueId).activate();
     }
@@ -194,7 +194,8 @@ export class LayerTool {
    * @returns
    */
   #createItemTemplate(item) {
-    const itemTemplate = document.createElement('div');
+    let itemTemplate = document.createElement('div');
+    itemTemplate.style.display = 'flex';
     itemTemplate.style.height = '30px';
     itemTemplate.style.border = '1px dashed';
     itemTemplate.style.width = 'calc(' + (100 - item.level * 5) + '% - 20px)';
@@ -208,9 +209,19 @@ export class LayerTool {
     itemTemplate.addEventListener('dragover', this.#bindedDragover);
     itemTemplate.addEventListener('dragleave', this.#bindedDragleave);
     itemTemplate.addEventListener('drop', this.#bindedDrop);
-    itemTemplate.addEventListener('dblclick', this.#bindedDblClick.bind(this));
+    itemTemplate.addEventListener('dblclick', this.#bindedDblClick);
 
-    return item.__type === 'layer' ? this.#setLayer(item, itemTemplate) : this.#setShape(item, itemTemplate);
+    itemTemplate = item.__type === 'layer' ? this.#setLayer(item, itemTemplate) : this.#setShape(item, itemTemplate);
+    
+    const killButton = document.createElement('button');
+    killButton.innerText = '🗑';
+    killButton.addEventListener('click', () => {
+      item.isShape ? item.kill() : item.killAll();
+      this.draw();
+    });
+    itemTemplate.appendChild(killButton);
+
+    return itemTemplate;
   }
 
   /**

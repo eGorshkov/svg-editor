@@ -96,9 +96,9 @@ export class Shape extends Prototype {
    * @param { Partial<IShape> } item 
    * @param { IShapeConfig } config 
    */
-  constructor(item, config) {
+  constructor(item, config, order) {
     super(null);
-    this.order = item?.order;
+    this.order = order;
     this.type = item?.type;
     this.config = config;
 
@@ -131,11 +131,11 @@ export class Shape extends Prototype {
    * 2. Убирает возможность переноса фигуры
    */
   deactivate() {
+    this.active && globalThis.ACTIVE_ITEM_SUBJECT.next();
     this.active = false;
     this.dragging = false;
     this.removeDraggable();
     this.removeResizable();
-    globalThis.ACTIVE_ITEM_SUBJECT.next();
   }
 
   kill() {

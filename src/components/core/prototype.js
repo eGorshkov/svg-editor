@@ -48,6 +48,10 @@ export default class Prototype {
     return this.__type === 'editor';
   }
 
+  get isLayer() {
+    return this.__type === 'layer';
+  }
+
   get isShape() {
     return this.__type === 'shape';
   }
@@ -73,5 +77,10 @@ export default class Prototype {
     }
 
     return orders;
+  }
+
+  kill() {
+    this.parent.killChild(this);
+    this.parent.reorder();
   }
 }

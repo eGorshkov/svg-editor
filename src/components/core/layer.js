@@ -41,7 +41,7 @@ export class Layer extends Core {
     this.updateCoreId();
 
     if (this.#isShape(item)) {
-      return new Shape(item, { ...this.defaultShapeConfig, ...item?.config });
+      return new Shape(item, { ...this.defaultShapeConfig, ...item?.config }, item?.order || this.items.length);
     }
 
     return new Layer(
@@ -52,10 +52,6 @@ export class Layer extends Core {
       },
       item?.order || this.items.length
     );
-  }
-
-  kill() {
-    this.parent.killChild(this);
   }
 
   #isShape(item) {
