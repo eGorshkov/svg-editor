@@ -149,6 +149,8 @@ export class Shape extends Prototype {
   }
 
   setDraggable() {
+    this.removeDraggable();
+
     this.template.style.cursor = 'grab';
     this.template.addEventListener('mousedown', this.listener.start, true);
   }
@@ -160,6 +162,7 @@ export class Shape extends Prototype {
 
   setResizable() {
     this.removeResizable();
+    
     this.resizable = this.active ? new Resizable(this.template, this.config) : null;
     if (this.resizable !== null) {
       this.template.viewportElement.appendChild(this.resizable.template);

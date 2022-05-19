@@ -44,7 +44,7 @@ export class Core extends Prototype {
   /**
    *
    * @param type { ShapesType }
-   * @param config { * }
+   * @param config { IShapeConfig }
    */
   add(type, config = {}) {
     const item = this.create({type, config});
@@ -62,7 +62,7 @@ export class Core extends Prototype {
       return null;
     }
 
-    return other.length && find.get ? find.get(other, key) : find;
+    return other.length && find.isLayer ? find.get(other, key) : find;
   }
 
   replaceOrder(source, target) {
@@ -98,10 +98,20 @@ export class Core extends Prototype {
     this.kill();
   }
 
+  getActive() {
+    for (let i = 0; i < this.items.length; i++) {
+      const item = this.items[i];
+      if (item.isShape && item.active) return item;
+      if (item.isLayer) return item.getActive();
+    }
+    return null;
+  }
+
   #createChilds(_items) {
     return _items.map(x => {
       const created = this.create(x);
       created.uniqueId = x.uniqueId || created.uniqueId;
+      created.active = x.active || created.active;
       return this.#withParent(created);
     });
   }
@@ -112,8 +122,7 @@ export class Core extends Prototype {
   }
 
   #set(_items) {
-    _items = Array.isArray(_items) ? _items : [_items];
-
+    _items = (Array.isArray(_items) ? _items : [_items]).filter(Boolean);
     if (!_items?.length) return [];
 
     this.items = [...this.items, ..._items];

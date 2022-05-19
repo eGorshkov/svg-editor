@@ -88,10 +88,6 @@ export class Editor extends Core {
       },
       true
     );
-
-    globalThis.ACTIVE_ITEM_SUBJECT.subscribe((activeItem) => {
-      this.#setActiveUniqueIds(activeItem?.orders);
-    })
   }
 
   #initObserver() {
@@ -110,17 +106,5 @@ export class Editor extends Core {
       
     });
     observer.observe(this.template, {subtree: true, childList: true});
-  }
-
-  #setActiveUniqueIds(orders) {
-    let child = null;
-    this.#activeUniqueIds = [];
-
-    while (orders?.length) {
-      const [first, ...other] = orders;
-      child = (child || this).get(first, 'order')
-      this.#activeUniqueIds.push(child.uniqueId);
-      orders = other;
-    }
   }
 }
