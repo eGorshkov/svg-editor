@@ -4,7 +4,12 @@ export class LayerTool {
   /**
    * @type {IEditor}
    */
-  editor = null;
+  #editor = null;
+
+  get editor() {
+    return this.#editor;
+  }
+
   #isOpen = false;
   #TOOL_NAME = 'layer-tool';
   #mapper = new Map();
@@ -19,7 +24,7 @@ export class LayerTool {
 
   constructor(editor) {
     this.#init();
-    this.editor = editor;
+    this.#editor = editor;
     this.editor.onChange.subscribe(changes => {
       changes && this.#isOpen && this.draw();
     });
@@ -53,11 +58,18 @@ export class LayerTool {
     const summaryEl = document.createElement('summary');
     summaryEl.style.listStyle = 'none';
 
+    let timeout = null;
     const el = this.#createItemTemplate(item);
-    el.addEventListener('click', () => {
-      detailsEl.open = !this.#mapperSelector.get(item.uniqueId);
-      this.#mapperSelector.set(item.uniqueId, !this.#mapperSelector.get(item.uniqueId));
+    el.addEventListener('click', ev => {
+      if (timeout) clearTimeout(timeout);
+      timeout = setTimeout(() => {
+        if (ev.detail === 1) {
+          detailsEl.open = !this.#mapperSelector.get(item.uniqueId);
+          this.#mapperSelector.set(item.uniqueId, !this.#mapperSelector.get(item.uniqueId));
+        }
+      }, 200);
     });
+
     summaryEl.appendChild(el);
     detailsEl.appendChild(summaryEl);
 
@@ -87,10 +99,11 @@ export class LayerTool {
   #createItemTemplate(item) {
     this.#items.set(item.uniqueId, new LayerItem(item, this));
     if (item.active) {
-      let p = item;
+      this.#items.get(item.uniqueId)?.template.classList.add('layer-tool-item__active');
+      let p = item.parent;
 
       while (!p.isEditor) {
-        this.#items.get(p.uniqueId)?.template.classList.add('layer-tool-item__active');
+        this.#items.get(p.uniqueId)?.template.classList.add('layer-tool-item__active-parent');
         p = p.parent;
       }
     }

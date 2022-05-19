@@ -54,12 +54,18 @@ export class Editor extends Core {
     this.template.addEventListener(
       'click',
       evt => {
-        console.log(evt.target);
         if (evt.target.hasAttribute(RESIZABLE_POINT_ATTRIBUTE)) {
           return;
         }
         const active = globalThis.ACTIVE_ITEM_SUBJECT.getValue();
-        if (active && evt.target !== active?.template) {
+
+        if (this.#isActiveLayer(active, evt.target) || this.#isActiveShape(active, evt.target)) {
+          evt.preventDefault();
+          evt.stopPropagation();
+          return;
+        }
+
+        if (active) {
           active.deactivate();
           globalThis.SETTINGS_TOOL_SUBJECT.next();
         }
@@ -75,11 +81,9 @@ export class Editor extends Core {
           switch (evt.key) {
             case 'Escape':
               active?.deactivate();
-              globalThis.SETTINGS_TOOL_SUBJECT.next();
               break;
             case 'Delete':
               active?.kill();
-              globalThis.SETTINGS_TOOL_SUBJECT.next();
               break;
             default:
               break;
@@ -88,6 +92,14 @@ export class Editor extends Core {
       },
       true
     );
+  }
+
+  #isActiveLayer(active, target) {
+    return active?.isLayer && target.id !== this.#EDITOR_TEMPLATE_ID && active.find(target.id, 'uniqueId')
+  }
+
+  #isActiveShape(active, target) {
+    return active?.isShape && target.id === active.id;
   }
 
   #initObserver() {

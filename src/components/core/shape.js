@@ -1,6 +1,5 @@
 import Prototype from './prototype.js';
 import { SHAPES } from '../shapes/base.js';
-import { Resizable } from '../helpers/resizable/resizable.js';
 
 export class Shape extends Prototype {
   __type = 'shape';
@@ -28,21 +27,6 @@ export class Shape extends Prototype {
    * @param shapeCtx
    */
   setting = shapeCtx => {};
-  /**
-   * Флаг того, что фигуру можно переносить
-   * @type {boolean}
-   */
-  dragging = false;
-  /**
-   *
-   * @type {number}
-   */
-  dragOffsetX = 0;
-  /**
-   *
-   * @type {number}
-   */
-  dragOffsetY = 0;
   /**
    * Класс изменения размера фигуры
    * @type {IResizable}
@@ -73,7 +57,6 @@ export class Shape extends Prototype {
         if (this.resizable) {
           this.resizable.hide();
         }
-        this.setSettings();
       }
     },
     end: evt => {
@@ -83,18 +66,16 @@ export class Shape extends Prototype {
       if (this.resizable) {
         this.resizable.show(this.template, this.config);
       }
-      this.setSettings();
 
       this.dragging = false;
-      this.active = false;
       this.dragOffsetX = this.dragOffsetY = null;
     }
   };
 
   /**
-   * 
-   * @param { Partial<IShape> } item 
-   * @param { IShapeConfig } config 
+   *
+   * @param { Partial<IShape> } item
+   * @param { IShapeConfig } config
    */
   constructor(item, config, order) {
     super(null);
@@ -118,11 +99,9 @@ export class Shape extends Prototype {
    * 2. Добавляется возможность переноса фигуры
    */
   activate() {
-    this.active = true;
-    this.setSettings();
+    super.activate(this.setting ? this.setting(this) : null);
     this.setDraggable();
-    this.setResizable();
-    globalThis.ACTIVE_ITEM_SUBJECT.next(this);
+    this.setResizable(this.#resizeSubscribeFn);
   }
 
   /**
@@ -131,9 +110,7 @@ export class Shape extends Prototype {
    * 2. Убирает возможность переноса фигуры
    */
   deactivate() {
-    this.active && globalThis.ACTIVE_ITEM_SUBJECT.next();
-    this.active = false;
-    this.dragging = false;
+    super.deactivate();
     this.removeDraggable();
     this.removeResizable();
   }
@@ -155,31 +132,10 @@ export class Shape extends Prototype {
     this.template.addEventListener('mousedown', this.listener.start, true);
   }
 
-  removeDraggable() {
-    this.template.style.cursor = 'default';
-    this.template.removeEventListener('mousedown', this.listener.start, true);
-  }
-
-  setResizable() {
-    this.removeResizable();
-    
-    this.resizable = this.active ? new Resizable(this.template, this.config) : null;
-    if (this.resizable !== null) {
-      this.template.viewportElement.appendChild(this.resizable.template);
-      this.resizable._resize.subscribe(([pointId, event]) => {
-        this.resize(this, pointId, event);
-        this.draw(this.template, this.config);
-        this.resizable.show(this.template, this.config);
-        this.setSettings();
-      });
-    }
-  }
-
-  removeResizable() {
-    if (this.resizable) {
-      this.resizable.remove();
-    }
-    this.resizable = null;
+  #resizeSubscribeFn([pointId, event]) {
+    this.resize(this, pointId, event);
+    this.draw(this.template, this.config);
+    this.resizable.show(this.template, this.config);
   }
 
   #create(toolType, config) {
@@ -188,14 +144,5 @@ export class Shape extends Prototype {
       return new SHAPES.square(config);
     }
     return new SHAPES[toolType](config);
-  }
-
-  setSettings() {
-    if (this.setting) {
-      globalThis.SETTINGS_TOOL_SUBJECT.next({
-        shape: this,
-        settingsConfig: this.setting(this)
-      });
-    }
   }
 }

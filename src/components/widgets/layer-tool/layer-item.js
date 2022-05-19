@@ -14,7 +14,7 @@ export default class LayerItem {
   #bindedDragleave = this.#dragleaveHandler.bind(this);
   #bindedDragover = this.#dragoverHandler.bind(this);
   #bindedDrop = this.#dropHandler.bind(this);
-  #bindedDblClick = this.#dblClick.bind(this);
+  #bindedDblClick = this.dblClick.bind(this);
 
   draw = null;
   template = null;
@@ -35,9 +35,6 @@ export default class LayerItem {
   #init() {
     this.template = document.createElement('button');
     this.template.classList.add('layer-tool-item');
-
-    // const level = this.#item.level - 1;
-    // this.template.style.width = 'calc(' + (100 - level * 5) + '% - 10px)';
 
     this.template.setAttribute('draggable', 'true');
     this.template.setAttribute('type', this.#item.__type);
@@ -138,7 +135,7 @@ export default class LayerItem {
     this.#replaceItems(source.orders, targetOrders);
   }
 
-  #dblClick(ev) {
+  dblClick(ev) {
     ev.preventDefault();
     ev.stopPropagation();
     const type = this.#getType(ev.target);
@@ -146,6 +143,7 @@ export default class LayerItem {
 
     switch (type) {
       case 'shape':
+      case 'layer':
         globalThis.ACTIVE_ITEM_SUBJECT.getValue()?.deactivate();
         this.#widget.editor.get(orders, 'order')?.activate();
         break;
@@ -190,7 +188,7 @@ export default class LayerItem {
 
   #reactivateShape(source, parentLayer, isSourceShapeWasActive) {
     if (source.isLayer) {
-      const ACTIVE_SHAPE = parentLayer.get(source.uniqueId)?.getActive();
+      const ACTIVE_SHAPE = parentLayer.get(source.uniqueId)?.find(true, 'active');
       if (ACTIVE_SHAPE) {
         globalThis.ACTIVE_ITEM_SUBJECT.getValue()?.deactivate();
         ACTIVE_SHAPE.activate();

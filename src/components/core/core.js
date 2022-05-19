@@ -6,6 +6,34 @@ import between from '../helpers/between.js';
 export class Core extends Prototype {
   __type = 'core';
   items = [];
+
+  listener = {
+    start: evt => {
+      this.dragging = true;
+      this.dragOffsetX = evt.offsetX;
+      this.dragOffsetY = evt.offsetY;
+      document.addEventListener('mousemove', this.listener.move, true);
+      document.addEventListener('mouseup', this.listener.end, true);
+    },
+    move: evt => {
+      console.log('layer move');
+      evt.preventDefault();
+      if (this.active && this.dragging) {
+        this.template.style.cursor = 'grabbing';
+        this.#replacePosition(evt);
+        if (this.resizable) this.resizable.hide();
+      }
+    },
+    end: evt => {
+      document.removeEventListener('mousemove', this.listener.move, true);
+      document.removeEventListener('mouseup', this.listener.end, true);
+      if (this.resizable) this.resizable.show(this.template, this.coreConfig);
+
+      this.dragging = false;
+      this.dragOffsetX = this.dragOffsetY = null;
+    }
+  };
+
   #coreId = 0;
   #bindCreateChilds = this.#createChilds.bind(this);
   #bindSet = this.#set.bind(this);
@@ -24,6 +52,13 @@ export class Core extends Prototype {
     return compose(this.#bindWithParent, this.#bindSet, this.#bindSetToTemplate);
   }
 
+  #coreConfig = null;
+
+  get coreConfig() {
+    return this.#coreConfig;
+
+  }
+
   constructor(elementName) {
     super(createTemplate(elementName));
   }
@@ -33,13 +68,6 @@ export class Core extends Prototype {
   }
 
   create(item) {}
-
-  killChild(child, byKey = 'uniqueId') {
-    if(!child || !byKey) return;
-
-    this.template.removeChild(child.template);
-    this.items = this.items.filter(x => x[byKey] !== child[byKey]);
-  }
 
   /**
    *
@@ -63,6 +91,18 @@ export class Core extends Prototype {
     }
 
     return other.length && find.isLayer ? find.get(other, key) : find;
+  }
+
+  find(value, key) {
+    for (let i = 0; i < this.items.length; i++) {
+      const item = this.items[i];
+      if (item.isShape && item[key] === value) return item;
+      else if (item.isLayer) {
+        const child = item.find(value, key);
+        if (child) return child;
+      }
+    }
+    return null;
   }
 
   replaceOrder(source, target) {
@@ -93,18 +133,92 @@ export class Core extends Prototype {
     this.items.forEach((x, i) => x.order = i)
   }
 
+  killChild(child, byKey = 'uniqueId') {
+    if(!child || !byKey) return;
+
+    this.template.removeChild(child.template);
+    this.items = this.items.filter(x => x[byKey] !== child[byKey]);
+  }
+
   killAll() {
-    this.items.forEach(x => x.isLayer ? x.killAll() : x.kill());
+    this.items.forEach(x => x.isShape ? x.kill() : x.killAll());
     this.kill();
   }
 
-  getActive() {
+  activate() {
+    super.activate();
+    this.#coreConfig = this.getCoreConfig();
+    this.setResizable(null, this.coreConfig);
+    this.setCoreDraggable();
+  }
+
+  deactivate() {
+    super.deactivate();
+    this.removeResizable();
+    this.removeCoreDraggable();
+  }
+
+  getCoreConfig() {
+    const config = {
+      x: Infinity,
+      y: Infinity,
+      width: -Infinity,
+      height: -Infinity
+    }
+
     for (let i = 0; i < this.items.length; i++) {
       const item = this.items[i];
-      if (item.isShape && item.active) return item;
-      if (item.isLayer) return item.getActive();
+      const itemConfig = item.isShape ? item.config : item.getCoreConfig();
+      config.x = Math.min(config.x, itemConfig.x);
+      config.y = Math.min(config.y, itemConfig.y);
+      config.width = Math.max(config.width, itemConfig.width);
+      config.height = Math.max(config.height, itemConfig.height);
     }
-    return null;
+
+    return config;
+  }
+
+  setCoreDraggable(cb = this.listener.start) {
+    for (let i = 0; i < this.items.length; i++) {
+      const item = this.items[i];
+      item.isLayer ? item.setCoreDraggable(cb) : item.setDraggable(cb);
+    }
+  }
+
+  removeCoreDraggable(cb = this.listener.start) {
+    for (let i = 0; i < this.items.length; i++) {
+      const item = this.items[i];
+      item.isLayer ? item.removeCoreDraggable(cb) : item.removeDraggable(cb);
+    }
+  }
+
+  changeChildPosition(change) {
+    for (let i = 0; i < this.items.length; i++) {
+      const item = this.items[i];
+      if (item.isShape) {
+        item.config.x += change.x;
+        item.config.y += change.y;
+        item.draw(item.template, item.config);
+      } else {
+        item.changeChildPosition(change)
+      }
+    }
+  }
+
+  #replacePosition(evt) {
+    this.template.style.cursor = 'grabbing';
+
+    if(this.dragOffsetX === 0 && this.dragOffsetY === 0) return;
+
+    const change = {};
+    change.x = evt.offsetX - this.dragOffsetX;
+    change.y = evt.offsetY - this.dragOffsetY;
+
+    this.dragOffsetX = evt.offsetX;
+    this.dragOffsetY = evt.offsetY;
+
+    this.changeChildPosition(change);
+    if (this.resizable) this.resizable.hide();
   }
 
   #createChilds(_items) {
