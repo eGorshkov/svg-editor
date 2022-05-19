@@ -3,14 +3,14 @@ import { Core } from './core.js';
 import { RESIZABLE_POINT_ATTRIBUTE } from '../helpers/resizable/resizable.js';
 import { Subject } from '../helpers/custom-rx/subject.js';
 
+/**
+ * @implements {IEditor}
+ */
 export class Editor extends Core {
   __type = 'editor';
   #EDITOR_TEMPLATE_ID = 'editor-template';
-  #activeUniqueIds = [];
 
-  get activeUniqueIds() {
-    return this.#activeUniqueIds;
-  }
+  onChange = new Subject(null, false);
 
   get configuration() {
     return {
@@ -25,15 +25,13 @@ export class Editor extends Core {
     };
   }
 
-  onChange = new Subject(null, false);
-
   constructor(config) {
     super('svg');
-    
+
     this.template.setAttribute('id', this.#EDITOR_TEMPLATE_ID);
     this.#setListener();
     this.#initObserver();
-    if (config?.layers?.length) this.load(config?.layers.sort((a, b) => a.order - b.order ? 1 : -1));
+    if (config?.layers?.length) this.load(config?.layers.sort((a, b) => (a.order - b.order ? 1 : -1)));
   }
 
   /**
@@ -43,11 +41,14 @@ export class Editor extends Core {
    * @returns {Layer}
    */
   create(layer) {
-    this.updateCoreId();
-    return new Layer(layer?.items, {
-      x: this.template.clientWidth / 2,
-      y: this.template.clientHeight / 2
-    }, layer?.order || this.items.length);
+    return new Layer(
+      layer?.items,
+      {
+        x: this.template.clientWidth / 2,
+        y: this.template.clientHeight / 2
+      },
+      layer?.order || this.items.length
+    );
   }
 
   #setListener() {
@@ -83,19 +84,19 @@ export class Editor extends Core {
               active?.deactivate();
               break;
             case 'Delete':
-              active?.kill();
+              active?.isLayer ? active?.killAll() : active?.kill();
               break;
             default:
               break;
           }
-        };
+        }
       },
       true
     );
   }
 
   #isActiveLayer(active, target) {
-    return active?.isLayer && target.id !== this.#EDITOR_TEMPLATE_ID && active.find(target.id, 'uniqueId')
+    return active?.isLayer && target.id !== this.#EDITOR_TEMPLATE_ID && active.find(target.id, 'uniqueId');
   }
 
   #isActiveShape(active, target) {
@@ -114,9 +115,8 @@ export class Editor extends Core {
         removed = [...removed, ...entry.removedNodes];
       });
 
-      if(added.length || removed.length) this.onChange.next({added, removed});
-      
+      if (added.length || removed.length) this.onChange.next({ added, removed });
     });
-    observer.observe(this.template, {subtree: true, childList: true});
+    observer.observe(this.template, { subtree: true, childList: true });
   }
 }

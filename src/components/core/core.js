@@ -1,8 +1,11 @@
 import Prototype from './prototype.js';
 import { createTemplate } from '../helpers/shape-creator.js';
-import { compose } from '../helpers/compose.js';
+import compose from '../helpers/compose.js';
 import between from '../helpers/between.js';
 
+/**
+ * @implements Base
+ */
 export class Core extends Prototype {
   __type = 'core';
   items = [];
@@ -34,15 +37,10 @@ export class Core extends Prototype {
     }
   };
 
-  #coreId = 0;
   #bindCreateChilds = this.#createChilds.bind(this);
   #bindSet = this.#set.bind(this);
   #bindSetToTemplate = this.#setToTemplate.bind(this);
   #bindWithParent = this.#withParent.bind(this);
-
-  get coreId() {
-    return this.#coreId;
-  }
 
   get load() {
     return compose(this.#bindCreateChilds, this.#bindSet, this.#bindSetToTemplate);
@@ -56,15 +54,10 @@ export class Core extends Prototype {
 
   get coreConfig() {
     return this.#coreConfig;
-
   }
 
   constructor(elementName) {
     super(createTemplate(elementName));
-  }
-
-  updateCoreId() {
-    this.#coreId++;
   }
 
   create(item) {}
@@ -75,7 +68,7 @@ export class Core extends Prototype {
    * @param config { IShapeConfig }
    */
   add(type, config = {}) {
-    const item = this.create({type, config});
+    const item = this.create({ type, config });
     if (item.isLayer) item.add(type, config);
     this.#add(item);
   }
@@ -84,8 +77,8 @@ export class Core extends Prototype {
     values = Array.isArray(values) ? values : [values];
     const [value, ...other] = values;
     const find = this.items.find(x => x[key] === value);
-    
-    if(!find) {
+
+    if (!find) {
       console.error('Not find', value, 'by', key, 'in items');
       return null;
     }
@@ -106,16 +99,16 @@ export class Core extends Prototype {
   }
 
   replaceOrder(source, target) {
-    if (!Number.isInteger(source) || !Number.isInteger(target) || source === target || target >= this.items.length) return;
+    if (!Number.isInteger(source) || !Number.isInteger(target) || source === target || target >= this.items.length)
+      return;
 
     const SOURCE_LAYER = this.get(source, 'order');
-    const IS_SOURCE_MORE_THEN_TARGET = SOURCE_LAYER.order > target
+    const IS_SOURCE_MORE_THEN_TARGET = SOURCE_LAYER.order > target;
     const [MIN, MAX] = [SOURCE_LAYER.order, target].sort();
 
-
-    for (let i=0; i<this.items.length; i++) {
+    for (let i = 0; i < this.items.length; i++) {
       const ITEM = this.items[i];
-      if(between(ITEM.order, MIN, MAX)) ITEM.order = ITEM.order + (IS_SOURCE_MORE_THEN_TARGET ? 1 : -1);
+      if (between(ITEM.order, MIN, MAX)) ITEM.order += IS_SOURCE_MORE_THEN_TARGET ? 1 : -1;
     }
 
     SOURCE_LAYER.order = target;
@@ -126,22 +119,21 @@ export class Core extends Prototype {
     TARGET_LAYER
       ? this.template.insertBefore(SOURCE_LAYER.template, TARGET_LAYER.template)
       : this.template.appendChild(SOURCE_LAYER.template);
-      
   }
 
   reorder() {
-    this.items.forEach((x, i) => x.order = i)
+    this.items.forEach((x, i) => (x.order = i));
   }
 
   killChild(child, byKey = 'uniqueId') {
-    if(!child || !byKey) return;
+    if (!child || !byKey) return;
 
     this.template.removeChild(child.template);
     this.items = this.items.filter(x => x[byKey] !== child[byKey]);
   }
 
   killAll() {
-    this.items.forEach(x => x.isShape ? x.kill() : x.killAll());
+    this.items.forEach(x => (x.isShape ? x.kill() : x.killAll()));
     this.kill();
   }
 
@@ -164,7 +156,7 @@ export class Core extends Prototype {
       y: Infinity,
       width: -Infinity,
       height: -Infinity
-    }
+    };
 
     for (let i = 0; i < this.items.length; i++) {
       const item = this.items[i];
@@ -200,15 +192,13 @@ export class Core extends Prototype {
         item.config.y += change.y;
         item.draw(item.template, item.config);
       } else {
-        item.changeChildPosition(change)
+        item.changeChildPosition(change);
       }
     }
   }
 
   #replacePosition(evt) {
     this.template.style.cursor = 'grabbing';
-
-    if(this.dragOffsetX === 0 && this.dragOffsetY === 0) return;
 
     const change = {};
     change.x = evt.offsetX - this.dragOffsetX;

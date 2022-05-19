@@ -1,13 +1,11 @@
 import Prototype from './prototype.js';
 import { SHAPES } from '../shapes/base.js';
 
+/**
+ * @implements {IShape}
+ */
 export class Shape extends Prototype {
   __type = 'shape';
-  /**
-   *  Конфигурация фигуры
-   * @type {IShapeConfig}
-   */
-  config = null;
   /**
    * Функция рисвоки шаблона
    * @param template - шаблон фигуры
@@ -27,11 +25,6 @@ export class Shape extends Prototype {
    * @param shapeCtx
    */
   setting = shapeCtx => {};
-  /**
-   * Класс изменения размера фигуры
-   * @type {IResizable}
-   */
-  resizable = null;
   /**
    *  Тип фигуры
    * @type {ShapesType}
@@ -86,11 +79,7 @@ export class Shape extends Prototype {
     [this.template, this.config, this.draw, this.resize, this.setting] = this.#create(this.type, config);
     this.template.setAttribute('id', this.uniqueId);
     this.draw(this.template, this.config);
-    this.setListeners();
-  }
-
-  setListeners() {
-    this.template.addEventListener('click', e => (this.active ? this.deactivate() : this.activate()));
+    this.#setListeners();
   }
 
   /**
@@ -113,6 +102,7 @@ export class Shape extends Prototype {
     super.deactivate();
     this.removeDraggable();
     this.removeResizable();
+    this.removeSettings();
   }
 
   kill() {
@@ -136,6 +126,10 @@ export class Shape extends Prototype {
     this.resize(this, pointId, event);
     this.draw(this.template, this.config);
     this.resizable.show(this.template, this.config);
+  }
+
+  #setListeners() {
+    this.template.addEventListener('click', e => (this.active ? this.deactivate() : this.activate()));
   }
 
   #create(toolType, config) {

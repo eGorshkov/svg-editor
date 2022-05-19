@@ -1,27 +1,12 @@
 import { Shape } from './shape.js';
 import { Core } from './core.js';
 
+/**
+ * @implements {ILayer}
+ */
 export class Layer extends Core {
   __type = 'layer';
   defaultShapeConfig = null;
-
-  /**
-   * Ссылка на редактор
-   * @param {IEditor} editor
-   */
-  #editor = null;
-
-  get editor() {
-    return this.#editor;
-  }
-
-  set editor(e) {
-    return (this.#editor = e);
-  }
-
-  get shapes() {
-    return this.items;
-  }
 
   constructor(shapes, defaultShapeConfig, order) {
     super('g');
@@ -38,8 +23,6 @@ export class Layer extends Core {
    * @returns {Shape | Layer}
    */
   create(item) {
-    this.updateCoreId();
-
     if (this.#isShape(item)) {
       return new Shape(item, { ...this.defaultShapeConfig, ...item?.config }, item?.order || this.items.length);
     }

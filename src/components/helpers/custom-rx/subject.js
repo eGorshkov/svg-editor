@@ -1,8 +1,9 @@
-import { compose } from '../compose.js';
+import compose from '../compose.js';
 /**
  *
  * @param value
  * @param checkFirstChange
+ * @implements { ISubject }
  * @returns { Subject }
  * @constructor
  */
@@ -15,7 +16,7 @@ export function Subject(value, checkFirstChange) {
   this.value = value ?? null;
 
   Object.defineProperty(this, 'subscribeCount', {
-    get: function() {
+    get: function () {
       return this.subscribeFunctions.length;
     }
   });
@@ -36,7 +37,7 @@ Subject.prototype.subscribe = function (cb) {
 
 Subject.prototype.next = function (v) {
   this.value = v;
-  if(!this.canSubscribe) return;
+  if (!this.canSubscribe) return;
 
   for (let i = 0; i < this.subscribeCount; i++) {
     const pipeFns = this.pipeFunctions[i];

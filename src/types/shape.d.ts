@@ -1,46 +1,37 @@
-import { IResizable } from './resizable';
-import { Base } from './base.js';
+import { IResizable, IResizablePointType } from './resizable';
+import { IPrototype } from './prototype';
+import { ShapesType } from './base';
 
-export interface IShape extends Base<IShapeConfig, null, 'shape'> {
-  /**
-   * Флаг того, что фигуру можно переносить
-   */
-  dragging: boolean;
+export declare interface IShape extends IPrototype<'shape'> {
   /**
    *
    */
-  dragOffsetX: 0;
-  /**
-   *
-   */
-  dragOffsetY: 0;
-  /**
-   * Класс изменения размера фигуры
-   */
-  resizable: IResizable;
+  config: IShapeConfig;
   /**
    * Тип фигуры
    */
   type: ShapesType;
+
+  /**
+   *
+   * @param shapeCtx
+   * @param pointId
+   * @param event
+   */
+  resize(shapeCtx: IShape, pointId: IResizablePointType, event: Event): void;
+
+  /**
+   *
+   * @param shapeCtx
+   */
+  setting(shapeCtx: IShape): void;
+
   /**
    * Функция рисвоки шаблона
    * @param template - шаблон фигуры
    * @param config - конфигурация фигуры
    */
   draw(template: SVGElement, config: IShapeConfig): void;
-  /**
-   * Функция активации фигуры
-   * 1. Активируется resizable - возможность изменения размера фигуры
-   * 2. Добавляется возможность переноса фигуры
-   */
-  active(): void;
-
-  /**
-   * Функция деактивации фигуры
-   * 1. Отключает resizable - возможность изменения размера фигуры
-   * 2. Убирает возможность переноса фигуры
-   */
-  deactivate(): void;
 }
 
 export interface IShapeConfig {

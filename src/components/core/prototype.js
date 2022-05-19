@@ -1,24 +1,34 @@
 import { Resizable } from '../helpers/resizable/resizable.js';
 
+/**
+ * @implements {IPrototype}
+ */
 export default class Prototype {
   __type = 'prototype';
   uniqueId = Math.ceil(Math.random() * 10 ** 10).toString();
 
   /**
    * Флаг того, что фигуру можно переносить
-   * @type {boolean}
    */
   dragging = false;
   /**
    *
-   * @type {number}
    */
   dragOffsetX = 0;
   /**
    *
-   * @type {number}
    */
   dragOffsetY = 0;
+
+  listener = {
+    start: () => {},
+    move: () => {},
+    end: () => {}
+  };
+
+  config = null;
+
+  resizable = null;
 
   #order = null;
 
@@ -113,6 +123,10 @@ export default class Prototype {
     globalThis.SETTINGS_TOOL_SUBJECT.next({ item: this, config });
   }
 
+  removeSettings() {
+    globalThis.SETTINGS_TOOL_SUBJECT.next();
+  }
+
   setDraggable(cb = this.listener.start) {
     this.removeDraggable(cb);
 
@@ -143,7 +157,9 @@ export default class Prototype {
   }
 
   kill() {
+    this.deactivate();
     this.parent.killChild(this);
     this.parent.reorder();
+    this.removeSettings();
   }
 }
