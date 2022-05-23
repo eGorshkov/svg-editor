@@ -1,33 +1,39 @@
 import { Shape } from './shape.js';
 import { Core } from './core.js';
 
+/**
+ * @implements {ILayer}
+ */
 export class Layer extends Core {
+  __type = 'layer';
   defaultShapeConfig = null;
-  #order = 0;
 
-  get order() {
-    return this.#order;
-  }
+  constructor(shapes, defaultShapeConfig, order) {
+    super('g');
 
-  constructor(layerId, shapes, defaultShapeConfig, order) {
-    super('g', shapes);
-    this.#order = order;
-    this.layerId = `layer-${layerId}`;
+    this.order = order;
     this.defaultShapeConfig = defaultShapeConfig;
-    this.template.setAttribute('id', this.layerId);
+
+    if (shapes?.length) this.load(shapes);
   }
 
   /**
    *
-   * @param shape { IShape }
-   * @returns {Shape}
+   * @param item { IShape | ILayer }
+   * @returns {Shape | Layer}
    */
-  create(shape) {
-    this.updateCoreId();
-    return new Shape(shape?.type, this.coreId, this.layerId, { ...this.defaultShapeConfig, ...shape?.config });
-  }
+  create(item) {
+    if ('items' in item) {
+      return new Layer(
+        item?.items,
+        {
+          x: this.template.clientWidth / 2,
+          y: this.template.clientHeight / 2
+        },
+        item?.order || this.items.length
+      );
+    }
 
-  updateOrder(newValue) {
-    this.#order = newValue;
+    return new Shape(item, { ...this.defaultShapeConfig, ...item?.config }, item?.order || this.items.length);
   }
 }
