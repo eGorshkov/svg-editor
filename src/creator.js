@@ -18,18 +18,17 @@ function createContainers(editor) {
 }
 
 /**
- * 
- * @param {Editor} editor 
- * @returns 
+ *
+ * @param {Editor} editor
+ * @returns
  */
 function createHeader(editor) {
   const headerContainer = document.createElement('div');
   headerContainer.classList.add('editor__header');
 
-  [
-    getCopyConfigurationButton(editor),
-    getExportButton(editor)
-  ].forEach(template => headerContainer.appendChild(template));
+  [getCopyConfigurationButton(editor), getExportButton(editor), getLinkButton(editor)].forEach(template =>
+    headerContainer.appendChild(template)
+  );
 
   return headerContainer;
 }
@@ -46,18 +45,14 @@ function createContainer(editor) {
 
 function createTools(editor) {
   const layerTool = new LayerTool(editor);
-  return [
-    layerTool,
-    createSettingsTool(editor),
-    createSelectTool(editor, layerTool)
-  ];
+  return [layerTool, createSettingsTool(editor), createSelectTool(editor, layerTool)];
 }
 
 /**
- * 
- * @param {Editor} editor 
- * @param {LayerTool} layerTool 
- * @returns 
+ *
+ * @param {Editor} editor
+ * @param {LayerTool} layerTool
+ * @returns
  */
 function createSelectTool(editor, layerTool) {
   const selectTool = new SelectTool();
@@ -105,68 +100,88 @@ function createEditor(config) {
 }
 
 /**
- * 
- * @param {Editor} editor 
+ *
+ * @param {Editor} editor
  * @returns {HTMLElement}
  */
 function getCopyConfigurationButton(editor) {
-  const  configurationButton = document.createElement('button')
+  const configurationButton = document.createElement('button');
 
   configurationButton.innerText = 'Copy configuration';
   configurationButton.addEventListener('click', e => navigator.clipboard.writeText(editor.configuration.toJson()));
-  
+
   return configurationButton;
 }
 
-
 /**
- * 
- * @param {Editor} editor 
+ *
+ * @param {Editor} editor
  * @returns {HTMLElement}
  */
 function getExportButton(editor) {
   const exportButton = document.createElement('button');
 
   exportButton.innerText = 'Export as svg';
-  exportButton.addEventListener('click', handleExport(editor))
+  exportButton.addEventListener('click', handleExport(editor));
 
   return exportButton;
-
 }
 
 /**
- * 
- * @param {Editor} editor 
+ *
+ * @param {Editor} editor
+ * @returns {HTMLElement}
+ */
+function getLinkButton(editor) {
+  const btn = document.createElement('button');
+
+  btn.innerText = 'Link shapes';
+  btn.addEventListener('click', () => {
+    globalThis.SET_TO_LINK.next(['e', editor.items[0].items[0]]);
+    globalThis.SET_TO_LINK.next(['e', editor.items[1].items[0]]);
+  });
+
+  return btn;
+}
+
+/**
+ *
+ * @param {Editor} editor
  * @returns {void}
  */
 function handleExport(editor) {
   return () => {
     const data = editor.template.innerHTML;
     let _x, _y, _w, _h;
-    _x = _y = Infinity; 
+    _x = _y = Infinity;
     _w = _h = -Infinity;
 
     editor.items.forEach(item => {
-      const {x,y,width,height} = item.template.getBoundingClientRect();
+      const { x, y, width, height } = item.template.getBoundingClientRect();
       _x = Math.min(_x, x);
       _y = Math.min(_y, y);
       _w = Math.max(_w, x + width);
       _h = Math.max(_h, y + height);
     });
 
-    const blob = new Blob([
-      `<svg title="graph" version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${Math.ceil(_w)} ${Math.ceil(_h)}">`,
-      `<style>.editor__text-element {white-space: pre; text-align: center;}</style>`,
-      data,
-      '</svg>'
-    ], {type:"image/svg+xml;charset=utf-8"});
+    const blob = new Blob(
+      [
+        `<svg title="graph" version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${Math.ceil(_w)} ${Math.ceil(
+          _h
+        )}">`,
+        `<style>.editor__text-element {white-space: pre; text-align: center;}</style>`,
+        data,
+        '</svg>'
+      ],
+      { type: 'image/svg+xml;charset=utf-8' }
+    );
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.document = 'exported.svg';
     link.href = url;
     link.target = '__blank';
     link.click();
-  }
+  };
 }
 
 export { createEditor, createTemplates, createUI };

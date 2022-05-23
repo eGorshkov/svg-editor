@@ -1,8 +1,6 @@
 import { createTemplate } from '../helpers/shape-creator.js';
 
 const STEP = 20;
-const TYPES = ['w', 'e'].reverse();
-
 const COORDS_BY_TYPE = {
   e: coords => ({
     x: coords.x + coords.width,
@@ -14,180 +12,198 @@ const COORDS_BY_TYPE = {
   }),
   s: coords => ({
     x: coords.x + coords.width / 2,
-    y: coords.y
+    y: coords.y + coords.height
   }),
   n: coords => ({
     x: coords.x + coords.width / 2,
-    y: coords.y + coords.height
+    y: coords.y
   })
 };
 
 export default class Linker {
-    set = globalThis.SET_TO_LINK;
-    update = globalThis.UPDATE_LINK;
-    #editor = null;
-    active = false;
-    shapes = [];
-    links = [];
-    /**
-     * @type {SVGElement}
-     */
-    template = createTemplate('g')
+  set = globalThis.SET_TO_LINK;
+  update = globalThis.UPDATE_LINK;
+  #editor = null;
+  active = false;
+  shapes = [];
+  links = [];
+  /**
+   * @type {SVGElement}
+   */
+  template = createTemplate('g');
 
-    constructor(editor) {
-        this.#editor = editor;
-        this.template.id = 'links-container';
-        this.#init();    
-        this.#editor.template.appendChild(this.template);
-    }
+  constructor(editor) {
+    this.#editor = editor;
+    this.template.id = 'links-container';
+    this.#init();
+    this.#editor.template.appendChild(this.template);
+  }
 
-    #init() {
-        this.set.subscribe(([type, id]) => {
-            if (this.active) {
-                console.log('linking');
-                this.shapes.push({
-                    id,
-                    type: TYPES[1]
-                });
-                this.#link();
-                this.active = false;
-                this.shapes = [];
-                this.#draw();
-                console.log('end linking', this.links);
-                return;
-            } else {
-                console.log('start linking');
-                this.active = true;
-                this.shapes.push({id, type: TYPES[0]});
-            }
-        });
+  #init() {
+    this.set.subscribe(([type, shape]) => {
+      if (this.active) {
+        console.log('linking');
+        this.shapes.push({ shape, type });
+        this.#link();
+        this.active = false;
+        this.shapes = [];
+        this.#draw();
+        console.log('end linking', this.links);
+      } else {
+        console.log('start linking');
+        this.active = true;
+        this.shapes.push({ shape, type });
+      }
+    });
 
-        this.update.subscribe(shape => {
-            console.log('update links', shape.uniqueId, this.links.filter(x => x.id.includes(shape.uniqueId)));
-        });
-    }
-
-    #link() {
-        const [from, to] = this.shapes.map(v => ({
-            ...v,
-            coords: this.#editor.find(v.id, 'uniqueId').template.getBBox(),
-        }));
-        this.#createLink(from, to);
-    }
-
-    #createLink(from, to) {
-        this.links.push({
-            from: from.id,
-            to: to.id,
-            get id() {
-                return [this.from, this.to].join('-')
-            },
-            path: this.#createPath(from, to)
-        })
-    }
-
-    #draw() {
-        const childs = [...this.template.children].map(x => x.id); 
-        this.links.forEach(child => {
-            if (childs.includes(child.id)) {
-
-            } else {
-                debugger;
-                const linkTemplate = createTemplate('polyline');
-                linkTemplate.id = child.id;
-                linkTemplate.setAttribute('points', this.#createPoints(child));
-
-                linkTemplate.style.fill = 'none';
-                linkTemplate.style.stroke = 'black';
-                linkTemplate.style.strokeWidth = 3;
-
-                this.template.appendChild(linkTemplate);
-            }
-        })
-
-    }
-
-    #createPoints(link) {
-       return link.path.map(p => `${p.x},${p.y}`).join(' ')
-    }
-
-    #createPath(from, to) {
-        let start = COORDS_BY_TYPE[from.type](from.coords),
-            end = COORDS_BY_TYPE[to.type](to.coords);
-
-        return [
-            start,
-            ...this.#getAdditionalPoints(from, start, to, end),
-            end
-        ]
-    }
-
-    #getAdditionalPoints(from, start, to, end) {
-        const type = [from.type, to.type].join('-')
-
-        const config = {
-            from,
-            start,
-            to,
-            end,
-            type,
+    this.update.subscribe(shape => {
+      for (let i = 0; i < this.links.length; i++) {
+        const link = this.links[i];
+        if (link.id.includes(shape.uniqueId)) {
+          document.getElementById(link.id)?.setAttribute('points', this.#createPoints(link));
         }
+      }
+    });
+  }
 
-        switch (type) {
-            case 'e-e':
-            case 'w-w':
-                return this.#getCoordsBySameHorizontalTypes(config);
-            case 'e-w':
-            case 'w-e':
-                return this.#getCoordsByNotSameHorizontalTypes(config);
-            case 's-s':
-            case 'n-n':
-                return this.#getCoordsBySameVerticalTypes(config);
-            default:
-                return [];
-        }
+  #link() {
+    this.#createLink(this.shapes);
+  }
+
+  #createLink([from, to]) {
+    this.links.push({
+      from: from,
+      to: to,
+      get id() {
+        return [this.from.shape.uniqueId, this.to.shape.uniqueId].join('-');
+      },
+      path: () => this.#createPath(from, to)
+    });
+  }
+
+  #draw() {
+    const childs = [...this.template.children].map(x => x.id);
+    this.links.forEach(child => {
+      if (childs.includes(child.id)) {
+      } else {
+        debugger;
+        const linkTemplate = createTemplate('polyline');
+        linkTemplate.id = child.id;
+        linkTemplate.setAttribute('points', this.#createPoints(child));
+
+        linkTemplate.style.fill = 'none';
+        linkTemplate.style.stroke = 'black';
+        linkTemplate.style.strokeWidth = 3;
+
+        this.template.appendChild(linkTemplate);
+      }
+    });
+  }
+
+  #createPoints(link) {
+    return link
+      .path()
+      .map(p => `${p.x},${p.y}`)
+      .join(' ');
+  }
+
+  #createPath(from, to) {
+    let start = COORDS_BY_TYPE[from.type](from.shape.template.getBBox()),
+      end = COORDS_BY_TYPE[to.type](to.shape.template.getBBox());
+
+    return [start, ...this.#getAdditionalPoints(from, start, to, end), end];
+  }
+
+  #getAdditionalPoints(from, start, to, end) {
+    const type = [from.type, to.type].join('-');
+
+    const config = {
+      start,
+      end,
+      type
+    };
+
+    switch (type) {
+      case 'e-e':
+      case 'w-w':
+        return this.#getCoordsBySameTypes(config, 'x', 'e-e');
+      case 'e-w':
+      case 'w-e':
+        return this.#getCoordsByNotSameTypes(config, 'x', 'e-w');
+      case 's-s':
+      case 'n-n':
+        return this.#getCoordsBySameTypes(config, 'y', 's-s');
+      case 's-n':
+      case 'n-s':
+        return this.#getCoordsByNotSameTypes(config, 'y', 's-n');
+      default:
+        return [];
     }
+  }
 
-    #getCoordsBySameHorizontalTypes(config) {
-        const {start, end, type} = config
-        const NEXT_STEP = STEP * (type === 'e-e' ? 1 : -1)
-        const FN = type === 'e-e' ? Math.max : Math.min;
-        const NEXT_X = FN(start.x, end.x) + NEXT_STEP;
-        return [ {...start, x: NEXT_X}, {...end, x: NEXT_X} ];
-    }
+  /**
+   *
+   * @param config
+   * @param prop {'x' | 'y'}
+   * @param positiveType {'s-s' | 'e-e'}
+   */
+  #getCoordsBySameTypes(config, prop, positiveType) {
+    const { start, end, type } = config;
+    const NEXT_STEP = STEP * (type === positiveType ? 1 : -1);
+    const FN = type === positiveType ? Math.max : Math.min;
+    const NEXT = FN(start[prop], end[prop]) + NEXT_STEP;
+    return [
+      { ...start, [prop]: NEXT },
+      { ...end, [prop]: NEXT }
+    ];
+  }
 
-    #getCoordsByNotSameHorizontalTypes(config) {
-        const {start, from, end, to, type} = config
-        let sx, ex;
+  /**
+   *
+   * @param config
+   * @param prop {'x' | 'y'}
+   * @param positiveType {'s-n' | 'e-w'}
+   */
+  #getCoordsByNotSameTypes(config, prop, positiveType) {
+    const { start, end, type } = config;
 
-        let middleX = Math.abs(start.x - end.x) / 2;
-        let isPositive = start.x - end.x > 0;
-        let isNear = isPositive && type === 'w-e' || !isPositive && type === 'e-w';
+    let aProp = prop === 'x' ? 'y' : 'x',
+      aPositiveType = positiveType.split('-').reverse().join('-'),
+      middleDiff = (start[prop] - end[prop]) / 2,
+      middleAbs = Math.abs(middleDiff),
+      aMiddleDiff = (start[aProp] - end[aProp]) / 2,
+      aMiddleAbs = Math.abs(aMiddleDiff),
+      isPositiveDiff = middleDiff > 0,
+      aIsPositiveDiff = aMiddleDiff > 0;
 
-        if (isNear) {
-            sx = start.x + middleX * (type === 'w-e' ? -1 : 1);
-            ex = end.x + middleX * (type === 'w-e' ? 1 : -1);
-            return [ {...start, x: sx}, {...end, x: ex} ];
-        } else {
-            sx = start.x + STEP;
-            ex = end.x - STEP;
+    const isNear = (!isPositiveDiff && type === positiveType) || (isPositiveDiff && type === aPositiveType);
 
-            y = (middleY > 0 ? start.y : end.y) + (middleY > 0 ? from.coords.height : to.coords.height) / 2 + STEP; 
+    return isNear
+      ? this.#getNearCoords(start, end, prop, middleAbs, isPositiveDiff)
+      : this.#getDiffCoords(start, end, prop, aProp, aMiddleAbs, isPositiveDiff, aIsPositiveDiff);
+  }
 
-            return [
-                {...start, x: sx},
-                {x: sx, y},
-                {x: ex, y},
-                {...end, x: end.x - STEP}
-            ]
-        }
-    }
+  #getNearCoords(start, end, prop, middleAbs, isPositiveDiff) {
+    const startV = start[prop] + middleAbs * (isPositiveDiff ? -1 : 1),
+      endV = end[prop] + middleAbs * (isPositiveDiff ? 1 : -1);
+    return [
+      { ...start, [prop]: startV },
+      { ...end, [prop]: endV }
+    ];
+  }
 
-    #getCoordsBySameVerticalTypes(config) {
-        const {start, end, type} = config
-        const NEXT_STEP = STEP * (type === 'n-n' ? 1 : -1)
-        const FN = type === 'n-n' ? Math.max : Math.min;
-        const NEXT_Y = FN(start.y, end.y) + NEXT_STEP;
-        return [ {...start, y: NEXT_Y}, {...end, y: NEXT_Y} ];
-    }
+  #getDiffCoords(start, end, prop, aProp, aMiddleAbs, isPositiveDiff, aIsPositiveDiff) {
+    const startV = start[prop] + STEP * (isPositiveDiff ? 1 : -1),
+      endV = end[prop] + STEP * (isPositiveDiff ? -1 : 1);
+
+    const aStartV = start[aProp] + aMiddleAbs * (aIsPositiveDiff ? -1 : 1),
+      aEndV = end[aProp] + aMiddleAbs * (aIsPositiveDiff ? 1 : -1);
+
+    return [
+      { ...start, [prop]: startV },
+      { [aProp]: aStartV, [prop]: startV },
+      { [aProp]: aEndV, [prop]: endV },
+      { ...end, [prop]: endV }
+    ];
+  }
 }

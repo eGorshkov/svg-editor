@@ -44,7 +44,7 @@ export class Shape extends Prototype {
         this.config.x = evt.offsetX - this.dragOffsetX;
         this.config.y = evt.offsetY - this.dragOffsetY;
         this.draw(this.template, this.config);
-        globalThis.UPDATE_LINK.next(this)
+        globalThis.UPDATE_LINK.next(this);
         if (this.resizable) {
           this.resizable.hide();
         }
@@ -116,11 +116,10 @@ export class Shape extends Prototype {
     this.template.addEventListener('click', e => (this.active ? this.deactivate() : this.activate()));
     this.template.addEventListener('mouseenter', e => {
       console.log(this.uniqueId, 'shape enter link');
-      globalThis.SET_TO_LINK.next(['e', this.uniqueId]);
     });
     this.template.addEventListener('mouseout', e => {
       console.log(this.uniqueId, 'shape out link');
-    })
+    });
   }
 
   #create(toolType, config) {

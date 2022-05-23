@@ -28,17 +28,7 @@
 
 export const MOCK_DEFAULT_LAYERS = {
   layers: [
-    {
-      "order":0,
-      "items":[
-        {"order":0,"type":"square","config":{"width":80,"height":80,"x":84,"y":95.5}}
-      ]
-    },
-    {
-      "order":1,
-      "items":[
-        {"order":0,"type":"square","config":{"width":80,"height":80,"x":254.5,"y":217.5}}
-      ]
-    }
+    { order: 0, items: [{ order: 0, type: 'square', config: { width: 80, height: 80, x: 84, y: 95.5 } }] },
+    { order: 1, items: [{ order: 0, type: 'square', config: { width: 80, height: 80, x: 249.5, y: 98.5 } }] }
   ]
 };
