@@ -1,34 +1,32 @@
-import { map } from '../../helpers/custom-rx/map.js';
-import { RESIZABLE_CONTAINER_ID } from '../../helpers/resizable/resizable.js';
+import LayerItem from './layer-item.js';
 
 export class LayerTool {
   /**
    * @type {IEditor}
    */
   #editor = null;
+
+  get editor() {
+    return this.#editor;
+  }
+
   #isOpen = false;
   #TOOL_NAME = 'layer-tool';
+  #mapper = new Map();
   #mapperSelector = new Map();
+  #prevMapperSelector = new Map();
+  #items = new Map();
   /**
    *
    * @type {HTMLElement}
    */
   template = document.createElement('aside');
 
-  #bindedDragstart = this.#dragstartHandler.bind(this);
-  #bindedDragleave = this.#dragleaveHandler.bind(this);
-  #bindedDragover = this.#dragoverHandler.bind(this);
-  #bindedDrop = this.#dropHandler.bind(this);
-
   constructor(editor) {
     this.#init();
     this.#editor = editor;
-    this.#editor.onChange
-    .pipe(
-      map(({added = [], removed = []} = {}) => Boolean([...added, ...removed].filter(x => x.id !== RESIZABLE_CONTAINER_ID).length))
-    )
-    .subscribe((isChanged) => {
-      isChanged && this.#isOpen && this.draw();
+    this.editor.onChange.subscribe(changes => {
+      changes && this.#isOpen && this.draw();
     });
   }
 
@@ -45,119 +43,52 @@ export class LayerTool {
     }
 
     if (this.#isOpen) {
-      const mapper = new Map();
-      this.#editor.items.forEach(item => {
-        const detailsEl = document.createElement('details');
-        this.#mapperSelector.get(item.layerId) && detailsEl.setAttribute('open', '');
-        const summaryEl = document.createElement('summary');
-        summaryEl.style.listStyle = 'none';
-        summaryEl.addEventListener('click', () =>
-          this.#mapperSelector.set(item.layerId, !this.#mapperSelector.get(item.layerId))
-        );
+      this.#prevMapperSelector = new Map([...this.#mapperSelector.entries()]);
+      this.#mapperSelector.clear();
+      this.#mapper.clear();
 
-        summaryEl.appendChild(this.#createItemTemplate(item, 'layer'));
-        detailsEl.appendChild(summaryEl);
-        item.shapes
-          ?.sort((a, b) => a.order - b.order)
-          .forEach((shape, i) => detailsEl.appendChild(this.#createItemTemplate(shape, 'shape')));
+      this.editor.items.forEach(item => this.#createLayerList(item));
+      [...this.#mapper.entries()].sort().forEach(([_, t]) => this.template.appendChild(t));
+    }
+  }
 
-        mapper.set(item.order, detailsEl);
-        this.#mapperSelector.set(item.layerId, this.#mapperSelector.get(item.layerId) || false);
+  #createLayerList(item) {
+    const detailsEl = document.createElement('details');
+    this.#prevMapperSelector.get(item.uniqueId) && detailsEl.setAttribute('open', '');
+    const summaryEl = document.createElement('summary');
+    summaryEl.style.listStyle = 'none';
+
+    let timeout = null;
+    const el = this.#createItemTemplate(item);
+    el.addEventListener('click', ev => {
+      if (timeout) clearTimeout(timeout);
+      timeout = setTimeout(() => {
+        if (ev.detail === 1) {
+          detailsEl.open = !this.#mapperSelector.get(item.uniqueId);
+          this.#mapperSelector.set(item.uniqueId, !this.#mapperSelector.get(item.uniqueId));
+        }
+      }, 200);
+    });
+
+    summaryEl.appendChild(el);
+    detailsEl.appendChild(summaryEl);
+
+    item.items
+      ?.sort((a, b) => a.order - b.order)
+      .forEach(child => {
+        const childEl = child.__type === 'layer' ? this.#createLayerList(child) : this.#createItemTemplate(child);
+        detailsEl.appendChild(childEl);
       });
-      [...mapper.entries()].sort().forEach(([_, t]) => this.template.appendChild(t));
-    }
-  }
 
-  /**
-   *
-   * @param {DragEvent} ev
-   */
-  #dragstartHandler(ev) {
-    ev.dataTransfer.dropEffect = 'copy';
-    const [layerOrder, shapeOrder] = ev.target.getAttribute('order').split('-');
-    ev.dataTransfer.setData(
-      'text/plain',
-      JSON.stringify({
-        type: ev.target.getAttribute('type'),
-        layerOrder,
-        shapeOrder
-      })
-    );
-  }
+    if (item.level === 1) this.#mapper.set(item.order, detailsEl);
+    this.#mapperSelector.set(item.uniqueId, this.#prevMapperSelector.get(item.uniqueId) || false);
 
-  /**
-   *
-   * @param {DragEvent} ev
-   */
-  #dragoverHandler(ev) {
-    ev.preventDefault();
-    ev.dataTransfer.dropEffect = 'move';
-    ev.target.style.border = '1px solid tomato';
-  }
-
-  /**
-   *
-   * @param {DragEvent} ev
-   */
-  #dragleaveHandler(ev) {
-    ev.preventDefault();
-    ev.target.style.border = '1px dashed rgb(0 0 0 / 30%)';
-  }
-
-  /**
-   *
-   * @param {DragEvent} ev
-   */
-  #dropHandler(ev) {
-    ev.preventDefault();
-    const targetType = ev.target.getAttribute('type');
-    const [targetLayerOrder, targetShapeOrder] = ev.target.getAttribute('order').split('-');
-
-    const source = JSON.parse(ev.dataTransfer.getData('text/plain'));
-
-    if (source.type === 'layer') this.#editor.replaceOrder(+source.layerOrder, +targetLayerOrder);
-    else if (source.type === 'shape')
-      this.#shapeToShape(+source.layerOrder, +source.shapeOrder, +targetLayerOrder, +targetShapeOrder);
-
-    this.draw();
-  }
-
-  #shapeToShape(sourceLayerOrder, sourceShapeOrder, targetLayerOrder, targetShapeOrder) {
-    console.log(sourceLayerOrder, sourceShapeOrder, targetLayerOrder, targetShapeOrder);
-    if (sourceLayerOrder === targetLayerOrder) {
-      const LAYER = this.#editor.items.find(x => x.order === sourceLayerOrder);
-      LAYER.replaceOrder(sourceShapeOrder, targetShapeOrder);
-    } else {
-      const SOURCE_LAYER = this.#editor.items.find(x => x.order === sourceLayerOrder);
-      const TARGET_LAYER = this.#editor.items.find(x => x.order === targetLayerOrder);
-
-      const SOURCE_SHAPE = SOURCE_LAYER.shapes.find(x => x.order === sourceShapeOrder);
-
-      TARGET_LAYER.add(SOURCE_SHAPE.type, SOURCE_SHAPE.config);
-      Number.isInteger(targetShapeOrder) && TARGET_LAYER.replaceOrder(TARGET_LAYER.shapes.length - 1, targetShapeOrder);
-
-      SOURCE_SHAPE.kill();
-
-      if (!SOURCE_LAYER.shapes.length) {
-        SOURCE_LAYER.kill();
-        this.#mapperSelector.delete(SOURCE_LAYER.layerId);
-      }
-    }
+    return detailsEl;
   }
 
   #init() {
-    this.template.classList.add('editor__tools');
-    this.template.style.position = 'absolute';
-    this.template.style.backgroundColor = '#fff';
-    this.template.style.boxShadow = '0 0 2px rgb(0 0 0 / 30%)';
-    this.template.style.width = '200px';
-    this.template.style.top = '100%';
-    this.template.style.left = '100%';
-    this.template.style.transform = 'translate(-100%, -100%)';
-    this.template.style.border = '1px dashed rgb(0 0 0 / 30%)';
-    this.template.style.padding = '24px';
+    this.template.classList.add('editor__tool', 'layer-tool-container');
     this.template.style.visibility = 'hidden';
-    this.template.style.zIndex = 1;
   }
 
   /**
@@ -166,49 +97,22 @@ export class LayerTool {
    * @returns
    */
   #createItemTemplate(item) {
-    const itemTemplate = document.createElement('div');
-    itemTemplate.style.height = '50px';
-    itemTemplate.style.border = '1px dashed';
-    itemTemplate.setAttribute('draggable', 'true');
-    itemTemplate.setAttribute('type', item.__type);
+    this.#items.set(item.uniqueId, new LayerItem(item, this));
+    if (item.active) {
+      this.#items.get(item.uniqueId)?.template.classList.add('layer-tool-item__active');
+      let p = item.parent;
 
-    itemTemplate.addEventListener('dragstart', this.#bindedDragstart);
-    itemTemplate.addEventListener('dragover', this.#bindedDragover);
-    itemTemplate.addEventListener('dragleave', this.#bindedDragleave);
-    itemTemplate.addEventListener('drop', this.#bindedDrop);
-    return item.__type === 'layer' ? this.#setLayer(item, itemTemplate) : this.#setShape(item, itemTemplate);
+      while (!p.isEditor) {
+        this.#items.get(p.uniqueId)?.template.classList.add('layer-tool-item__active-parent');
+        p = p.parent;
+      }
+    }
+
+    return this.#items.get(item.uniqueId)?.template;
   }
 
-  /**
-   *
-   * @param {ILayer} item
-   * @param {HTMLElement} itemTemplate
-   * @returns
-   */
-  #setLayer(item, itemTemplate) {
-    itemTemplate.innerText = item.layerId + ' order:' + item.order;
-    itemTemplate.setAttribute('order', item.order);
-    return itemTemplate;
-  }
-
-  /**
-   *
-   * @param {IShape} item
-   * @param {HTMLElement} itemTemplate
-   * @returns
-   */
-  #setShape(item, itemTemplate) {
-    itemTemplate.style.width = '90%';
-    itemTemplate.style.marginLeft = 'auto';
-    itemTemplate.innerText = item.shapeId + ' order:' + item.fullOrder;
-    itemTemplate.setAttribute('order', item.fullOrder);
-    return itemTemplate;
-  }
-
-  #removeItemTemplate(child) {
-    child.removeEventListener('dragstart', this.#bindedDragstart);
-    child.removeEventListener('dragover', this.#bindedDragover);
-    child.removeEventListener('drop', this.#bindedDrop);
-    this.template.removeChild(child);
+  #removeItemTemplate(item) {
+    this.#items.get(item.uniqueId)?.kill();
+    this.template.removeChild(item);
   }
 }

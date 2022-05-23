@@ -92,12 +92,13 @@ function createUI([main, containers, tools]) {
 }
 
 function createTemplates(editor) {
-  globalThis.SETTINGS_TOOL_SUBJECT = new Subject(null, false);
-  globalThis.ACTIVE_ITEM_SUBJECT = new Subject(null, false);
+  globalThis.EDITOR = editor;
   return [createMain(), createContainers(editor), createTools(editor)];
 }
 
 function createEditor(config) {
+  globalThis.SETTINGS_TOOL_SUBJECT = new Subject(null, false);
+  globalThis.ACTIVE_ITEM_SUBJECT = new Subject(null, false);
   return new Editor(config);
 }
 

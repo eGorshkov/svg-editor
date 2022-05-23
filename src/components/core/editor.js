@@ -3,15 +3,21 @@ import { Core } from './core.js';
 import { RESIZABLE_POINT_ATTRIBUTE } from '../helpers/resizable/resizable.js';
 import { Subject } from '../helpers/custom-rx/subject.js';
 
+/**
+ * @implements {IEditor}
+ */
 export class Editor extends Core {
   __type = 'editor';
   #EDITOR_TEMPLATE_ID = 'editor-template';
+
+  onChange = new Subject(null, false);
 
   get configuration() {
     return {
       items: this.items,
       layers: this.items.map(layer => ({
-        items: layer.items.map(shape => ({ type: shape.type, config: shape.config }))
+        order: layer.order,
+        items: layer.items.map(shape => ({ order: shape.order, type: shape.type, config: shape.config }))
       })),
       toJson() {
         return JSON.stringify(this.layers);
@@ -19,13 +25,13 @@ export class Editor extends Core {
     };
   }
 
-  onChange = new Subject(null, false);
-
   constructor(config) {
-    super('svg', config?.layers.sort((a, b) => a.order - b.order ? 1 : -1));
+    super('svg');
+
     this.template.setAttribute('id', this.#EDITOR_TEMPLATE_ID);
     this.#setListener();
     this.#initObserver();
+    if (config?.layers?.length) this.load(config?.layers.sort((a, b) => (a.order - b.order ? 1 : -1)));
   }
 
   /**
@@ -35,30 +41,39 @@ export class Editor extends Core {
    * @returns {Layer}
    */
   create(layer) {
-    this.updateCoreId();
-    const _layer = new Layer(this.coreId, layer?.items, {
-      x: this.template.clientWidth / 2,
-      y: this.template.clientHeight / 2
-    }, layer?.order || this.items.length);
-    _layer.editor = this;
-    return _layer;
+    return new Layer(
+      layer?.items,
+      {
+        x: this.template.clientWidth / 2,
+        y: this.template.clientHeight / 2
+      },
+      layer?.order || this.items.length
+    );
   }
 
   #setListener() {
-    document.addEventListener(
+    this.template.addEventListener(
       'click',
       evt => {
         if (evt.target.hasAttribute(RESIZABLE_POINT_ATTRIBUTE)) {
           return;
         }
         const active = globalThis.ACTIVE_ITEM_SUBJECT.getValue();
-        if (active && evt.target !== active?.template) {
+
+        if (this.#isActiveLayer(active, evt.target) || this.#isActiveShape(active, evt.target)) {
+          evt.preventDefault();
+          evt.stopPropagation();
+          return;
+        }
+
+        if (active) {
           active.deactivate();
           globalThis.SETTINGS_TOOL_SUBJECT.next();
         }
       },
       true
     );
+    
     document.addEventListener(
       'keydown',
       evt => {
@@ -67,20 +82,25 @@ export class Editor extends Core {
           switch (evt.key) {
             case 'Escape':
               active?.deactivate();
-              globalThis.SETTINGS_TOOL_SUBJECT.next();
               break;
             case 'Delete':
-              active?.kill();
-              if (!active?.layer.shapes.length) active?.layer?.kill();
-              globalThis.SETTINGS_TOOL_SUBJECT.next();
+              active?.isLayer ? active?.killAll() : active?.kill();
               break;
             default:
               break;
           }
-        };
+        }
       },
       true
     );
+  }
+
+  #isActiveLayer(active, target) {
+    return active?.isLayer && target.id !== this.#EDITOR_TEMPLATE_ID && active.find(target.id, 'uniqueId');
+  }
+
+  #isActiveShape(active, target) {
+    return active?.isShape && target.id === active.id;
   }
 
   #initObserver() {
@@ -95,9 +115,8 @@ export class Editor extends Core {
         removed = [...removed, ...entry.removedNodes];
       });
 
-      if(added.length || removed.length) this.onChange.next({added, removed});
-      
+      if (added.length || removed.length) this.onChange.next({ added, removed });
     });
-    observer.observe(this.template, {subtree: true, childList: true});
+    observer.observe(this.template, { subtree: true, childList: true });
   }
 }
