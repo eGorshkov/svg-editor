@@ -1,4 +1,4 @@
-export function compose(...functions) {
+export default function compose(...functions) {
   if (!functions) {
     return x => x;
   }
@@ -7,5 +7,9 @@ export function compose(...functions) {
     return functions[0];
   }
 
-  return functions.reduce((a, b) => (...args) => b(a(...args)));
+  return functions.reduce(
+    (a, b) =>
+      (...args) =>
+        b(a(...args))
+  );
 }

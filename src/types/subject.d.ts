@@ -1,9 +1,10 @@
-export interface ISubject {
-  value: any;
+export declare interface ISubject<V = any> {
+  value: V;
   subscribeFunctions: Function[];
+  subscribeCount: number;
   next(...args): any;
   subscribe(...args): any;
   pipe(...args): any;
   bind(...args): Function;
-  getValue(): any;
+  getValue(): V;
 }
