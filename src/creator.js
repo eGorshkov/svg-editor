@@ -99,6 +99,8 @@ function createTemplates(editor) {
 function createEditor(config) {
   globalThis.SETTINGS_TOOL_SUBJECT = new Subject(null, false);
   globalThis.ACTIVE_ITEM_SUBJECT = new Subject(null, false);
+  globalThis.SET_TO_LINK = new Subject(null, false);
+  globalThis.UPDATE_LINK = new Subject(null, false);
   return new Editor(config);
 }
 
