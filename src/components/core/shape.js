@@ -110,18 +110,6 @@ export class Shape extends Prototype {
     this.parent.killChild(this);
   }
 
-  kill() {
-    this.deactivate();
-    this.layer.killChild(this, 'shapeId');
-  }
-
-  setDraggable() {
-    this.removeDraggable();
-
-    this.template.style.cursor = 'grab';
-    this.template.addEventListener('mousedown', this.listener.start, true);
-  }
-
   #resizeSubscribeFn([pointId, event]) {
     this.resize(this, pointId, event);
     this.draw(this.template, this.config);
