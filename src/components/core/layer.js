@@ -23,21 +23,17 @@ export class Layer extends Core {
    * @returns {Shape | Layer}
    */
   create(item) {
-    if (this.#isShape(item)) {
-      return new Shape(item, { ...this.defaultShapeConfig, ...item?.config }, item?.order || this.items.length);
+    if ('items' in item) {
+      return new Layer(
+        item?.items,
+        {
+          x: this.template.clientWidth / 2,
+          y: this.template.clientHeight / 2
+        },
+        item?.order || this.items.length
+      );
     }
 
-    return new Layer(
-      item?.items,
-      {
-        x: this.template.clientWidth / 2,
-        y: this.template.clientHeight / 2
-      },
-      item?.order || this.items.length
-    );
-  }
-
-  #isShape(item) {
-    return 'config' in item;
+    return new Shape(item, { ...this.defaultShapeConfig, ...item?.config }, item?.order || this.items.length);
   }
 }
