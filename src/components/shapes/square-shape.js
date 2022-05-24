@@ -1,5 +1,6 @@
 import { ShapeCreator } from '../helpers/shape-creator.js';
-import { Resizer } from '../helpers/resizable/resizer.js';
+import Resizer from '../helpers/resizable/resizer.js';
+import Linker from '../helpers/linker/linker.js';
 import {
   defaultStrokeSetting,
   defaultFillSetting,
@@ -26,6 +27,10 @@ export function squareDraw(template, config) {
  */
 export function squareResize(shapeCtx, pointId, event) {
   Resizer.defaultStrategy(shapeCtx.config, shapeCtx.resizable.points[pointId], pointId);
+}
+
+export function squareLinking(shapeCtx) {
+  return Linker.defaultStrategy(shapeCtx, ['n', 'e', 's', 'w']);
 }
 
 /**
@@ -55,5 +60,5 @@ export function squareSetting(shapeCtx) {
 }
 
 export function SquareShape(config) {
-  return ShapeCreator('rect', config, squareDraw, squareResize, squareSetting);
+  return ShapeCreator('rect', config, squareDraw, squareResize, squareSetting, squareLinking);
 }

@@ -1,13 +1,16 @@
 import { ShapeCreator } from '../helpers/shape-creator.js';
-import { Resizer } from '../helpers/resizable/resizer.js';
+import Resizer from '../helpers/resizable/resizer.js';
 import {
   defaultFillSetting,
   defaultStrokeSetting,
   InputAsNumberChange
 } from '../helpers/settings-callback-functions.js';
+import Linker from '../helpers/linker/linker.js';
 
 export function triangleDraw(template, config) {
   template.style.transform = `translate(${config.x}px, ${config.y}px)`;
+  template.setAttributeNS(null, 'x', config.x);
+  template.setAttributeNS(null, 'y', config.y);
   template.setAttributeNS(null, 'points', `0,${config.height} ${config.width / 2},0 ${config.width},${config.height}`);
 }
 
@@ -46,6 +49,15 @@ export function triangleSetting(shapeCtx) {
   ];
 }
 
+/**
+ * 
+ * @param shapeCtx { IShape }
+ * @returns 
+ */
+function triangleLinking(shapeCtx) {
+  return Linker.defaultStrategy(shapeCtx, ['n', 'se', 'sw']);
+}
+
 export function TriangleShape(config) {
-  return ShapeCreator('polygon', config, triangleDraw, triangleResize, triangleSetting);
+  return ShapeCreator('polygon', config, triangleDraw, triangleResize, triangleSetting, triangleLinking);
 }

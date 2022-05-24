@@ -162,4 +162,14 @@ export default class Prototype {
     this.parent.reorder();
     this.removeSettings();
   }
+
+  getEditor() {
+    let p = this.parent;
+
+    while (!p.isEditor) {
+      p = p.parent;
+    }
+
+    return p;
+  }
 }

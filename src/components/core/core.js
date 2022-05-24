@@ -56,6 +56,10 @@ export class Core extends Prototype {
     return this.#coreConfig;
   }
 
+  get last() {
+    return this.items[this.items.length - 1];
+  }
+
   constructor(elementName) {
     super(createTemplate(elementName));
   }

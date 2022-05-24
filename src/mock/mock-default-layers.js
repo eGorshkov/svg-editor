@@ -25,10 +25,6 @@
 //     { order: 4, items: [{ order: 0, type: 'line', config: { width: 80, height: 80, x: 386, y: 115.5 } }] }
 //   ]
 // };
-
 export const MOCK_DEFAULT_LAYERS = {
-  layers: [
-    { order: 0, items: [{ order: 0, type: 'square', config: { width: 80, height: 80, x: 84, y: 95.5 } }] },
-    { order: 1, items: [{ order: 0, type: 'square', config: { width: 80, height: 80, x: 249.5, y: 98.5 } }] }
-  ]
+  layers: [{"order":0,"items":[{"order":0,"type":"square","config":{"width":80,"height":80,"x":658.5,"y":364.5}}]},{"order":1,"items":[{"order":0,"type":"square","config":{"width":80,"height":80,"x":784.5,"y":500}}]},{"order":2,"items":[{"order":0,"type":"square","config":{"width":80,"height":80,"x":535.5,"y":501}}]},{"order":3,"items":[{"order":0,"type":"square","config":{"width":80,"height":80,"x":784.5,"y":258.5}}]},{"order":4,"items":[{"order":0,"type":"square","config":{"width":80,"height":80,"x":535.5,"y":257.5}}]}]
 };

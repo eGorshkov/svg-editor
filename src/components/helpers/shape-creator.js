@@ -9,22 +9,24 @@ export function createTemplate(elementName) {
  * @param {(template, config) => void} drawCallback 
  * @param {(shapeCtx, pointId, event) => void} resizeCallback 
  * @param {(shapeCtx) => ISetting[]} settingCallback 
+ * @param {() => any} linkingCallback 
  * @returns {[
  *  HTMLElement,
  *  IShapeConfig,
  * (template, config) => void,
  * (shapeCtx, pointId, event) => void,
- * (shapeCtx) => ISetting[]
+ * (shapeCtx) => ISetting[],
+ * () => any
  *  ]}
  */
-export function ShapeCreator(elementName, config, drawCallback, resizeCallback, settingCallback) {
+export function ShapeCreator(elementName, config, drawCallback, resizeCallback, settingCallback, linkingCallback) {
   const template = createTemplate(elementName);
   template.setAttributeNS(null, 'width', config.width ?? 80);
   template.setAttributeNS(null, 'height', config.height ?? 80);
   template.setAttributeNS(null, 'cursor', config.cursor ?? 'default');
   template.setAttributeNS(null, 'fill', config.fill ?? 'rgb(255, 255, 255)');
   template.setAttributeNS(null, 'stroke', config.stroke ?? 'rgb(0, 0, 0)');
-  return [template, config, drawCallback || defaultDraw, resizeCallback || defaultResize, settingCallback || null];
+  return [template, config, drawCallback || defaultDraw, resizeCallback || defaultResize, settingCallback || null, linkingCallback || null];
 }
 
 /**

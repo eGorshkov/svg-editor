@@ -1,10 +1,11 @@
 import { ShapeCreator } from '../helpers/shape-creator.js';
-import { Resizer } from '../helpers/resizable/resizer.js';
+import Resizer from '../helpers/resizable/resizer.js';
 import {
   defaultFillSetting,
   defaultStrokeSetting,
   InputAsNumberChange
 } from '../helpers/settings-callback-functions.js';
+import Linker from '../helpers/linker/linker.js';
 
 export function circleDraw(template, config) {
   template.setAttributeNS(null, 'cx', config.x);
@@ -42,6 +43,10 @@ export function circleSetting(shapeCtx) {
   ];
 }
 
+export function circleLinking(shapeCtx) {
+  return Linker.defaultStrategy(shapeCtx, ['n', 'e', 's', 'w']);
+}
+
 export function CircleShape(config) {
-  return ShapeCreator('circle', config, circleDraw, circleResize, circleSetting);
+  return ShapeCreator('circle', config, circleDraw, circleResize, circleSetting, circleLinking);
 }

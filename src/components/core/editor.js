@@ -2,7 +2,6 @@ import { Layer } from './layer.js';
 import { Core } from './core.js';
 import { RESIZABLE_POINT_ATTRIBUTE } from '../helpers/resizable/resizable.js';
 import { Subject } from '../helpers/custom-rx/subject.js';
-import Linker from './linker.js';
 
 /**
  * @implements {IEditor}
@@ -10,7 +9,6 @@ import Linker from './linker.js';
 export class Editor extends Core {
   __type = 'editor';
   #EDITOR_TEMPLATE_ID = 'editor-template';
-  #linker = null;
 
   onChange = new Subject(null, false);
 
@@ -34,8 +32,6 @@ export class Editor extends Core {
     this.#setListener();
     this.#initObserver();
     if (config?.layers?.length) this.load(config?.layers.sort((a, b) => (a.order - b.order ? 1 : -1)));
-
-    this.#linker = new Linker(this);
   }
 
   /**
