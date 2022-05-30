@@ -40,28 +40,28 @@ const COORDS_BY_TYPE = {
 
 const COORDS_BY_TYPE_WITH_STEP = {
   e: coords => ({
-        x: coords.x + coords.width + STEP,
-        y: coords.y + coords.height / 2
+    x: coords.x + coords.width + STEP,
+    y: coords.y + coords.height / 2
   }),
   w: coords => ({
-        x: coords.x - STEP,
-        y: coords.y + coords.height / 2
+    x: coords.x - STEP,
+    y: coords.y + coords.height / 2
   }),
   s: coords => ({
-        x: coords.x + coords.width / 2,
-        y: coords.y + coords.height + STEP
+    x: coords.x + coords.width / 2,
+    y: coords.y + coords.height + STEP
   }),
   n: coords => ({
-        x: coords.x + coords.width / 2,
-        y: coords.y - STEP
+    x: coords.x + coords.width / 2,
+    y: coords.y - STEP
   }),
   ne: coords => ({
     x: coords.x + coords.width + STEP,
     y: coords.y
   }),
   nw: coords => ({
-        x: coords.x,
-        y: coords.y
+    x: coords.x,
+    y: coords.y
   }),
   se: coords => ({
     x: coords.x + coords.width + STEP,
@@ -78,7 +78,7 @@ const COORDS_BY_TYPE_WITH_STEP = {
       ...getter.apply(this, args)
     };
   }
-}
+};
 
 const GET_POINT = {
   vertical: {
@@ -86,39 +86,51 @@ const GET_POINT = {
       return isUpper ? 's' : 'n';
     },
     near(start, end) {
-      return [{ x: end.x,  y: start.y}]
+      return [{ x: end.x, y: start.y }];
     },
     away(start, end, isLeft, isUpper) {
       const halfWidth = end.width / 2;
       const startWidth = start.width * (isLeft ? 1 : -1);
-  
+
       if (between(start.x + startWidth, end.x - end.width, end.x + end.width)) {
         const x = isLeft ? end.x - halfWidth - STEP : end.x + halfWidth + STEP;
-        return [ { x, y: start.y }, { x, y: end.y }];
+        return [
+          { x, y: start.y },
+          { x, y: end.y }
+        ];
       }
-      
-      const x = start.x - (start.x - end.x) / 2
-      return [ { x,  y: start.y}, { x,  y: end.y}];
-    },
+
+      const x = start.x - (start.x - end.x) / 2;
+      return [
+        { x, y: start.y },
+        { x, y: end.y }
+      ];
+    }
   },
   horizontal: {
     findAwayPoint(isLeft, isUpper) {
       return isLeft ? 'e' : 'w';
     },
     near(start, end) {
-      return [{ x: start.x,  y: end.y}]
+      return [{ x: start.x, y: end.y }];
     },
     away(start, end, isLeft, isUpper) {
       const halfHeight = end.height / 2;
       const startHeight = start.height * (isUpper ? 1 : -1);
-  
+
       if (between(start.y + startHeight, end.y - end.height, end.y + end.height)) {
         const y = isUpper ? end.y - halfHeight - STEP : end.y + halfHeight + STEP;
-        return [ { x: start.x, y }, { x: end.x, y }];
+        return [
+          { x: start.x, y },
+          { x: end.x, y }
+        ];
       }
-  
+
       const y = start.y - (start.y - end.y) / 2;
-      return [{ x: start.x, y }, { x: end.x, y}];
+      return [
+        { x: start.x, y },
+        { x: end.x, y }
+      ];
     }
   },
   get(startProp, endProp, start, end, isLeft, isUpper) {
@@ -126,7 +138,7 @@ const GET_POINT = {
     const fn = strategy.findAwayPoint(isLeft, isUpper).includes(endProp) ? strategy.away : strategy.near;
     return fn(start, end, isLeft, isUpper);
   }
-}
+};
 
 function isHorizontalType(type) {
   return ['w', 'sw', 'nw', 'e', 'se', 'sw'].includes(type);
@@ -137,14 +149,14 @@ function getter(type, coords, isCircle) {
   coords = {
     ...coords,
     height: isCircle ? coords.width : coords.height
-  }
+  };
   const config = this[type](coords);
   return isCircle
-  ? {
-      x: config.x - coords.width / 2,
-      y: config.y - coords.width / 2
-    }
-  : config;
+    ? {
+        x: config.x - coords.width / 2,
+        y: config.y - coords.width / 2
+      }
+    : config;
 }
 
 function getAdditionalPoints(startProp, endProp, start, end) {
@@ -152,10 +164,7 @@ function getAdditionalPoints(startProp, endProp, start, end) {
 }
 
 function getCoords(type, coords, isCircle) {
-    return [
-        COORDS_BY_TYPE.get(...arguments),
-        COORDS_BY_TYPE_WITH_STEP.get(...arguments),
-    ]
+  return [COORDS_BY_TYPE.get(...arguments), COORDS_BY_TYPE_WITH_STEP.get(...arguments)];
 }
 
 function defaultStrategy(shapeCtx, types) {
@@ -165,18 +174,18 @@ function defaultStrategy(shapeCtx, types) {
     .map((_, i) => {
       const [template] = ShapeCreator('circle', {}),
         type = types[i],
-        point = points[type] = COORDS_BY_TYPE.get(type, shapeCtx.config, shapeCtx.type === 'circle')
+        point = (points[type] = COORDS_BY_TYPE.get(type, shapeCtx.config, shapeCtx.type === 'circle'));
 
       template.setAttributeNS(null, 'cx', point.x);
       template.setAttributeNS(null, 'cy', point.y);
       template.setAttributeNS(null, 'r', CIRCLE_WIDTH / 2);
       template.setAttributeNS(null, 'width', CIRCLE_WIDTH);
-      template.setAttribute('type', type)
+      template.setAttribute('type', type);
 
       template.style.cursor = 'pointer';
 
-      template.addEventListener('mouseenter', () => template.style.visibility = 'visible');
-      template.addEventListener('mouseout', () => template.style.visibility = 'hidden');
+      template.addEventListener('mouseenter', () => (template.style.visibility = 'visible'));
+      template.addEventListener('mouseout', () => (template.style.visibility = 'hidden'));
       template.addEventListener('click', () => shapeCtx.setLink(type, point));
 
       return template;
@@ -201,7 +210,7 @@ function defaultStrategy(shapeCtx, types) {
       return {
         points: this.points[type],
         template: this.templates.find(t => t.getAttribute('type', type) === type)
-      }
+      };
     },
     show() {
       this.templates.forEach(x => (x.style.visibility = 'visible'));
@@ -213,9 +222,9 @@ function defaultStrategy(shapeCtx, types) {
 }
 
 const Linker = {
-    getCoords,
-    getAdditionalPoints,
-    defaultStrategy
-}
+  getCoords,
+  getAdditionalPoints,
+  defaultStrategy
+};
 
 export default Linker;

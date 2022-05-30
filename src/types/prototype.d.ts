@@ -1,6 +1,8 @@
-import { IShapeConfig } from './shape';
+import { IShape, IShapeConfig } from './shape';
 import { IResizable } from './resizable';
 import { ISetting } from './setting';
+import { Base } from './base';
+import { IEditor } from './editor';
 
 export declare interface IPrototype<T = string> {
   __type: T;
@@ -31,7 +33,7 @@ export declare interface IPrototype<T = string> {
 
   config: IShapeConfig;
 
-  parent: IPrototype;
+  parent: Base;
   fullOrder: string;
   level: number;
   orders: number[];
@@ -43,6 +45,11 @@ export declare interface IPrototype<T = string> {
    * Класс изменения размера фигуры
    */
   resizable: IResizable | null;
+
+  links: {
+    from: IShape[];
+    to: IShape[];
+  }
 
   kill(): void;
 
@@ -61,4 +68,8 @@ export declare interface IPrototype<T = string> {
   setResizable(subscribeFn, config: IShapeConfig): void;
 
   removeResizable(): void;
+
+  getEditor(): IEditor;
+
+  getFullPath(prop: keyof typeof IPrototype): any[];
 }

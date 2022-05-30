@@ -6,7 +6,7 @@ export default class ShapeSettings extends PrototypeSettings {
   }
 
   createInformationBlock() {
-    return [...super.createInformationBlock(), this.#createLinksList()];
+    return [...super.createInformationBlock(), this.#createLinksList()].filter(Boolean);
   }
 
   getLabelElement() {
@@ -14,35 +14,53 @@ export default class ShapeSettings extends PrototypeSettings {
     return super.getLabelElement(`Type: ${type.toCapitalizeCase()} | Order: ${order}`);
   }
 
-  #createLinksList() {
-    const list = document.createElement('div');
+  #setSubItem(link, type) {
+    const { linkShape, toType, toShape, fromType, fromShape } = link;
+    const linkWith = type === 'from' ? toShape : fromShape;
 
-    const setSubItem = (link, type) => {
-      const { linkShape, toType, toShape, fromType, fromShape } = link;
-      const linkWith = type === 'from' ? toShape : fromShape;
+    const el = document.createElement('div');
+    const removeBtn = document.createElement('button');
+    const linkShapeLink = this.linkBtn(linkShape.uniqueId);
+    const linkWithLink = this.linkBtn(linkWith.uniqueId);
 
-      const el = document.createElement('div');
-      const removeBtn = document.createElement('button');
-      const linkShapeLink = this.linkBtn(linkShape.uniqueId);
-      const linkWithLink = this.linkBtn(linkWith.uniqueId);
-
-      removeBtn.innerText = 'Remove';
-      removeBtn.addEventListener('click', () => globalThis.LINK_STORE.removeLinkById(linkShape.uniqueId));
-
-      el.append('Link ');
-      el.appendChild(linkShapeLink);
-      el.append(type === 'from' ? ': To ' : ': From ');
-      el.append(` ${fromType}-${toType} link`);
-      el.appendChild(removeBtn);
-
-      return el;
+    removeBtn.innerText = 'Remove';
+    const remove = () => {
+      globalThis.LINK_STORE.removeLinkById(linkShape.uniqueId);
+      removeBtn.removeEventListener('click', remove);
+      el.parentElement.removeChild(el);
     };
+    removeBtn.addEventListener('click', remove);
+    removeBtn.style.marginLeft = 'auto';
 
-    globalThis.LINK_STORE.getByShapeId(this.item.uniqueId, 'from').forEach(x =>
-      list.appendChild(setSubItem(x, 'from'))
+    el.style.display = 'flex';
+    el.append(`${fromType}-${toType} link (`);
+    el.appendChild(linkShapeLink);
+    el.append(') ' + (type === 'from' ? 'to' : 'from') + ' shape (');
+    el.appendChild(linkWithLink);
+    el.append(')');
+    el.appendChild(removeBtn);
+
+    return el;
+  }
+
+  #createLinksList() {
+    if (this.item.links.from.length + this.item.links.to.length === 0) return null;
+
+    const list = document.createElement('div'),
+      title = document.createElement('div');
+    list.style.padding = '10px';
+    list.style.margin = '10px 0';
+    list.style.border = '1px solid';
+    list.style.borderRadius = '8px';
+
+    title.innerText = 'Links';
+
+    list.appendChild(title);
+    ['from', 'to'].forEach(type =>
+      globalThis.LINK_STORE.getByShapeId(this.item.uniqueId, type).forEach(x =>
+        list.appendChild(this.#setSubItem(x, type))
+      )
     );
-
-    globalThis.LINK_STORE.getByShapeId(this.item.uniqueId, 'to').forEach(x => list.appendChild(setSubItem(x, 'to')));
 
     return list;
   }

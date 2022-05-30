@@ -73,7 +73,7 @@ export class Editor extends Core {
       },
       true
     );
-    
+
     document.addEventListener(
       'keydown',
       evt => {

@@ -35,7 +35,7 @@ export class Shape extends Prototype {
   links = {
     to: [],
     from: []
-  }
+  };
   /**
    *  Тип фигуры
    * @type {ShapesType}
@@ -121,7 +121,7 @@ export class Shape extends Prototype {
   }
 
   setLink(type) {
-    globalThis.LINK.set.next([type, this])
+    globalThis.LINK.set.next([type, this]);
   }
 
   #resizeSubscribeFn([pointId, event]) {

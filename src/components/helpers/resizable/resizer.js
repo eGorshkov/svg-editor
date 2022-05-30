@@ -54,6 +54,6 @@ function circleStrategy(shapeConfig, shapeTemplate, point, pointId) {
 const Resizer = {
   defaultStrategy,
   circleStrategy
-}
+};
 
 export default Resizer;

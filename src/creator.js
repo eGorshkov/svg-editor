@@ -89,7 +89,6 @@ function createUI([main, containers, tools]) {
 
 function createTemplates(editor) {
   globalThis.EDITOR = editor;
-
   globalThis.LINK_STORE = new LinkStore(editor);
   globalThis.LINK_STORE.init();
 

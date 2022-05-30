@@ -50,9 +50,9 @@ export function triangleSetting(shapeCtx) {
 }
 
 /**
- * 
+ *
  * @param shapeCtx { IShape }
- * @returns 
+ * @returns
  */
 function triangleLinking(shapeCtx) {
   return Linker.defaultStrategy(shapeCtx, ['n', 'se', 'sw']);

@@ -1,3 +1,6 @@
+/**
+ * @implements {ILinkStore}
+ */
 export default class LinkStore {
   links = [];
   initFrom = {

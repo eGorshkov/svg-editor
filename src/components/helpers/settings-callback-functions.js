@@ -3,7 +3,12 @@
  * @param shapeCtx {IShape}
  */
 export function defaultStrokeSetting(shapeCtx) {
-  return { type: 'color', label: 'Stroke: ', currentValue: shapeCtx.config.stroke, cb: ColorChange(shapeCtx, 'stroke') };
+  return {
+    type: 'color',
+    label: 'Stroke: ',
+    currentValue: shapeCtx.config.stroke,
+    cb: ColorChange(shapeCtx, 'stroke')
+  };
 }
 /**
  *
@@ -17,7 +22,12 @@ export function defaultFillSetting(shapeCtx) {
  * @param shapeCtx {IShape}
  */
 export function defaultColorSetting(shapeCtx) {
-  return { type: 'color', label: 'Text color: ', currentValue: shapeCtx.config.color, cb: ColorChange(shapeCtx, 'color') };
+  return {
+    type: 'color',
+    label: 'Text color: ',
+    currentValue: shapeCtx.config.color,
+    cb: ColorChange(shapeCtx, 'color')
+  };
 }
 
 function ColorChange(shapeCtx, key) {

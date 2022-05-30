@@ -1,6 +1,10 @@
 import { SETTINGS_TOOLS } from '../tools/base.js';
 
 export default class PrototypeSettings {
+  /**
+   *
+   * @type {IPrototype}
+   */
   #item = null;
   get item() {
     return this.#item;
@@ -23,23 +27,18 @@ export default class PrototypeSettings {
     label.innerText = `${this.item.__type.toUpperCase()} SETTINGS`;
     containerTemplate.appendChild(label);
 
-    const infoTemplate = this.getLabelElement();
+    let infoTemplate = this.getLabelElement();
     containerTemplate.appendChild(infoTemplate);
 
     const pathTemplate = document.createElement('p');
 
     this.item.getFullPath('uniqueId').forEach((id, i, arr) => {
-      const textEl = document.createElement('span'),
-        afterTextEl = document.createElement('span'),
-        isNotLast = i < arr.length - 1,
+      const isNotLast = i < arr.length - 1,
         btnEl = this.linkBtn(id);
-
-      textEl.innerText = `${isNotLast ? 'Layer' : this.item.__type.toCapitalizeCase()} id: `;
-      afterTextEl.innerText = ' > ';
-
-      pathTemplate.appendChild(textEl);
+      pathTemplate.append(`${isNotLast ? 'Layer' : 'Current'} (`);
       pathTemplate.appendChild(btnEl);
-      isNotLast && pathTemplate.appendChild(afterTextEl);
+      pathTemplate.append(')');
+      isNotLast && pathTemplate.append(' > ');
     });
     containerTemplate.appendChild(pathTemplate);
 
@@ -64,13 +63,16 @@ export default class PrototypeSettings {
   }
 
   linkBtn(uniqueId) {
-    const btn = this.#createBtn(uniqueId, false, () => {
+    const change = () => {
       if (this.item.uniqueId !== uniqueId) {
         this.item.deactivate();
         const el = this.item.getEditor().find(uniqueId, 'uniqueId');
         el?.activate();
       }
-    });
+      btn.removeEventListener('click', change);
+    };
+
+    const btn = this.#createBtn(uniqueId, false, change);
 
     btn.style.background = btn.style.border = 'none';
     btn.style.padding = 0;

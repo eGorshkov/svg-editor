@@ -34,6 +34,8 @@ export class SettingsTool {
     const SettingsClass = item.isLayer ? LayerSettings : ShapeSettings;
     this.settings = new SettingsClass(item, config);
 
-    [...this.settings.createInformationBlock(), this.settings.createParametersBlock()].forEach(t => this.template.appendChild(t));
+    [...this.settings.createInformationBlock(), this.settings.createParametersBlock()].forEach(t =>
+      this.template.appendChild(t)
+    );
   }
 }

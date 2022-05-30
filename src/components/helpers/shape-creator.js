@@ -3,13 +3,13 @@ export function createTemplate(elementName) {
 }
 
 /**
- * 
- * @param {string} elementName 
- * @param {*} config 
- * @param {(template, config) => void} drawCallback 
- * @param {(shapeCtx, pointId, event) => void} resizeCallback 
- * @param {(shapeCtx) => ISetting[]} settingCallback 
- * @param {() => any} linkingCallback 
+ *
+ * @param {string} elementName
+ * @param {*} config
+ * @param {(template, config) => void} drawCallback
+ * @param {(shapeCtx, pointId, event) => void} resizeCallback
+ * @param {(shapeCtx) => ISetting[]} settingCallback
+ * @param {() => any} linkingCallback
  * @returns {[
  *  HTMLElement,
  *  IShapeConfig,
@@ -26,12 +26,19 @@ export function ShapeCreator(elementName, config, drawCallback, resizeCallback, 
   template.setAttributeNS(null, 'cursor', config.cursor ?? 'default');
   template.setAttributeNS(null, 'fill', config.fill ?? 'rgb(255, 255, 255)');
   template.setAttributeNS(null, 'stroke', config.stroke ?? 'rgb(0, 0, 0)');
-  return [template, config, drawCallback || defaultDraw, resizeCallback || defaultResize, settingCallback || null, linkingCallback || null];
+  return [
+    template,
+    config,
+    drawCallback || defaultDraw,
+    resizeCallback || defaultResize,
+    settingCallback || null,
+    linkingCallback || null
+  ];
 }
 
 /**
  *
- * @param { IShape } shapeCtx 
+ * @param { IShape } shapeCtx
  * @param { * } event
  * @param { string } activePointId
  */
@@ -39,7 +46,7 @@ function defaultResize(shapeCtx, event, activePointId) {}
 
 /**
  *
- * @param {HTMLElement} template 
+ * @param {HTMLElement} template
  * @param {IShapeConfig} config
  */
 export function defaultDraw(template, config) {
