@@ -131,7 +131,14 @@ export class Shape extends Prototype {
   }
 
   #setListeners() {
-    this.template.addEventListener('click', e => (this.active ? this.deactivate() : this.activate()));
+    this.template.addEventListener('click', e => {
+      if (e.shiftKey) {
+        this.active && this.deactivate();
+        this.parent.activate();
+      } else {
+        this.active ? this.deactivate() : this.activate();
+      }
+    });
     this.template.addEventListener('mouseenter', e => {
       if (this.link) return this.link.show();
       if (this.linking) {

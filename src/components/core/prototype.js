@@ -59,7 +59,7 @@ export default class Prototype {
   }
 
   get orders() {
-    return this.#getOrders();
+    return this.getFullPath();
   }
 
   #active = false;
@@ -93,18 +93,6 @@ export default class Prototype {
   constructor(template) {
     this.template = template;
     this.template?.setAttribute('id', this.uniqueId);
-  }
-
-  #getOrders() {
-    let parent = this.parent;
-    let orders = [this.order];
-
-    while (!parent.isEditor) {
-      orders = [parent.order, ...orders];
-      parent = parent.parent;
-    }
-
-    return orders;
   }
 
   activate(settingsConfig) {
@@ -171,5 +159,17 @@ export default class Prototype {
     }
 
     return p;
+  }
+
+  getFullPath(prop = 'order') {
+    let parent = this.parent;
+    let orders = [this[prop]];
+
+    while (!parent.isEditor) {
+      orders = [parent[prop], ...orders];
+      parent = parent.parent;
+    }
+
+    return orders;
   }
 }

@@ -27,7 +27,7 @@ function createHeader(editor) {
   const headerContainer = document.createElement('div');
   headerContainer.classList.add('editor__header');
 
-  [getCopyConfigurationButton(editor), getExportButton(editor), getLinkForm(editor)].forEach(template =>
+  [getCopyConfigurationButton(editor), getExportButton(editor)].forEach(template =>
     headerContainer.appendChild(template)
   );
 
@@ -96,6 +96,14 @@ function createTemplates(editor) {
   return [createMain(), createContainers(editor), createTools(editor)];
 }
 
+function createCommon(config) {
+  String.prototype.toCapitalizeCase = function() {
+    const [first, ...other] = this;
+    return first.toUpperCase() + other.join('').toLocaleLowerCase();
+  }
+  return config;
+}
+
 function createEditor(config) {
   globalThis.SETTINGS_TOOL_SUBJECT = new Subject(null, false);
   globalThis.ACTIVE_ITEM_SUBJECT = new Subject(null, false);
@@ -135,63 +143,6 @@ function getExportButton(editor) {
   exportButton.addEventListener('click', handleExport(editor));
 
   return exportButton;
-}
-
-/**
- *
- * @param {Editor} editor
- * @returns {HTMLElement}
- */
-function getLinkForm(editor) {
-
-  const form = document.createElement('form'),
-    btn = document.createElement('button'),
-    clearBtn = document.createElement('button'),
-    input = document.createElement('input');
-
-  form.addEventListener('submit', (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    const startPoint = e.target.children.start.value;
-
-    for (const layer of editor.items) {
-      layer.items.forEach(shape => {
-        shape.link = shape.linking(shape);
-        shape.link.templates.forEach(t => shape.parent.template.appendChild(t));
-      })
-    }
-
-    const rootShape = editor.items[0].items[0];
-
-    for (let i = 1; i < editor.items.length; i++) {
-      const nextShape = editor.items[i].items[0];
-      ['w', 'e', 's', 'n'].forEach(next => {
-        rootShape.setLink(startPoint);
-        nextShape.setLink(next);
-      })
-    }
-  })
-
-  btn.innerText = 'Link';
-  btn.type = 'submit';
-
-  clearBtn.innerText = 'Clear';
-  clearBtn.addEventListener('click', (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const ids = editor.linker.links.map(x => x.id);
-    ids.forEach(id => editor.linker.killLinkById(id));
-  })
-
-  input.setAttribute('name', 'start');
-  input.value = 'e';
-
-  form.appendChild(input);
-  form.appendChild(btn);
-  form.appendChild(clearBtn);
-
-  return form;
 }
 
 /**
@@ -246,4 +197,4 @@ function handleExport(editor) {
   };
 }
 
-export { createEditor, createTemplates, createUI };
+export { createCommon, createEditor, createTemplates, createUI };

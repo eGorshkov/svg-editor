@@ -10,11 +10,7 @@ export default class LayerSettings extends PrototypeSettings {
   }
 
   getLabelElement() {
-    return (
-      this.item.__type.toUpperCase() +
-      (this.item.parent.isEditor ? '' : ' | Parent Layer: ' + this.item.parent.uniqueId) +
-      ' | Order: ' +
-      this.item.order
-    );
+    const { parent, order } = this.item;
+    return super.getLabelElement((parent.isLayer ? 'Parent Layer: ' : '') + `Order: ${order}`);
   }
 }

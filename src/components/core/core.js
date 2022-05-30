@@ -93,7 +93,7 @@ export class Core extends Prototype {
   find(value, key) {
     for (let i = 0; i < this.items.length; i++) {
       const item = this.items[i];
-      if (item.isShape && item[key] === value) return item;
+      if (item[key] === value) return item;
       else if (item.isLayer) {
         const child = item.find(value, key);
         if (child) return child;

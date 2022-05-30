@@ -69,4 +69,25 @@ export default class LinkStore {
       linkShape
     });
   }
+
+  removeLinkById(linkId) {
+    const linkIndex = this.links.findIndex(x => x.linkShape.uniqueId === linkId),
+      link = this.links[linkIndex];
+    link.fromShape.links.from = link.fromShape.links.from.filter(x => x.uniqueId !== linkId);
+    link.toShape.links.to = link.toShape.links.to.filter(x => x.uniqueId !== linkId);
+
+    link.linkShape.kill();
+    this.links.splice(linkIndex, 1);
+  }
+
+  getByShapeId(shapeId, type) {
+    switch (type) {
+      case 'from':
+        return this.links.filter(x => x.fromShape.uniqueId === shapeId);
+      case 'to':
+        return this.links.filter(x => x.toShape.uniqueId === shapeId);
+      default:
+        return this.links.filter(x => x.fromShape.uniqueId === shapeId || x.toShape.uniqueId === shapeId);
+    }
+  }
 }
