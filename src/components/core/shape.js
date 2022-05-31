@@ -1,116 +1,90 @@
+import Prototype from './prototype.js';
 import { SHAPES } from '../shapes/base.js';
-import { Resizable } from '../helpers/resizable/resizable.js';
+import moveListener from '../helpers/move-listener.js';
 
-export class Shape {
-  /**
-   * Шаблон фигуры
-   * @type {SVGElement}
-   */
-  template = null;
-  /**
-   *  Конфигурация фигуры
-   * @type {IShapeConfig}
-   */
-  config = null;
+/**
+ * @implements {IShape}
+ */
+export class Shape extends Prototype {
+  __type = 'shape';
   /**
    * Функция рисвоки шаблона
    * @param template - шаблон фигуры
    * @param config - конфигурация фигуры
+   * @type {IShape.draw}
    */
   draw = (template, config) => {};
   /**
    *
    * @param shapeCtx
+   * @param pointId
    * @param event
-   * @param activePoint
    */
   resize = (shapeCtx, pointId, event) => {};
   /**
-   * Ид фигуры
-   * @type {string}
+   *
+   * @param shapeCtx
    */
-  shapeId = '';
-  /**
-   * Флаг того, что фигура активна:
-   * 1. Активируется resizable - возможность изменения размера фигуры
-   * 2. Добавляется возможность переноса фигуры
-   * @type {boolean}
-   */
-  _active = false;
-  /**
-   * Флаг того, что фигуру можно переносить
-   * @type {boolean}
-   */
-  dragging = false;
+  setting = shapeCtx => {};
   /**
    *
-   * @type {number}
+   * @param shapeCtx
    */
-  dragOffsetX = 0;
-  /**
-   *
-   * @type {number}
-   */
-  dragOffsetY = 0;
-  /**
-   * Класс изменения размера фигуры
-   * @type {IResizable}
-   */
-  resizable = null;
+  linking = shapeCtx => {};
+  link = null;
+  links = {
+    to: [],
+    from: []
+  };
   /**
    *  Тип фигуры
    * @type {ShapesType}
    */
   type = null;
 
-  listener = {
-    start: evt => {
+  listener = moveListener(
+    evt => {
       this.dragging = true;
       this.dragOffsetX = evt.offsetX - this.config.x;
       this.dragOffsetY = evt.offsetY - this.config.y;
-      document.addEventListener('mousemove', this.listener.move, true);
-      document.addEventListener('mouseup', this.listener.end, true);
     },
-    move: evt => {
-      console.log('shape move');
-      evt.preventDefault();
-      if (this._active && this.dragging) {
+    evt => {
+      if (this.active && this.dragging) {
         this.template.style.cursor = 'grabbing';
         this.config.x = evt.offsetX - this.dragOffsetX;
         this.config.y = evt.offsetY - this.dragOffsetY;
         this.draw(this.template, this.config);
-        if (this.resizable) {
-          this.resizable.hide();
+        globalThis.LINK.update.next(this);
+        if (this.resizable) this.resizable.hide();
+        if (this.link) {
+          this.link.hide();
+          this.link.updatePosition(this);
         }
       }
     },
-    end: evt => {
+    _ => {
       this.draw(this.template, this.config);
-      document.removeEventListener('mousemove', this.listener.move, true);
-      document.removeEventListener('mouseup', this.listener.end, true);
-      if (this.resizable) {
-        this.resizable.show(this.template, this.config);
-      }
-
+      if (this.resizable) this.resizable.show(this.template, this.config);
       this.dragging = false;
-      this._active = false;
       this.dragOffsetX = this.dragOffsetY = null;
     }
-  };
+  );
 
-  constructor(toolType, shapeId, layerId, config) {
-    this.type = toolType;
-    this.shapeId = `${layerId}-${this.type}-${shapeId}`;
+  /**
+   *
+   * @param { Partial<IShape> } item
+   * @param { IShapeConfig } config
+   */
+  constructor(item, config, order) {
+    super(null);
+    this.order = order;
+    this.type = item?.type;
     this.config = config;
 
-    [this.template, this.config, this.draw, this.resize] = this.#create(this.type, config);
-    this.template.setAttribute('id', this.shapeId);
+    [this.template, this.config, this.draw, this.resize, this.setting, this.linking] = this.#create(this.type, config);
+    this.template.setAttribute('id', this.uniqueId);
     this.draw(this.template, this.config);
-    this.setListeners();
-  }
-
-  setListeners() {
-    this.template.addEventListener('click', e => (this._active ? this.deactivate() : this.active()));
+    this.#setListeners();
   }
 
   /**
@@ -118,10 +92,10 @@ export class Shape {
    * 1. Активируется resizable - возможность изменения размера фигуры
    * 2. Добавляется возможность переноса фигуры
    */
-  active() {
-    this._active = true;
+  activate() {
+    super.activate(this.setting ? this.setting(this) : null);
     this.setDraggable();
-    this.setResizable();
+    this.setResizable(this.#resizeSubscribeFn);
   }
 
   /**
@@ -130,47 +104,56 @@ export class Shape {
    * 2. Убирает возможность переноса фигуры
    */
   deactivate() {
-    this._active = false;
-    this.dragging = false;
+    super.deactivate();
     this.removeDraggable();
     this.removeResizable();
+    this.removeSettings();
   }
 
-  setDraggable() {
-    this.template.style.cursor = 'grab';
-    this.template.addEventListener('mousedown', this.listener.start, true);
-  }
-
-  removeDraggable() {
-    this.template.style.cursor = 'default';
-    this.template.removeEventListener('mousedown', this.listener.start, true);
-  }
-
-  setResizable() {
-    this.removeResizable();
-    this.resizable = this._active ? new Resizable(this.template, this.config) : null;
-    if (this.resizable !== null) {
-      this.template.viewportElement.appendChild(this.resizable.template);
-      this.resizable._resize.subscribe(([pointId, event]) => {
-        this.resize(this, pointId, event);
-        this.draw(this.template, this.config);
-        this.resizable.show(this.template, this.config);
-      });
+  kill() {
+    this.deactivate();
+    globalThis.LINK.remove.next(this);
+    if (this.link) {
+      this.link.kill(this.parent.template);
+      this.link = null;
     }
+    this.parent.killChild(this);
   }
 
-  removeResizable() {
-    if (this.resizable) {
-      this.resizable.remove();
-    }
-    this.resizable = null;
+  setLink(type) {
+    globalThis.LINK.set.next([type, this]);
+  }
+
+  #resizeSubscribeFn([pointId, event]) {
+    this.resize(this, pointId, event);
+    this.draw(this.template, this.config);
+    this.resizable.show(this.template, this.config);
+  }
+
+  #setListeners() {
+    this.template.addEventListener('click', e => {
+      if (e.shiftKey) {
+        this.active && this.deactivate();
+        this.parent.activate();
+      } else {
+        this.active ? this.deactivate() : this.activate();
+      }
+    });
+    this.template.addEventListener('mouseenter', e => {
+      if (this.link) return this.link.show();
+      if (this.linking) {
+        this.link = this.linking(this);
+        this.link.templates.forEach(t => this.parent.template.appendChild(t));
+      }
+    });
+    this.template.addEventListener('mouseout', e => this.link?.hide());
   }
 
   #create(toolType, config) {
     config = { width: 80, height: 80, ...config };
     if (!SHAPES[toolType]) {
-      return SHAPES.square(config);
+      return new SHAPES.square(config);
     }
-    return SHAPES[toolType](config);
+    return new SHAPES[toolType](config);
   }
 }

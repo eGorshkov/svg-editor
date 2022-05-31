@@ -2,21 +2,21 @@
 function defaultStrategyCalculate(config, point) {
   const calculate = {
     e: () => {
-      config.width = point.x - config.x
+      config.width = point.x - config.x;
     },
     w: () => {
       config.width += config.x - point.x;
       config.x -= config.x - point.x;
     },
     s: () => {
-      config.height = point.y - config.y
+      config.height = point.y - config.y;
     },
     n: () => {
       config.height += config.y - point.y;
       config.y -= config.y - point.y;
-    },
+    }
   };
-  return (pointId) => calculate[pointId]();
+  return pointId => calculate[pointId]();
 }
 function defaultStrategy(shapeConfig, point, pointId) {
   if (!pointId) {
@@ -51,7 +51,9 @@ function circleStrategy(shapeConfig, shapeTemplate, point, pointId) {
 }
 //#endregion
 
-export const Resizer = {
+const Resizer = {
   defaultStrategy,
   circleStrategy
-}
+};
+
+export default Resizer;

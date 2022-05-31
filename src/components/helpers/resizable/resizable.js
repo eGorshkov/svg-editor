@@ -1,7 +1,7 @@
 import { ShapeCreator } from '../shape-creator.js';
 import { circleDraw, CircleShape } from '../../shapes/circle-shape.js';
 import { squareDraw, SquareShape } from '../../shapes/square-shape.js';
-import { Subject } from '../subject.js';
+import { Subject } from '../custom-rx/subject.js';
 import { ResizablePoints } from './resizable-points.js';
 
 export const RESIZABLE_CONTAINER_ID = 'resizable-container';
