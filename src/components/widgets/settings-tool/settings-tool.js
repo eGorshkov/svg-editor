@@ -30,17 +30,12 @@ export class SettingsTool {
     }
 
     if (!item) return;
-    
-    const label = document.createElement('p');
-    label.innerText = 'SETTINGS';
-    this.template.appendChild(label);
 
     const SettingsClass = item.isLayer ? LayerSettings : ShapeSettings;
     this.settings = new SettingsClass(item, config);
 
-    [
-      ...this.settings.createInformationBlock(),
-      ...this.settings.createParametersBlock()
-    ].forEach(t => this.template.appendChild(t));
+    [...this.settings.createInformationBlock(), this.settings.createParametersBlock()].forEach(t =>
+      this.template.appendChild(t)
+    );
   }
 }

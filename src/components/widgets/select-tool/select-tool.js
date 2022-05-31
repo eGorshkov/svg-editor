@@ -17,8 +17,14 @@ export class SelectTool {
       const toolTemplate = document.createElement('button');
       toolTemplate.setAttribute('id', `${tool.type}-${this.#TOOL_NAME}`);
       toolTemplate.innerText = tool.alias;
-      this.template.appendChild(toolTemplate);
       toolTemplate.addEventListener('click', e => this.select(e, tool));
+      this.template.appendChild(toolTemplate);
+
+      if (tool.separated) {
+        const separateLine = document.createElement('hr');
+        separateLine.style.width = '100%';
+        this.template.appendChild(separateLine);
+      }
     });
   }
 

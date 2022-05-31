@@ -1,6 +1,6 @@
 import { ShapeCreator } from '../helpers/shape-creator.js';
 import { getCustomTemplate, restoreCustomTemplate } from '../helpers/custom-elements/custom-template.js';
-import { Resizer } from '../helpers/resizable/resizer.js';
+import Resizer from '../helpers/resizable/resizer.js';
 import { defaultColorSetting, InputAsNumberChange } from '../helpers/settings-callback-functions.js';
 /**
  *

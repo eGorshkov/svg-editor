@@ -51,7 +51,9 @@ function circleStrategy(shapeConfig, shapeTemplate, point, pointId) {
 }
 //#endregion
 
-export const Resizer = {
+const Resizer = {
   defaultStrategy,
   circleStrategy
 };
+
+export default Resizer;

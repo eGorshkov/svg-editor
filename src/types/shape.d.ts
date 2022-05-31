@@ -39,5 +39,9 @@ export interface IShapeConfig {
   y: number;
   width: number;
   height: number;
+  color: string;
+  stroke: string;
+  strokeWidth: number;
+  strokeDasharray: number;
   value?: string;
 }

@@ -4,6 +4,7 @@ import { SelectTool } from './components/widgets/select-tool/select-tool.js';
 import { SettingsTool } from './components/widgets/settings-tool/settings-tool.js';
 import { LayerTool } from './components/widgets/layer-tool/layer-tool.js';
 import { Subject } from './components/helpers/custom-rx/subject.js';
+import LinkStore from './components/stores/link.store.js';
 
 //#region CREATORS
 
@@ -18,18 +19,17 @@ function createContainers(editor) {
 }
 
 /**
- * 
- * @param {Editor} editor 
- * @returns 
+ *
+ * @param {Editor} editor
+ * @returns
  */
 function createHeader(editor) {
   const headerContainer = document.createElement('div');
   headerContainer.classList.add('editor__header');
 
-  [
-    getCopyConfigurationButton(editor),
-    getExportButton(editor)
-  ].forEach(template => headerContainer.appendChild(template));
+  [getCopyConfigurationButton(editor), getExportButton(editor)].forEach(template =>
+    headerContainer.appendChild(template)
+  );
 
   return headerContainer;
 }
@@ -46,18 +46,14 @@ function createContainer(editor) {
 
 function createTools(editor) {
   const layerTool = new LayerTool(editor);
-  return [
-    layerTool,
-    createSettingsTool(editor),
-    createSelectTool(editor, layerTool)
-  ];
+  return [layerTool, createSettingsTool(editor), createSelectTool(editor, layerTool)];
 }
 
 /**
- * 
- * @param {Editor} editor 
- * @param {LayerTool} layerTool 
- * @returns 
+ *
+ * @param {Editor} editor
+ * @param {LayerTool} layerTool
+ * @returns
  */
 function createSelectTool(editor, layerTool) {
   const selectTool = new SelectTool();
@@ -93,78 +89,111 @@ function createUI([main, containers, tools]) {
 
 function createTemplates(editor) {
   globalThis.EDITOR = editor;
+  globalThis.LINK_STORE = new LinkStore(editor);
+  globalThis.LINK_STORE.init();
+
   return [createMain(), createContainers(editor), createTools(editor)];
+}
+
+function createCommon(config) {
+  String.prototype.toCapitalizeCase = function() {
+    const [first, ...other] = this;
+    return first.toUpperCase() + other.join('').toLocaleLowerCase();
+  }
+  return config;
 }
 
 function createEditor(config) {
   globalThis.SETTINGS_TOOL_SUBJECT = new Subject(null, false);
   globalThis.ACTIVE_ITEM_SUBJECT = new Subject(null, false);
+
+  globalThis.LINK = {
+    set: new Subject(null, false),
+    update: new Subject(null, false),
+    remove: new Subject(null, false),
+  }
+
   return new Editor(config);
 }
 
 /**
- * 
- * @param {Editor} editor 
+ *
+ * @param {Editor} editor
  * @returns {HTMLElement}
  */
 function getCopyConfigurationButton(editor) {
-  const  configurationButton = document.createElement('button')
+  const configurationButton = document.createElement('button');
 
   configurationButton.innerText = 'Copy configuration';
   configurationButton.addEventListener('click', e => navigator.clipboard.writeText(editor.configuration.toJson()));
-  
+
   return configurationButton;
 }
 
-
 /**
- * 
- * @param {Editor} editor 
+ *
+ * @param {Editor} editor
  * @returns {HTMLElement}
  */
 function getExportButton(editor) {
   const exportButton = document.createElement('button');
 
   exportButton.innerText = 'Export as svg';
-  exportButton.addEventListener('click', handleExport(editor))
+  exportButton.addEventListener('click', handleExport(editor));
 
   return exportButton;
-
 }
 
 /**
- * 
- * @param {Editor} editor 
+ *
+ * @param {Editor} editor
  * @returns {void}
  */
 function handleExport(editor) {
+  function changeValue(el, x, y) {
+    // [...el.children].forEach(child => {
+    //   child.hasAttribute('x') && child.setAttribute('x', +child.getAttribute('x') - x);
+    //   child.hasAttribute('y') && child.setAttribute('y', +child.getAttribute('y') - y);
+    //   if (child.children.length) changeValue(child, x, y);
+    // })
+    return el;
+  }
+
+  function createBlob(clone, _w, _h) {
+    return new Blob(
+      [
+        `<svg title="graph" version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${Math.ceil(_w)} ${Math.ceil(_h)}">`,
+        `<style>.editor__text-element {white-space: pre; text-align: center;}</style>`,
+        clone.innerHTML,
+        '</svg>'
+      ],
+      { type: 'image/svg+xml;charset=utf-8' }
+    );
+  }
+
   return () => {
-    const data = editor.template.innerHTML;
+    const clone = editor.template.cloneNode(true);
     let _x, _y, _w, _h;
-    _x = _y = Infinity; 
+    _x = _y = Infinity;
     _w = _h = -Infinity;
 
     editor.items.forEach(item => {
-      const {x,y,width,height} = item.template.getBoundingClientRect();
+      const { x, y, width, height } = item.template.getBBox();
       _x = Math.min(_x, x);
       _y = Math.min(_y, y);
       _w = Math.max(_w, x + width);
       _h = Math.max(_h, y + height);
     });
 
-    const blob = new Blob([
-      `<svg title="graph" version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${Math.ceil(_w)} ${Math.ceil(_h)}">`,
-      `<style>.editor__text-element {white-space: pre; text-align: center;}</style>`,
-      data,
-      '</svg>'
-    ], {type:"image/svg+xml;charset=utf-8"});
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
+    changeValue(clone, _x - 50, _y - 50);
+
+    const blob = createBlob(clone, _w, _h), url = URL.createObjectURL(blob), link = document.createElement('a');
+
     link.document = 'exported.svg';
     link.href = url;
     link.target = '__blank';
     link.click();
-  }
+  };
 }
 
-export { createEditor, createTemplates, createUI };
+export { createCommon, createEditor, createTemplates, createUI };

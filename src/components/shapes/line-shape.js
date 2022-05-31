@@ -1,5 +1,5 @@
 import { ShapeCreator } from '../helpers/shape-creator.js';
-import { Resizer } from '../helpers/resizable/resizer.js';
+import Resizer from '../helpers/resizable/resizer.js';
 import { InputAsNumberChange, defaultStrokeSetting } from '../helpers/settings-callback-functions.js';
 
 export function lineDraw(template, config) {
