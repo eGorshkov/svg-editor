@@ -22,10 +22,18 @@ export default class LinkStore {
   }
 
   set(type, shape) {
+    if (type === 'link') {
+      debugger;
+      const fromShape = this.#editor.find(shape.config.from.shapeId, 'uniqueId')
+      const toShape = this.#editor.find(shape.config.to.shapeId, 'uniqueId')
+      this.addLink({type: from.type, shape: fromShape}, {type: to.type, shape: toShape})
+    }
+
+
     const curr = { type, shape };
 
     if (this.from?.type) {
-      this.#editor.add('link', { from: this.from, to: curr });
+      this.#editor.add('link', { from: {type: this.from.type, shapeId: this.from.shape.uniqueId}, to: {type: curr.type, shapeId: curr.shape.uniqueId} });
       const shape = this.#editor.last.last;
       this.addLink(curr, shape);
       this.from = { ...this.initFrom };

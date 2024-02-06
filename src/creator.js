@@ -92,6 +92,8 @@ function createTemplates(editor) {
   globalThis.LINK_STORE = new LinkStore(editor);
   globalThis.LINK_STORE.init();
 
+  globalThis.EDITOR.init();
+
   return [createMain(), createContainers(editor), createTools(editor)];
 }
 

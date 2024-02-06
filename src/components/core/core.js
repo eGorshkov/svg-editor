@@ -213,6 +213,8 @@ export class Core extends Prototype {
 
     this.changeChildPosition(change);
     if (this.resizable) this.resizable.hide();
+
+    if (this.isLayer) this.items.forEach(item => item.r)
   }
 
   #createChilds(_items) {

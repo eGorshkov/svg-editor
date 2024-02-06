@@ -9,6 +9,7 @@ import { Subject } from '../helpers/custom-rx/subject.js';
 export class Editor extends Core {
   __type = 'editor';
   #EDITOR_TEMPLATE_ID = 'editor-template';
+  #config = null;
 
   onChange = new Subject(null, false);
 
@@ -17,7 +18,7 @@ export class Editor extends Core {
       items: this.items,
       layers: this.items.map(layer => ({
         order: layer.order,
-        items: layer.items.map(shape => ({ order: shape.order, type: shape.type, config: shape.config }))
+        items: layer.items.map(shape => ({ uniqueId: shape.uniqueId, order: shape.order, type: shape.type, config: shape.config }))
       })),
       toJson() {
         return JSON.stringify(this.layers);
@@ -27,11 +28,17 @@ export class Editor extends Core {
 
   constructor(config) {
     super('svg');
-
     this.template.setAttribute('id', this.#EDITOR_TEMPLATE_ID);
+    this.#config = config;
+  }
+
+  init(config) {
     this.#setListener();
     this.#initObserver();
-    if (config?.layers?.length) this.load(config?.layers.sort((a, b) => (a.order - b.order ? 1 : -1)));
+    if (this.#config?.layers?.length) this.load(this.#config?.layers.sort((a, b) => (a.order - b.order ? 1 : -1)));
+
+    debugger;
+    const links = this.find()
   }
 
   /**

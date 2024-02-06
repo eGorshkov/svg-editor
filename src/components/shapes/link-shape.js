@@ -8,10 +8,12 @@ function getAdditionalPoints(startProp, endProp, [_, start], [end]) {
 }
 
 function getPoints(from, to) {
-  const { type: fromType, shape: fromShape } = from,
-    { type: toType, shape: toShape } = to,
-    start = getCoords(fromType, fromShape),
-    end = getCoords(toType, toShape).reverse();
+  const fromType = from.type;
+  const fromShape = globalThis.EDITOR.find(from.shapeId, 'uniqueId');
+  const toType = to.type;
+  const toShape = globalThis.EDITOR.find(to.shapeId, 'uniqueId');
+  const start = getCoords(fromType, fromShape);
+  const end = getCoords(toType, toShape).reverse();
 
   return [...start, ...getAdditionalPoints(fromType, toType, start, end), ...end];
 }

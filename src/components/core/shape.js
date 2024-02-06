@@ -70,6 +70,8 @@ export class Shape extends Prototype {
     }
   );
 
+  _updateFn = this.#updateFn.bind(this);
+
   /**
    *
    * @param { Partial<IShape> } item
@@ -79,10 +81,15 @@ export class Shape extends Prototype {
     super(null);
     this.order = order;
     this.type = item?.type;
+    this.uniqueId = config.uniqueId ?? this.uniqueId;
     this.config = config;
 
     [this.template, this.config, this.draw, this.resize, this.setting, this.linking] = this.#create(this.type, config);
     this.template.setAttribute('id', this.uniqueId);
+    this.type === 'link' ? null : this.init(); 
+  }
+
+  init() {
     this.draw(this.template, this.config);
     this.#setListeners();
   }
@@ -95,7 +102,7 @@ export class Shape extends Prototype {
   activate() {
     super.activate(this.setting ? this.setting(this) : null);
     this.setDraggable();
-    this.setResizable(this.#resizeSubscribeFn);
+    this.setResizable(this.#updateFn);
   }
 
   /**
@@ -124,10 +131,13 @@ export class Shape extends Prototype {
     globalThis.LINK.set.next([type, this]);
   }
 
-  #resizeSubscribeFn([pointId, event]) {
+  #updateFn([pointId, event]) {
     this.resize(this, pointId, event);
     this.draw(this.template, this.config);
     this.resizable.show(this.template, this.config);
+    this.link?.updatePosition(this);
+    this.link?.hide();
+    globalThis.LINK.update.next(this);
   }
 
   #setListeners() {
