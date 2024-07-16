@@ -17,6 +17,8 @@ export class Core extends Prototype {
       this.dragOffsetY = evt.offsetY;
       document.addEventListener('mousemove', this.listener.move, true);
       document.addEventListener('mouseup', this.listener.end, true);
+      this.resizable?.hide();
+      if (this.isLayer) this.shapes.forEach(shape => shape.link?.kill(this.template));
     },
     move: evt => {
       console.log('layer move');
@@ -24,13 +26,21 @@ export class Core extends Prototype {
       if (this.active && this.dragging) {
         this.template.style.cursor = 'grabbing';
         this.#replacePosition(evt);
-        if (this.resizable) this.resizable.hide();
       }
     },
     end: evt => {
       document.removeEventListener('mousemove', this.listener.move, true);
       document.removeEventListener('mouseup', this.listener.end, true);
-      if (this.resizable) this.resizable.show(this.template, this.coreConfig);
+      if (this.isLayer) {
+        this.shapes.forEach(shape => {
+          if (shape.link) {
+            shape.link.updatePosition(shape)
+            shape.link.templates.forEach(t => this.template.appendChild(t));
+          }
+        });
+        this.#coreConfig = this.getCoreConfig();
+        this.setResizable(null, this.coreConfig);
+      };
 
       this.dragging = false;
       this.dragOffsetX = this.dragOffsetY = null;
@@ -58,6 +68,11 @@ export class Core extends Prototype {
 
   get last() {
     return this.items[this.items.length - 1];
+  }
+
+  get shapes() {
+    if (this.isShape) return [];
+    return this.#getShapes(this.items);
   }
 
   constructor(elementName) {
@@ -133,7 +148,10 @@ export class Core extends Prototype {
     if (!child || !byKey) return;
 
     this.template.removeChild(child.template);
-    this.items = this.items.filter(x => x[byKey] !== child[byKey]);
+    if (this.items.length <= 1 && !this.isEditor) this.kill();
+    else {
+      this.items = this.items.filter(x => x[byKey] !== child[byKey]);
+    }
   }
 
   killAll() {
@@ -195,6 +213,7 @@ export class Core extends Prototype {
         item.config.x += change.x;
         item.config.y += change.y;
         item.draw(item.template, item.config);
+        globalThis.LINK.update.next(item);
       } else {
         item.changeChildPosition(change);
       }
@@ -214,13 +233,12 @@ export class Core extends Prototype {
     this.changeChildPosition(change);
     if (this.resizable) this.resizable.hide();
 
-    if (this.isLayer) this.items.forEach(item => item.r)
+    if (this.isLayer) this.items.forEach(item => item.resizable?.hide())
   }
 
   #createChilds(_items) {
     return _items.map(x => {
       const created = this.create(x);
-      created.uniqueId = x.uniqueId || created.uniqueId;
       created.active = x.active || created.active;
       return this.#withParent(created);
     });
@@ -241,5 +259,14 @@ export class Core extends Prototype {
 
   #setToTemplate(_items) {
     _items.forEach(item => this.template.appendChild(item.template));
+  }
+
+  #getShapes(items) {
+    const res = [];
+    for (let i = 0; i < items.length; i++) {
+      const n = items[i];
+      n.isLayer ? res.push(...this.#getShapes(n.items)) : res.push(n);
+    }
+    return res;
   }
 }

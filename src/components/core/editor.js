@@ -37,8 +37,7 @@ export class Editor extends Core {
     this.#initObserver();
     if (this.#config?.layers?.length) this.load(this.#config?.layers.sort((a, b) => (a.order - b.order ? 1 : -1)));
 
-    debugger;
-    const links = this.find()
+    this.shapes.filter(shape => shape.type === "link").forEach(link => globalThis.LINK.set.next([link.type, link]));
   }
 
   /**

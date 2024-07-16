@@ -113,6 +113,7 @@ function createEditor(config) {
     set: new Subject(null, false),
     update: new Subject(null, false),
     remove: new Subject(null, false),
+    clear: new Subject(null, false)
   }
 
   return new Editor(config);
