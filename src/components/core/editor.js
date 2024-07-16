@@ -18,6 +18,7 @@ export class Editor extends Core {
       items: this.items,
       layers: this.items.map(layer => ({
         order: layer.order,
+        name: layer.name,
         items: layer.items.map(shape => ({ uniqueId: shape.uniqueId, order: shape.order, type: shape.type, config: shape.config }))
       })),
       toJson() {
@@ -48,12 +49,11 @@ export class Editor extends Core {
    */
   create(layer) {
     return new Layer(
-      layer?.items,
+      layer,
       {
         x: this.template.clientWidth / 2,
         y: this.template.clientHeight / 2
-      },
-      layer?.order || this.items.length
+      }
     );
   }
 
