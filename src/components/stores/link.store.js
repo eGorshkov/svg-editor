@@ -23,7 +23,6 @@ export default class LinkStore {
   }
 
   set(type, shape) {
-    debugger
     if (type === 'link') {
       const fromShape = this.#editor.find(shape.config.from.shapeId, 'uniqueId');
       const toShape = this.#editor.find(shape.config.to.shapeId, 'uniqueId');
