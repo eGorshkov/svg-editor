@@ -164,4 +164,8 @@ export class Shape extends Prototype {
     }
     return new SHAPES[toolType](config);
   }
+
+  getConfiguration() {
+    return { uniqueId: this.uniqueId, order: this.order, type: this.type, config: this.config }
+  }
 }

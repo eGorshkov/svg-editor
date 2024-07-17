@@ -81,6 +81,8 @@ export class Core extends Prototype {
 
   create(item) {}
 
+  getConfiguration() {}
+
   /**
    *
    * @param type { ShapesType }
@@ -219,7 +221,7 @@ export class Core extends Prototype {
       }
     }
   }
-
+  
   #replacePosition(evt) {
     this.template.style.cursor = 'grabbing';
 

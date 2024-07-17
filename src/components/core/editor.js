@@ -16,11 +16,7 @@ export class Editor extends Core {
   get configuration() {
     return {
       items: this.items,
-      layers: this.items.map(layer => ({
-        order: layer.order,
-        name: layer.name,
-        items: layer.items.map(shape => ({ uniqueId: shape.uniqueId, order: shape.order, type: shape.type, config: shape.config }))
-      })),
+      layers: this.items.map(layer => layer.getConfiguration()),
       toJson() {
         return JSON.stringify(this.layers);
       }

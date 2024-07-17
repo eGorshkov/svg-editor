@@ -47,6 +47,7 @@ export default class LayerItem {
     this.template.addEventListener('dblclick', this.#bindedDblClick);
 
     this.#item.__type === 'layer' ? this.#setLayer() : this.#setShape();
+    this.template.appendChild(this.#createCopyButton());
     this.template.appendChild(this.#createKillButton());
 
     return this.template;
@@ -93,6 +94,70 @@ export default class LayerItem {
     return killButton;
   }
 
+  #createCopyButton() {
+    const copyButton = document.createElement('button');
+    copyButton.classList.add('layer-tool-copy-button');
+    copyButton.innerText = '©';
+    copyButton.addEventListener('click', () => {
+      let newItem;
+      const links = [];
+      const config = structuredClone(this.#item.getConfiguration());
+      const duplicate = this.#duplicateConfiguration(config, links);
+      this.#item.parent.load([duplicate]);
+      this.#item.parent.reorder();
+      this.#widget.draw();
+
+      if (this.#item.orders.length === 1) newItem = this.#item.parent.last;
+      else
+        this.#item.orders.forEach((order, i, arr) => {
+          newItem = i === arr.length - 1 ? newItem.last : (newItem ?? this.#item.getEditor()).get(order, 'order');
+        });
+
+      links.length && this.#item.isLayer ? this.#linkNewLayer(newItem, links) : this.#linkNewShape(newItem, links);
+
+      this.#item.parent.reorder();
+      this.#widget.draw();
+    });
+    return copyButton;
+  }
+
+  #linkNewShape(shape, links) {
+    links.forEach(link => {
+      const donorShape = this.#item.orders.every((o, i) => o === link.fromShape.orders[i])
+        ? link.fromShape
+        : link.toShape;
+      const fromShape = link.fromShape.uniqueId === donorShape.uniqueId ? shape : link.fromShape;
+      const toShape = link.fromShape.uniqueId === donorShape.uniqueId ? link.toShape : shape;
+
+      globalThis.LINK.set.next([link.fromType, fromShape]);
+      globalThis.LINK.set.next([link.toType, toShape]);
+    });
+  }
+
+  #linkNewLayer(layer, links) {
+    links.forEach(link => {
+      const lf = this.#item.orders.every((o, i) => o === link.fromShape.orders[i]) && layer;
+      const lt = this.#item.orders.every((o, i) => o === link.toShape.orders[i]) && layer;
+
+      const fromShape = lf ? lf.get(link.fromShape.orders.slice(lf.orders.length), 'order') : link.fromShape;
+      const toShape = lt ? lt.get(link.toShape.orders.slice(lt.orders.length), 'order') : link.toShape;
+
+      globalThis.LINK.set.next([link.fromType, fromShape]);
+      globalThis.LINK.set.next([link.toType, toShape]);
+    });
+  }
+
+  #duplicateConfiguration(configuration, links) {
+    if (configuration.items) {
+      const items = configuration.items.reduce((acc, x) => [...acc, this.#duplicateConfiguration(x, links)], []);
+      return { ...configuration, items };
+    }
+    links.push(...globalThis.LINK_STORE.getByShapeId(configuration.uniqueId));
+    configuration.uniqueId = null;
+    configuration.config.x += 10;
+    configuration.config.y += 10;
+    return configuration;
+  }
   /**
    *
    * @param {DragEvent} ev
@@ -178,7 +243,6 @@ export default class LayerItem {
       this.#reactivateShape(SOURCE, PARENT_LAYER, IS_SOURCE_SHAPE_WAS_ACTIVE);
     }
   }
-
   #isInSameLayer(sourceOrders, targetOrders) {
     return (
       sourceOrders.slice(0, sourceOrders.length - 1).toString() ===

@@ -119,12 +119,6 @@ function createEditor(config) {
   globalThis.SETTINGS_TOOL_SUBJECT = new Subject(null, false);
   globalThis.ACTIVE_ITEM_SUBJECT = new Subject(null, false);
 
-  globalThis.LINK = {
-    set: new Subject(null, false),
-    update: new Subject(null, false),
-    remove: new Subject(null, false),
-    clear: new Subject(null, false)
-  }
   globalThis.GRID = new Grid();
 
   return new Editor(config);
