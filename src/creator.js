@@ -1,4 +1,5 @@
 import { createCustomTemplate } from './components/helpers/custom-elements/custom-template.js';
+import Grid from './components/helpers/grid/grid.js';
 import { Editor } from './components/core/editor.js';
 import { SelectTool } from './components/widgets/select-tool/select-tool.js';
 import { SettingsTool } from './components/widgets/settings-tool/settings-tool.js';
@@ -41,6 +42,7 @@ function createContainer(editor) {
   container.classList.add('editor__container');
   container.appendChild(editor.template);
   container.appendChild(customTemplate);
+  container.appendChild(globalThis.GRID.template);
   return container;
 }
 
@@ -58,16 +60,24 @@ function createTools(editor) {
 function createSelectTool(editor, layerTool) {
   const selectTool = new SelectTool();
   selectTool.template.classList.add('editor__tool--left');
-  selectTool._select.subscribe(toolType => {
-    switch (toolType) {
+  selectTool._select.subscribe(tool => {
+    switch (tool.type) {
       case 'hand':
       case 'select':
+        break;
+      case "grid":
+        const el = document.getElementById("editor-grid-template");
+        const value = globalThis.GRID.config.visible === "hidden";
+        el.style.visibility = value ? 'visible' : 'hidden';
+        globalThis.GRID.updateSettings({visible: el.style.visibility})
         break;
       case 'layers-widget':
         layerTool.change();
         break;
+      case 'shape':
+        editor.add(tool.value);
+        break;
       default:
-        editor.add(toolType);
         break;
     }
   });
@@ -92,6 +102,8 @@ function createTemplates(editor) {
   globalThis.LINK_STORE = new LinkStore(editor);
   globalThis.LINK_STORE.init();
 
+  globalThis.EDITOR.init();
+
   return [createMain(), createContainers(editor), createTools(editor)];
 }
 
@@ -111,7 +123,9 @@ function createEditor(config) {
     set: new Subject(null, false),
     update: new Subject(null, false),
     remove: new Subject(null, false),
+    clear: new Subject(null, false)
   }
+  globalThis.GRID = new Grid();
 
   return new Editor(config);
 }

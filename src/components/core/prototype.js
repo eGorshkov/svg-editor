@@ -7,6 +7,7 @@ export default class Prototype {
   __type = 'prototype';
   uniqueId = Math.ceil(Math.random() * 10 ** 10).toString();
 
+  name = null;
   /**
    * Флаг того, что фигуру можно переносить
    */

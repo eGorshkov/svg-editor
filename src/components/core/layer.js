@@ -8,13 +8,15 @@ export class Layer extends Core {
   __type = 'layer';
   defaultShapeConfig = null;
 
-  constructor(shapes, defaultShapeConfig, order) {
+  constructor(config, defaultShapeConfig) {
     super('g');
 
-    this.order = order;
+    this.name = config.name ?? null;
+    this.order = config.order;
+    this.uniqueId = config.uniqueId ?? this.uniqueId;
     this.defaultShapeConfig = defaultShapeConfig;
 
-    if (shapes?.length) this.load(shapes);
+    if (config.items?.length) this.load(config.items);
   }
 
   /**
@@ -24,14 +26,10 @@ export class Layer extends Core {
    */
   create(item) {
     if ('items' in item) {
-      return new Layer(
-        item?.items,
-        {
-          x: this.template.clientWidth / 2,
-          y: this.template.clientHeight / 2
-        },
-        item?.order || this.items.length
-      );
+      return new Layer(item, {
+        x: this.template.clientWidth / 2,
+        y: this.template.clientHeight / 2
+      });
     }
 
     return new Shape(item, { ...this.defaultShapeConfig, ...item?.config }, item?.order || this.items.length);

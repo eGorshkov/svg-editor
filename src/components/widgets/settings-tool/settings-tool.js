@@ -1,6 +1,7 @@
 import LayerSettings from './items/layer.settings.js';
 import PrototypeSettings from './items/prototype.settings.js';
 import ShapeSettings from './items/shape.settings.js';
+import ToolSettings from './items/tool.settings.js';
 
 export class SettingsTool {
   /**
@@ -18,7 +19,7 @@ export class SettingsTool {
   }
 
   /**
-   * @param {IShape | isLayer} item
+   * @param {IShape | isLayer | ITool} item
    * @param {ISetting[]} config
    */
   changeTemplate(item, config) {
@@ -31,7 +32,7 @@ export class SettingsTool {
 
     if (!item) return;
 
-    const SettingsClass = item.isLayer ? LayerSettings : ShapeSettings;
+    const SettingsClass = item.isLayer ? LayerSettings : item.isLayer ? ShapeSettings : ToolSettings;
     this.settings = new SettingsClass(item, config);
 
     [...this.settings.createInformationBlock(), this.settings.createParametersBlock()].forEach(t =>

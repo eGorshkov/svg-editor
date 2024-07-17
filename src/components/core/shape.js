@@ -47,6 +47,8 @@ export class Shape extends Prototype {
       this.dragging = true;
       this.dragOffsetX = evt.offsetX - this.config.x;
       this.dragOffsetY = evt.offsetY - this.config.y;
+      this.resizable?.hide();
+      this.link?.hide();
     },
     evt => {
       if (this.active && this.dragging) {
@@ -55,20 +57,18 @@ export class Shape extends Prototype {
         this.config.y = evt.offsetY - this.dragOffsetY;
         this.draw(this.template, this.config);
         globalThis.LINK.update.next(this);
-        if (this.resizable) this.resizable.hide();
-        if (this.link) {
-          this.link.hide();
-          this.link.updatePosition(this);
-        }
       }
     },
     _ => {
+      this.link?.updatePosition(this);
       this.draw(this.template, this.config);
       if (this.resizable) this.resizable.show(this.template, this.config);
       this.dragging = false;
       this.dragOffsetX = this.dragOffsetY = null;
     }
   );
+
+  _updateFn = this.#updateFn.bind(this);
 
   /**
    *
@@ -77,12 +77,17 @@ export class Shape extends Prototype {
    */
   constructor(item, config, order) {
     super(null);
+    this.uniqueId = item.uniqueId ?? this.uniqueId;
     this.order = order;
     this.type = item?.type;
     this.config = config;
 
     [this.template, this.config, this.draw, this.resize, this.setting, this.linking] = this.#create(this.type, config);
     this.template.setAttribute('id', this.uniqueId);
+    this.type === 'link' ? null : this.init(); 
+  }
+
+  init() {
     this.draw(this.template, this.config);
     this.#setListeners();
   }
@@ -95,7 +100,7 @@ export class Shape extends Prototype {
   activate() {
     super.activate(this.setting ? this.setting(this) : null);
     this.setDraggable();
-    this.setResizable(this.#resizeSubscribeFn);
+    this.setResizable(this.#updateFn);
   }
 
   /**
@@ -124,10 +129,13 @@ export class Shape extends Prototype {
     globalThis.LINK.set.next([type, this]);
   }
 
-  #resizeSubscribeFn([pointId, event]) {
+  #updateFn([pointId, event]) {
     this.resize(this, pointId, event);
     this.draw(this.template, this.config);
     this.resizable.show(this.template, this.config);
+    this.link?.updatePosition(this);
+    this.link?.hide();
+    globalThis.LINK.update.next(this);
   }
 
   #setListeners() {

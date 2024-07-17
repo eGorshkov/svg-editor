@@ -9,6 +9,7 @@ import { Subject } from '../helpers/custom-rx/subject.js';
 export class Editor extends Core {
   __type = 'editor';
   #EDITOR_TEMPLATE_ID = 'editor-template';
+  #config = null;
 
   onChange = new Subject(null, false);
 
@@ -17,7 +18,8 @@ export class Editor extends Core {
       items: this.items,
       layers: this.items.map(layer => ({
         order: layer.order,
-        items: layer.items.map(shape => ({ order: shape.order, type: shape.type, config: shape.config }))
+        name: layer.name,
+        items: layer.items.map(shape => ({ uniqueId: shape.uniqueId, order: shape.order, type: shape.type, config: shape.config }))
       })),
       toJson() {
         return JSON.stringify(this.layers);
@@ -27,11 +29,16 @@ export class Editor extends Core {
 
   constructor(config) {
     super('svg');
-
     this.template.setAttribute('id', this.#EDITOR_TEMPLATE_ID);
+    this.#config = config;
+  }
+
+  init(config) {
     this.#setListener();
     this.#initObserver();
-    if (config?.layers?.length) this.load(config?.layers.sort((a, b) => (a.order - b.order ? 1 : -1)));
+    if (this.#config?.layers?.length) this.load(this.#config?.layers.sort((a, b) => (a.order - b.order ? 1 : -1)));
+
+    this.shapes.filter(shape => shape.type === "link").forEach(link => globalThis.LINK.set.next([link.type, link]));
   }
 
   /**
@@ -42,12 +49,11 @@ export class Editor extends Core {
    */
   create(layer) {
     return new Layer(
-      layer?.items,
+      layer,
       {
         x: this.template.clientWidth / 2,
         y: this.template.clientHeight / 2
-      },
-      layer?.order || this.items.length
+      }
     );
   }
 

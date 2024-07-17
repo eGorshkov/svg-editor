@@ -57,7 +57,9 @@ export default class LayerItem {
    */
   #setLayer() {
     this.template.appendChild(
-      this.#createTextElement('↳ Layer \norder:' + this.#item.fullOrder + '\nid: ' + this.#item.uniqueId)
+      this.#createTextElement(
+        '↳ ' + (this.#item.name ?? 'Layer') + '\norder:' + this.#item.fullOrder + '\nid: ' + this.#item.uniqueId
+      )
     );
   }
 
@@ -66,7 +68,9 @@ export default class LayerItem {
    */
   #setShape() {
     this.template.appendChild(
-      this.#createTextElement('Shape \norder: ' + this.#item.fullOrder + '\nid: ' + this.#item.uniqueId)
+      this.#createTextElement(
+        (this.#item.name ?? 'Shape') + ' \norder: ' + this.#item.fullOrder + '\nid: ' + this.#item.uniqueId
+      )
     );
   }
 
@@ -162,7 +166,11 @@ export default class LayerItem {
     }
 
     if (this.#isInSameLayer(sourceOrders, targetOrders)) {
-      TARGET.parent.replaceOrder.call(TARGET.parent, ...sourceOrders, ...targetOrders);
+      TARGET.parent.replaceOrder.call(
+        TARGET.parent,
+        sourceOrders[sourceOrders.length - 1],
+        targetOrders[targetOrders.length - 1]
+      );
     } else {
       const IS_SOURCE_SHAPE_WAS_ACTIVE = SOURCE.isShape && SOURCE.active;
       const PARENT_LAYER = TARGET.parent.isEditor ? TARGET : TARGET.parent;
