@@ -43,12 +43,21 @@ export default class LinkStore {
     const curr = { type, shape };
 
     if (this.from?.type) {
-      this.#editor.add('link', {
-        from: { type: this.from.type, shapeId: this.from.shape.uniqueId },
-        to: { type: curr.type, shapeId: curr.shape.uniqueId }
-      });
-      const shape = this.#editor.last.last;
-      this.addLink(curr, shape);
+      this.#editor.load([
+        {
+          order: this.#editor.items.length,
+          items: [
+            {
+              type: 'link',
+              config: {
+                from: { type: this.from.type, shapeId: this.from.shape.uniqueId },
+                to: { type: curr.type, shapeId: curr.shape.uniqueId }
+              }
+            }
+          ]
+        }
+      ]);
+      this.addLink(curr, this.#editor.last.last);
     } else {
       this.from = curr;
     }
@@ -70,7 +79,7 @@ export default class LinkStore {
 
     ['to', 'from'].forEach(type =>
       shape.links[type].forEach(linkShape => {
-        linkShape.kill();
+        this.removeLinkById(linkShape.uniqueId);
         if (linkShape.parent.items.length === 0) linkShape.parent.kill();
       })
     );
@@ -99,11 +108,15 @@ export default class LinkStore {
   removeLinkById(linkId) {
     const linkIndex = this.links.findIndex(x => x.linkShape.uniqueId === linkId),
       link = this.links[linkIndex];
-    link.fromShape.links.from = link.fromShape.links.from.filter(x => x.uniqueId !== linkId);
-    link.toShape.links.to = link.toShape.links.to.filter(x => x.uniqueId !== linkId);
 
-    link.linkShape.kill();
-    this.links.splice(linkIndex, 1);
+    if (link) {
+      link.fromShape?.links &&
+        (link.fromShape.links.from = link.fromShape.links.from.filter(x => x.uniqueId !== linkId));
+      link.toShape?.links && (link.toShape.links.to = link.toShape.links.to.filter(x => x.uniqueId !== linkId));
+
+      link.linkShape.kill();
+      this.links.splice(linkIndex, 1);
+    }
   }
 
   getByShapeId(shapeId, type) {

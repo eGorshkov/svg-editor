@@ -239,8 +239,11 @@ export default class LayerItem {
     } else {
       const IS_SOURCE_SHAPE_WAS_ACTIVE = SOURCE.isShape && SOURCE.active;
       const PARENT_LAYER = TARGET.parent.isEditor ? TARGET : TARGET.parent;
-      this.#changePosition(SOURCE, PARENT_LAYER, targetOrders[targetOrders.length - 1]);
-      this.#reactivateShape(SOURCE, PARENT_LAYER, IS_SOURCE_SHAPE_WAS_ACTIVE);
+      const LINKS = SOURCE.isLayer
+        ? SOURCE.shapes.flatMap(shape => [...shape.links.from, ...shape.links.to])
+        : [SOURCE.links.from, SOURCE.links.to].flat();
+      this.#changePosition(SOURCE, PARENT_LAYER, targetOrders[targetOrders.length - 1], LINKS);
+      this.#reactivateShape(SOURCE, PARENT_LAYER, IS_SOURCE_SHAPE_WAS_ACTIVE, LINKS);
     }
   }
   #isInSameLayer(sourceOrders, targetOrders) {
@@ -250,7 +253,8 @@ export default class LayerItem {
     );
   }
 
-  #changePosition(source, parentLayer, targetLastOrder) {
+  #changePosition(source, parentLayer, targetLastOrder, links) {
+    source.isLayer && links.forEach(link => globalThis.LINK_STORE.removeLinkById(link.uniqueId));
     source.kill();
     source.order = parentLayer.items.length;
 
@@ -258,15 +262,29 @@ export default class LayerItem {
     parentLayer.replaceOrder(parentLayer.items.length - 1, targetLastOrder);
   }
 
-  #reactivateShape(source, parentLayer, isSourceShapeWasActive) {
+  #reactivateShape(source, parentLayer, isSourceShapeWasActive, LINKS) {
     if (source.isLayer) {
       const ACTIVE_SHAPE = parentLayer.get(source.uniqueId)?.find(true, 'active');
       if (ACTIVE_SHAPE) {
         globalThis.ACTIVE_ITEM_SUBJECT.getValue()?.deactivate();
         ACTIVE_SHAPE.activate();
       }
-    } else if (isSourceShapeWasActive) {
+    }
+
+    if (isSourceShapeWasActive) {
       parentLayer.get(source.uniqueId).activate();
+    }
+
+    if (LINKS?.length) {
+      LINKS.forEach(link => {
+        globalThis.EDITOR.load([
+          {
+            order: globalThis.EDITOR.items.length,
+            items: [link]
+          }
+        ]);
+        globalThis.LINK.set.next(['link', globalThis.EDITOR.last.last]);
+      });
     }
   }
 

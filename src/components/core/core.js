@@ -57,7 +57,7 @@ export class Core extends Prototype {
   }
 
   get #add() {
-    return compose(this.#bindWithParent, this.#bindSet, this.#bindSetToTemplate);
+    return compose(this.#bindWithParent, this.#bindSet, this.#bindSetToTemplate, () => this.reorder?.());
   }
 
   #coreConfig = null;
@@ -226,8 +226,14 @@ export class Core extends Prototype {
     this.template.style.cursor = 'grabbing';
 
     const change = {};
+    const gridSize = globalThis.GRID?.config.size;
     change.x = evt.offsetX - this.dragOffsetX;
     change.y = evt.offsetY - this.dragOffsetY;
+
+    if (evt.shiftKey && gridSize) {
+            change.x = change.x === 0 ? 0 : change.x > 0 ? gridSize : -gridSize;
+            change.y = change.y === 0 ? 0 : change.y > 0 ? gridSize : -gridSize;
+    }
 
     this.dragOffsetX = evt.offsetX;
     this.dragOffsetY = evt.offsetY;
