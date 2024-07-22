@@ -34,4 +34,12 @@ export class Layer extends Core {
 
     return new Shape(item, { ...this.defaultShapeConfig, ...item?.config }, item?.order || this.items.length);
   }
+
+  getConfiguration() {
+    return {
+      order: this.order,
+      name: this.name,
+      items: [...this.items.map(shape => shape.getConfiguration())]
+    };
+  }
 }

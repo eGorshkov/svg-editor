@@ -1,3 +1,5 @@
+import { Subject } from '../helpers/custom-rx/subject.js';
+
 /**
  * @implements {ILinkStore}
  */
@@ -16,28 +18,46 @@ export default class LinkStore {
   }
 
   init() {
+    globalThis.LINK = {
+      set: new Subject(null, false),
+      update: new Subject(null, false),
+      remove: new Subject(null, false),
+      clear: new Subject(null, false)
+    };
+
     globalThis.LINK.set.subscribe(([currType, currShape]) => this.set(currType, currShape));
     globalThis.LINK.update.subscribe(shape => this.update(shape));
     globalThis.LINK.remove.subscribe(shape => this.remove(shape));
-    globalThis.LINK.clear.subscribe(_ => this.clear())
+    globalThis.LINK.clear.subscribe(_ => this.clear());
   }
 
   set(type, shape) {
     if (type === 'link') {
       const fromShape = this.#editor.find(shape.config.from.shapeId, 'uniqueId');
       const toShape = this.#editor.find(shape.config.to.shapeId, 'uniqueId');
-      this.from = {type: shape.config.from.type, shape: fromShape}
-      this.addLink({type: shape.config.to.type, shape: toShape}, shape);
+      this.from = { type: shape.config.from.type, shape: fromShape };
+      this.addLink({ type: shape.config.to.type, shape: toShape }, shape);
       return;
     }
-
 
     const curr = { type, shape };
 
     if (this.from?.type) {
-      this.#editor.add('link', { from: {type: this.from.type, shapeId: this.from.shape.uniqueId}, to: {type: curr.type, shapeId: curr.shape.uniqueId} });
-      const shape = this.#editor.last.last;
-      this.addLink(curr, shape);
+      this.#editor.load([
+        {
+          order: this.#editor.items.length,
+          items: [
+            {
+              type: 'link',
+              config: {
+                from: { type: this.from.type, shapeId: this.from.shape.uniqueId },
+                to: { type: curr.type, shapeId: curr.shape.uniqueId }
+              }
+            }
+          ]
+        }
+      ]);
+      this.addLink(curr, this.#editor.last.last);
     } else {
       this.from = curr;
     }
@@ -59,7 +79,7 @@ export default class LinkStore {
 
     ['to', 'from'].forEach(type =>
       shape.links[type].forEach(linkShape => {
-        linkShape.kill();
+        this.removeLinkById(linkShape.uniqueId);
         if (linkShape.parent.items.length === 0) linkShape.parent.kill();
       })
     );
@@ -80,7 +100,7 @@ export default class LinkStore {
       toShape: curr.shape,
       linkShape
     });
-    
+
     linkShape.init();
     this.from = { ...this.initFrom };
   }
@@ -88,11 +108,15 @@ export default class LinkStore {
   removeLinkById(linkId) {
     const linkIndex = this.links.findIndex(x => x.linkShape.uniqueId === linkId),
       link = this.links[linkIndex];
-    link.fromShape.links.from = link.fromShape.links.from.filter(x => x.uniqueId !== linkId);
-    link.toShape.links.to = link.toShape.links.to.filter(x => x.uniqueId !== linkId);
 
-    link.linkShape.kill();
-    this.links.splice(linkIndex, 1);
+    if (link) {
+      link.fromShape?.links &&
+        (link.fromShape.links.from = link.fromShape.links.from.filter(x => x.uniqueId !== linkId));
+      link.toShape?.links && (link.toShape.links.to = link.toShape.links.to.filter(x => x.uniqueId !== linkId));
+
+      link.linkShape.kill();
+      this.links.splice(linkIndex, 1);
+    }
   }
 
   getByShapeId(shapeId, type) {
@@ -107,6 +131,6 @@ export default class LinkStore {
   }
 
   clear() {
-    this.links.forEach(link => this.removeLinkById(link.linkShape.uniqueId))
+    this.links.forEach(link => this.removeLinkById(link.linkShape.uniqueId));
   }
 }

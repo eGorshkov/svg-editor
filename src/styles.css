@@ -143,6 +143,7 @@ body {
 
 .layer-tool-container .layer-tool-item {
   display: flex;
+  gap: 8px;
   border: 1px dashed;
   margin-left: auto;
   padding: 5px;
@@ -151,12 +152,13 @@ body {
   width: 100%;
 }
 
-.layer-tool-container .layer-tool-item .layer-tool-kill-button {
+.layer-tool-container .layer-tool-item .layer-tool-kill-button,
+.layer-tool-container .layer-tool-item .layer-tool-copy-button  {
   cursor: pointer;
   background: none;
   line-height: 30px;
   border: 1px solid lightgrey;
-  border-radius: 30%;
+  border-radius: 50%;
   height: 30px;
   width: 30px;
   align-self: center;

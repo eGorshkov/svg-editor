@@ -47,6 +47,7 @@ export default class LayerItem {
     this.template.addEventListener('dblclick', this.#bindedDblClick);
 
     this.#item.__type === 'layer' ? this.#setLayer() : this.#setShape();
+    this.template.appendChild(this.#createCopyButton());
     this.template.appendChild(this.#createKillButton());
 
     return this.template;
@@ -93,6 +94,70 @@ export default class LayerItem {
     return killButton;
   }
 
+  #createCopyButton() {
+    const copyButton = document.createElement('button');
+    copyButton.classList.add('layer-tool-copy-button');
+    copyButton.innerText = '©';
+    copyButton.addEventListener('click', () => {
+      let newItem;
+      const links = [];
+      const config = structuredClone(this.#item.getConfiguration());
+      const duplicate = this.#duplicateConfiguration(config, links);
+      this.#item.parent.load([duplicate]);
+      this.#item.parent.reorder();
+      this.#widget.draw();
+
+      if (this.#item.orders.length === 1) newItem = this.#item.parent.last;
+      else
+        this.#item.orders.forEach((order, i, arr) => {
+          newItem = i === arr.length - 1 ? newItem.last : (newItem ?? this.#item.getEditor()).get(order, 'order');
+        });
+
+      links.length && this.#item.isLayer ? this.#linkNewLayer(newItem, links) : this.#linkNewShape(newItem, links);
+
+      this.#item.parent.reorder();
+      this.#widget.draw();
+    });
+    return copyButton;
+  }
+
+  #linkNewShape(shape, links) {
+    links.forEach(link => {
+      const donorShape = this.#item.orders.every((o, i) => o === link.fromShape.orders[i])
+        ? link.fromShape
+        : link.toShape;
+      const fromShape = link.fromShape.uniqueId === donorShape.uniqueId ? shape : link.fromShape;
+      const toShape = link.fromShape.uniqueId === donorShape.uniqueId ? link.toShape : shape;
+
+      globalThis.LINK.set.next([link.fromType, fromShape]);
+      globalThis.LINK.set.next([link.toType, toShape]);
+    });
+  }
+
+  #linkNewLayer(layer, links) {
+    links.forEach(link => {
+      const lf = this.#item.orders.every((o, i) => o === link.fromShape.orders[i]) && layer;
+      const lt = this.#item.orders.every((o, i) => o === link.toShape.orders[i]) && layer;
+
+      const fromShape = lf ? lf.get(link.fromShape.orders.slice(lf.orders.length), 'order') : link.fromShape;
+      const toShape = lt ? lt.get(link.toShape.orders.slice(lt.orders.length), 'order') : link.toShape;
+
+      globalThis.LINK.set.next([link.fromType, fromShape]);
+      globalThis.LINK.set.next([link.toType, toShape]);
+    });
+  }
+
+  #duplicateConfiguration(configuration, links) {
+    if (configuration.items) {
+      const items = configuration.items.reduce((acc, x) => [...acc, this.#duplicateConfiguration(x, links)], []);
+      return { ...configuration, items };
+    }
+    links.push(...globalThis.LINK_STORE.getByShapeId(configuration.uniqueId));
+    configuration.uniqueId = null;
+    configuration.config.x += 10;
+    configuration.config.y += 10;
+    return configuration;
+  }
   /**
    *
    * @param {DragEvent} ev
@@ -174,11 +239,13 @@ export default class LayerItem {
     } else {
       const IS_SOURCE_SHAPE_WAS_ACTIVE = SOURCE.isShape && SOURCE.active;
       const PARENT_LAYER = TARGET.parent.isEditor ? TARGET : TARGET.parent;
-      this.#changePosition(SOURCE, PARENT_LAYER, targetOrders[targetOrders.length - 1]);
-      this.#reactivateShape(SOURCE, PARENT_LAYER, IS_SOURCE_SHAPE_WAS_ACTIVE);
+      const LINKS = SOURCE.isLayer
+        ? SOURCE.shapes.flatMap(shape => [...shape.links.from, ...shape.links.to])
+        : [SOURCE.links.from, SOURCE.links.to].flat();
+      this.#changePosition(SOURCE, PARENT_LAYER, targetOrders[targetOrders.length - 1], LINKS);
+      this.#reactivateShape(SOURCE, PARENT_LAYER, IS_SOURCE_SHAPE_WAS_ACTIVE, LINKS);
     }
   }
-
   #isInSameLayer(sourceOrders, targetOrders) {
     return (
       sourceOrders.slice(0, sourceOrders.length - 1).toString() ===
@@ -186,7 +253,8 @@ export default class LayerItem {
     );
   }
 
-  #changePosition(source, parentLayer, targetLastOrder) {
+  #changePosition(source, parentLayer, targetLastOrder, links) {
+    source.isLayer && links.forEach(link => globalThis.LINK_STORE.removeLinkById(link.uniqueId));
     source.kill();
     source.order = parentLayer.items.length;
 
@@ -194,15 +262,29 @@ export default class LayerItem {
     parentLayer.replaceOrder(parentLayer.items.length - 1, targetLastOrder);
   }
 
-  #reactivateShape(source, parentLayer, isSourceShapeWasActive) {
+  #reactivateShape(source, parentLayer, isSourceShapeWasActive, LINKS) {
     if (source.isLayer) {
       const ACTIVE_SHAPE = parentLayer.get(source.uniqueId)?.find(true, 'active');
       if (ACTIVE_SHAPE) {
         globalThis.ACTIVE_ITEM_SUBJECT.getValue()?.deactivate();
         ACTIVE_SHAPE.activate();
       }
-    } else if (isSourceShapeWasActive) {
+    }
+
+    if (isSourceShapeWasActive) {
       parentLayer.get(source.uniqueId).activate();
+    }
+
+    if (LINKS?.length) {
+      LINKS.forEach(link => {
+        globalThis.EDITOR.load([
+          {
+            order: globalThis.EDITOR.items.length,
+            items: [link]
+          }
+        ]);
+        globalThis.LINK.set.next(['link', globalThis.EDITOR.last.last]);
+      });
     }
   }
 
