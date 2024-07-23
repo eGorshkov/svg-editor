@@ -8,10 +8,24 @@ import { Subject } from '../helpers/custom-rx/subject.js';
  */
 export class Editor extends Core {
   __type = 'editor';
+  onChange = new Subject(null, false);
+
   #EDITOR_TEMPLATE_ID = 'editor-template';
   #config = null;
-
-  onChange = new Subject(null, false);
+  
+  /**
+   * @type {ILayer}
+   */
+  #linksLayer;
+  get linksLayer() {
+    if (this.#linksLayer && this.get(this.#linksLayer.uniqueId)) {
+      return this.#linksLayer;
+    }
+    this.load([{name: "Линк", showable: false}]);
+    this.reorder();
+    this.#linksLayer = this.last;
+    return this.#linksLayer;
+  }
 
   get configuration() {
     return {
@@ -29,7 +43,7 @@ export class Editor extends Core {
     this.#config = config;
   }
 
-  init(config) {
+  init() {
     this.#setListener();
     this.#initObserver();
     if (this.#config?.layers?.length) this.load(this.#config?.layers.sort((a, b) => (a.order - b.order ? 1 : -1)));

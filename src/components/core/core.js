@@ -90,7 +90,7 @@ export class Core extends Prototype {
    */
   add(type, config = {}) {
     const item = this.create({ type, config });
-    if (item.isLayer) item.add(type, config);
+    if (type && item.isLayer) item.add(type, config);
     this.#add(item);
   }
 
@@ -225,16 +225,7 @@ export class Core extends Prototype {
   #replacePosition(evt) {
     this.template.style.cursor = 'grabbing';
 
-    const change = {};
-    const gridSize = globalThis.GRID?.config.size;
-    change.x = evt.offsetX - this.dragOffsetX;
-    change.y = evt.offsetY - this.dragOffsetY;
-
-    if (evt.shiftKey && gridSize) {
-            change.x = change.x === 0 ? 0 : change.x > 0 ? gridSize : -gridSize;
-            change.y = change.y === 0 ? 0 : change.y > 0 ? gridSize : -gridSize;
-    }
-
+    const change = this.getPositionChanges(evt, {}, evt.offsetX - this.dragOffsetX, evt.offsetY - this.dragOffsetY);
     this.dragOffsetX = evt.offsetX;
     this.dragOffsetY = evt.offsetY;
 

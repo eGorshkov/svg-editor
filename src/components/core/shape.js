@@ -53,8 +53,9 @@ export class Shape extends Prototype {
     evt => {
       if (this.active && this.dragging) {
         this.template.style.cursor = 'grabbing';
-        this.config.x = evt.offsetX - this.dragOffsetX;
-        this.config.y = evt.offsetY - this.dragOffsetY;
+        const change = this.getPositionChanges(evt, {}, (evt.offsetX - this.dragOffsetX) - this.config.x, (evt.offsetY - this.dragOffsetY) - this.config.y);
+        this.config.x += change.x;
+        this.config.y += change.y;
         this.draw(this.template, this.config);
         globalThis.LINK.update.next(this);
       }

@@ -173,4 +173,17 @@ export default class Prototype {
 
     return orders;
   }
+
+  getPositionChanges(event, change, changeX, changeY) {
+    const gridSize = globalThis.GRID?.config.size;
+    change.x = changeX;
+    change.y = changeY;
+
+    if (event.shiftKey && gridSize) {
+      change.x = change.x === 0 ? 0 : change.x > 0 ? gridSize : -gridSize;
+      change.y = change.y === 0 ? 0 : change.y > 0 ? gridSize : -gridSize;
+    }
+
+    return change;
+  }
 }

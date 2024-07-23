@@ -47,7 +47,7 @@ export class LayerTool {
       this.#mapperSelector.clear();
       this.#mapper.clear();
 
-      this.editor.items.forEach(item => this.#createLayerList(item));
+      this.editor.items.forEach(item => item.showable && this.#createLayerList(item));
       [...this.#mapper.entries()].sort().forEach(([_, t]) => this.template.appendChild(t));
     }
   }
