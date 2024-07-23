@@ -82,6 +82,16 @@ export class Editor extends Core {
     );
 
     document.addEventListener(
+        'mousewheel',
+        (evt) => {
+            if (!globalThis.ACTIVE_ITEM_SUBJECT.getValue()) {
+                this.#setStyle('zoom', evt.deltaY * -0.01, 1);
+                this.#initStyles();
+            }
+        }
+    )
+
+    document.addEventListener(
       'keydown',
       evt => {
         const active = globalThis.ACTIVE_ITEM_SUBJECT.getValue();
@@ -149,10 +159,14 @@ export class Editor extends Core {
   }
 
   #initStyles() {
-    let transform = ""; 
+    let transform = "";
+    let zoom = 1;
     Object.entries(this.#config.config).forEach(([key, value]) => {
       console.log(key, value)
       switch (key) {
+        case 'zoom':
+            zoom = value;
+            break;
         case 'rotate':
           transform += value ? `${key}(calc(${value} * 3.142rad)) ` : ""
           break;
@@ -164,9 +178,10 @@ export class Editor extends Core {
       }
     })
     this.template.style.transform = transform.trim();
+    this.template.style.zoom = zoom;
   }
 
-  #setStyle(key, value) {
-    this.#config.config[key] = (this.#config.config[key]??0) + value;
+  #setStyle(key, value, def = 0) {
+    this.#config.config[key] = (this.#config.config[key]??def) + value;
   }
 }
