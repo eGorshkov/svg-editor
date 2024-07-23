@@ -24,6 +24,8 @@ export class InputTool {
       input = document.createElement('input');
     label.innerText = config.label ?? '';
     label.classList.add('tool__item--input', 'pointer');
+    input.setAttribute('step', config.step ?? 1);
+
     label.appendChild(input);
     return label;
   }
