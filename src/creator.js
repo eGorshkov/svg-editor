@@ -77,8 +77,8 @@ function createSelectTool(editor, layerTool) {
       case 'shape':
         const active = globalThis.ACTIVE_ITEM_SUBJECT.getValue();
         if (active) {
-          const activeShape = active.isShape ? active : active.items[0];
-          active.parent.add(tool.value, {
+          const activeShape = active.isShape ? active : active.shapes[0];
+          (active.isShape ? active.parent : active).add(tool.value, {
             x: activeShape.config.x + activeShape.config.width / 2,
             y: activeShape.config.y + activeShape.config.height / 2 
           })

@@ -17,6 +17,7 @@ export function squareDraw(template, config) {
   template.setAttributeNS(null, 'y', config.y);
   template.setAttributeNS(null, 'width', config.width);
   template.setAttributeNS(null, 'height', config.height);
+  template.setAttributeNS(null, 'stroke-width', config.strokeWidth ?? 1);
 }
 
 /**
@@ -41,6 +42,7 @@ export function squareLinking(shapeCtx) {
 export function squareSetting(shapeCtx) {
   return [
     defaultStrokeSetting(shapeCtx),
+    { type: 'inputAsNumber', label: 'Ширина контура: ', currentValue: shapeCtx.config.strokeWidth ?? 1, step: .1, cb: InputAsNumberChange(shapeCtx, 'strokeWidth') },
     defaultFillSetting(shapeCtx),
     { type: 'inputAsNumber', label: 'X: ', currentValue: shapeCtx.config.x, cb: InputAsNumberChange(shapeCtx, 'x') },
     { type: 'inputAsNumber', label: 'Y: ', currentValue: shapeCtx.config.y, cb: InputAsNumberChange(shapeCtx, 'y') },
