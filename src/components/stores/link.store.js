@@ -1,4 +1,5 @@
 import { Subject } from '../helpers/custom-rx/subject.js';
+import { SHAPES_ALIAS } from '../shapes/base.js'
 
 /**
  * @implements {ILinkStore}
@@ -45,7 +46,7 @@ export default class LinkStore {
     if (this.from?.type) {
       this.#editor.linksLayer.load([
         {
-          type: 'link',
+          type: SHAPES_ALIAS.link,
           config: {
             from: { type: this.from.type, shapeId: this.from.shape.uniqueId },
             to: { type: curr.type, shapeId: curr.shape.uniqueId }

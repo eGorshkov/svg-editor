@@ -131,7 +131,7 @@ export default class Prototype {
   setResizable(subscribeFn, config = this.config) {
     this.removeResizable();
 
-    this.resizable = this.active ? new Resizable(this.template, config) : null;
+    this.resizable = this.active ? new Resizable(this.template, config, this.type) : null;
     if (this.resizable !== null) {
       this.template.viewportElement.appendChild(this.resizable.template);
       subscribeFn && this.resizable._resize.subscribe(subscribeFn.bind(this));
