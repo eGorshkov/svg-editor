@@ -9,8 +9,6 @@ export const DEFAULT_SELECTS = [
     settings: getGridSettings,
     separated: true
   },
-  { alias: 'Селект', type: 'select', value: 'select', icon: 'select' },
-  { alias: 'Хэнд', type: 'hand', value: 'hand', icon: 'hand' },
   { alias: 'Слои', type: 'layers-widget', icon: 'layers', separated: true },
   ...Object.values(SHAPES_ALIAS)
     .filter(alias => alias !== SHAPES_ALIAS.link)

@@ -2,6 +2,23 @@ import compose from '../helpers/compose.js';
 import { defaultStrokeSetting, InputAsNumberChange } from '../helpers/settings-callback-functions.js';
 import { ShapeCreator } from '../helpers/shape-creator.js';
 
+const positionEnum = {
+    "↑": 0,
+    0:"↑",
+    "→": 90,
+    90:"→",
+    "↓": 180,
+    180:"↓",
+    "←": 270,
+    270:"←",
+}
+const invertionEnum = {
+    "-1": "Налево",
+    "Налево": -1,
+    0:"Направо",
+    "Направо": 0
+}
+ 
 function getPath(points) {
   return points.map(i => `${i.x},${i.y}`).join(' ');
 }
@@ -25,6 +42,8 @@ export function doorDraw(template, config) {
            case 'rotate':
                 acc += ' '.concat(`${fn}(${value}deg)`)
                 break;
+            case 'scaleX':
+                acc += ' '.concat(`${fn}(${value})`)
            default:
                 break
         }
@@ -77,19 +96,37 @@ export function squareSetting(shapeCtx) {
     {
       type: 'list',
       label: "Ротация",
-      currentValue: "↑",
+      currentValue: positionEnum[shapeCtx?.config?.transform?.rotate ?? 0],
       options: ["↑", "→", "↓", "←"],
       cb: (e) => {
         switch (e.target.value) {
-            case "↑": shapeCtx.config.transform.rotate = 0; break; 
-            case "→": shapeCtx.config.transform.rotate = 90; break; 
-            case "↓": shapeCtx.config.transform.rotate = 180; break;
-            case "←": shapeCtx.config.transform.rotate = 270; break;
+            case "→":  
+            case "↓": 
+            case "←": 
+            case "↑": 
+                shapeCtx.config.transform.rotate = positionEnum[e.target.value]; 
+                break; 
             default: break;
         }
         shapeCtx.draw(shapeCtx.template, shapeCtx.config);
       }
-    }   
+    },
+    {
+      type: 'list',
+      label: "Инверсия",
+      currentValue: invertionEnum[shapeCtx?.config?.transform?.scaleX ?? 0],
+      options: ["Налево", "Направо"],
+      cb: (e) => {
+        switch (e.target.value) {
+            case "Налево":
+            case "Направо":
+                shapeCtx.config.transform.scaleX = invertionEnum[e.target.value]; 
+                break; 
+            default: break;
+        }
+        shapeCtx.draw(shapeCtx.template, shapeCtx.config);
+      }
+    }
   ];
 }
 
@@ -97,6 +134,6 @@ export function DoorShape(config) {
   config.stroke = 'black';
   config.strokeWidth = 3;
   config.strokeDasharray = 0;
-  config.transform = {};
+  config.transform = config.transform ?? {};
   return ShapeCreator('polyline', config, doorDraw, null, squareSetting, null);
 }
