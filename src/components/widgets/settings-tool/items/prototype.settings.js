@@ -23,20 +23,14 @@ export default class PrototypeSettings {
   createInformationBlock() {
     const containerTemplate = document.createElement('div');
     let label;
-    if (this.item.name) {
-      const inputEl = document.createElement('input');
+    const inputEl = document.createElement('input');
 
-      label = document.createElement('label');
-      label.style.display = 'flex';
-      inputEl.addEventListener('change', e => (this.item.name = e.target.value));
-      inputEl.value = this.item.name;
-      label.appendChild(inputEl);
-      label.append(' SETTINGS');
-    } else {
-      const name = this.#item.name ?? this.item.__type.toUpperCase();
-      label = document.createElement('p');
-      label.innerText = `${name} SETTINGS`;
-    }
+    label = document.createElement('label');
+    label.style.display = 'flex';
+    inputEl.addEventListener('change', e => (this.item.name = e.target.value));
+    inputEl.value = this.item.name ?? this.item.__type.toUpperCase();
+    label.appendChild(inputEl);
+    label.append(' SETTINGS');
 
     containerTemplate.appendChild(label);
 

@@ -46,7 +46,8 @@ export default class LayerItem {
     this.template.addEventListener('drop', this.#bindedDrop);
     this.template.addEventListener('dblclick', this.#bindedDblClick);
 
-    this.#item.__type === 'layer' ? this.#setLayer() : this.#setShape();
+    this.#item.isLayer ? this.#setLayer() : this.#setShape();
+    this.template.appendChild(this.#createWrapButton());
     this.template.appendChild(this.#createCopyButton());
     this.template.appendChild(this.#createKillButton());
 
@@ -92,6 +93,27 @@ export default class LayerItem {
       this.#widget.draw();
     });
     return killButton;
+  }
+
+  #createWrapButton() {
+    const wrapButton = document.createElement('button');
+    wrapButton.classList.add('layer-tool-kill-button');
+    wrapButton.innerText = '❒';
+    wrapButton.addEventListener('click', () => {
+      const parent = this.#item.parent;
+      const orders = this.#item.orders;
+      parent.load([{ order: this.#item.parent.items.length, items: [{ type: '__wrap' }] }]);
+      const layer = this.#item.parent.last;
+
+      this.#replaceItems(this.#item.orders, layer.last.orders);
+      parent.reorder();
+      this.#replaceItems(layer.orders, orders);
+      layer.items[0].kill();
+
+      parent.items.sort((a, b) => a.order - b.order);
+      this.#widget.draw();
+    });
+    return wrapButton;
   }
 
   #createCopyButton() {
@@ -246,6 +268,7 @@ export default class LayerItem {
       this.#reactivateShape(SOURCE, PARENT_LAYER, IS_SOURCE_SHAPE_WAS_ACTIVE, LINKS);
     }
   }
+
   #isInSameLayer(sourceOrders, targetOrders) {
     return (
       sourceOrders.slice(0, sourceOrders.length - 1).toString() ===

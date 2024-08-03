@@ -32,7 +32,7 @@ export class SettingsTool {
 
     if (!item) return;
 
-    const SettingsClass = item.isLayer ? LayerSettings : item.isLayer ? ShapeSettings : ToolSettings;
+    const SettingsClass = item.isLayer ? LayerSettings : item.isShape ? ShapeSettings : ToolSettings;
     this.settings = new SettingsClass(item, config);
 
     [...this.settings.createInformationBlock(), this.settings.createParametersBlock()].forEach(t =>

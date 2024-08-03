@@ -98,7 +98,7 @@ export class Editor extends Core {
     document.addEventListener(
         'mousewheel',
         (evt) => {
-            if (!globalThis.ACTIVE_ITEM_SUBJECT.getValue()) {
+            if (!globalThis.ACTIVE_ITEM_SUBJECT.getValue() && evt.shiftKey) {
                 this.#setStyle('zoom', evt.deltaY * -0.01, 1);
                 this.#initStyles();
             }
