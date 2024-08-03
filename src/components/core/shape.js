@@ -1,5 +1,5 @@
 import Prototype from './prototype.js';
-import { SHAPES } from '../shapes/base.js';
+import { SHAPES, SHAPES_ALIAS } from '../shapes/base.js';
 import moveListener from '../helpers/move-listener.js';
 
 /**
@@ -53,8 +53,9 @@ export class Shape extends Prototype {
     evt => {
       if (this.active && this.dragging) {
         this.template.style.cursor = 'grabbing';
-        this.config.x = evt.offsetX - this.dragOffsetX;
-        this.config.y = evt.offsetY - this.dragOffsetY;
+        const change = this.getPositionChanges(evt, {}, (evt.offsetX - this.dragOffsetX) - this.config.x, (evt.offsetY - this.dragOffsetY) - this.config.y);
+        this.config.x += change.x;
+        this.config.y += change.y;
         this.draw(this.template, this.config);
         globalThis.LINK.update.next(this);
       }
@@ -62,7 +63,7 @@ export class Shape extends Prototype {
     _ => {
       this.link?.updatePosition(this);
       this.draw(this.template, this.config);
-      if (this.resizable) this.resizable.show(this.template, this.config);
+      if (this.resizable) this.resizable.show(this.template, this.config, this.type);
       this.dragging = false;
       this.dragOffsetX = this.dragOffsetY = null;
     }
@@ -132,7 +133,7 @@ export class Shape extends Prototype {
   #updateFn([pointId, event]) {
     this.resize(this, pointId, event);
     this.draw(this.template, this.config);
-    this.resizable.show(this.template, this.config);
+    this.resizable.show(this.template, this.config, this.type);
     this.link?.updatePosition(this);
     this.link?.hide();
     globalThis.LINK.update.next(this);
@@ -160,7 +161,7 @@ export class Shape extends Prototype {
   #create(toolType, config) {
     config = { width: 80, height: 80, ...config };
     if (!SHAPES[toolType]) {
-      return new SHAPES.square(config);
+      return new SHAPES[SHAPES_ALIAS.square](config);
     }
     return new SHAPES[toolType](config);
   }

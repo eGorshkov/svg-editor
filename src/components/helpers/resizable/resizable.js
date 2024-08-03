@@ -64,10 +64,10 @@ export class Resizable {
     }
   };
 
-  constructor(shapeTemplate, shapeConfig) {
+  constructor(shapeTemplate, shapeConfig, shapeType) {
     [this.template] = ShapeCreator('g', { width: shapeConfig.width, height: shapeConfig.height });
     this.template.id = RESIZABLE_CONTAINER_ID;
-    this.setPoints(this.getShapeCoords(shapeTemplate, shapeConfig));
+    this.setPoints(shapeTemplate, this.getShapeCoords(shapeTemplate, shapeConfig), shapeType);
     this.createOverlay();
     this.create();
   }
@@ -91,8 +91,8 @@ export class Resizable {
     return coords;
   }
 
-  setPoints(coords) {
-    this.points = new ResizablePoints(coords);
+  setPoints(template, coords, shapeType) {
+    this.points = new ResizablePoints(template, coords, shapeType);
   }
 
   create() {
@@ -130,11 +130,11 @@ export class Resizable {
     );
   }
 
-  show(shapeTemplate, shapeConfig) {
+  show(shapeTemplate, shapeConfig, shapeType) {
     if (this.draggable) {
       return;
     }
-    this.setPoints(this.getShapeCoords(shapeTemplate, shapeConfig));
+    this.setPoints(shapeTemplate, this.getShapeCoords(shapeTemplate, shapeConfig), shapeType);
     Array.from(this.template.children).forEach(point => {
       this.draw(point);
       point.style.visibility = 'visible';

@@ -14,7 +14,7 @@ function defaultStrategyCalculate(config, point) {
     n: () => {
       config.height += config.y - point.y;
       config.y -= config.y - point.y;
-    }
+    },
   };
   return pointId => calculate[pointId]();
 }
@@ -51,9 +51,30 @@ function circleStrategy(shapeConfig, shapeTemplate, point, pointId) {
 }
 //#endregion
 
+//#region Стратегия ресайза линии
+function lineStrategy(shapeConfig, shapeTemplate, point, pointId) {
+  switch (pointId) {
+    case 'l1':      
+      shapeConfig.height += shapeConfig.y - point.y;
+      shapeConfig.y -= shapeConfig.y - point.y;
+
+      shapeConfig.width += shapeConfig.x - point.x;
+      shapeConfig.x -= shapeConfig.x - point.x;
+      break;
+    case 'l2':
+      shapeConfig.width = point.x - shapeConfig.x;
+      shapeConfig.height = point.y - shapeConfig.y;
+      break;
+    default:
+      break;
+  }
+}
+//#endregion
+
 const Resizer = {
   defaultStrategy,
-  circleStrategy
+  circleStrategy,
+  lineStrategy
 };
 
 export default Resizer;

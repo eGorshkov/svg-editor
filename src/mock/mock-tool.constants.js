@@ -1,4 +1,4 @@
-import { SHAPES } from '../components/shapes/base.js';
+import { SHAPES_ALIAS } from '../components/shapes/base.js';
 
 export const DEFAULT_SELECTS = [
   {
@@ -12,8 +12,8 @@ export const DEFAULT_SELECTS = [
   { alias: 'Селект', type: 'select', value: 'select', icon: 'select' },
   { alias: 'Хэнд', type: 'hand', value: 'hand', icon: 'hand' },
   { alias: 'Слои', type: 'layers-widget', icon: 'layers', separated: true },
-  ...Object.keys(SHAPES)
-    .filter(key => key !== 'link')
+  ...Object.values(SHAPES_ALIAS)
+    .filter(alias => alias !== SHAPES_ALIAS.link)
     .map(value => ({ alias: value.toUpperCase(), type: 'shape', value, icon: value }))
 ];
 

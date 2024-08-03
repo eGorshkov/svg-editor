@@ -131,7 +131,7 @@ export default class Prototype {
   setResizable(subscribeFn, config = this.config) {
     this.removeResizable();
 
-    this.resizable = this.active ? new Resizable(this.template, config) : null;
+    this.resizable = this.active ? new Resizable(this.template, config, this.type) : null;
     if (this.resizable !== null) {
       this.template.viewportElement.appendChild(this.resizable.template);
       subscribeFn && this.resizable._resize.subscribe(subscribeFn.bind(this));
@@ -172,5 +172,18 @@ export default class Prototype {
     }
 
     return orders;
+  }
+
+  getPositionChanges(event, change, changeX, changeY) {
+    const gridSize = globalThis.GRID?.config.size;
+    change.x = changeX;
+    change.y = changeY;
+
+    if (event.shiftKey && gridSize) {
+      change.x = change.x === 0 ? 0 : change.x > 0 ? gridSize : -gridSize;
+      change.y = change.y === 0 ? 0 : change.y > 0 ? gridSize : -gridSize;
+    }
+
+    return change;
   }
 }

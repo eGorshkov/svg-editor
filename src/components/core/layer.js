@@ -7,11 +7,13 @@ import { Core } from './core.js';
 export class Layer extends Core {
   __type = 'layer';
   defaultShapeConfig = null;
+  showable = true;
 
   constructor(config, defaultShapeConfig) {
     super('g');
 
     this.name = config.name ?? null;
+    this.showable = config.showable ?? true;
     this.order = config.order;
     this.uniqueId = config.uniqueId ?? this.uniqueId;
     this.defaultShapeConfig = defaultShapeConfig;
@@ -39,6 +41,7 @@ export class Layer extends Core {
     return {
       order: this.order,
       name: this.name,
+      showable: this.showable,
       items: [...this.items.map(shape => shape.getConfiguration())]
     };
   }

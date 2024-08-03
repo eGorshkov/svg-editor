@@ -17,7 +17,7 @@ export function lineDraw(template, config) {
  * @param event {Event}
  */
 export function lineResize(shapeCtx, pointId, event) {
-  Resizer.defaultStrategy(shapeCtx.config, shapeCtx.resizable.points[pointId], pointId);
+  Resizer.lineStrategy(shapeCtx.config, shapeCtx.template, shapeCtx.resizable.points[pointId], pointId);
 }
 
 /**

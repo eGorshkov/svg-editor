@@ -1,4 +1,5 @@
 import { Subject } from '../helpers/custom-rx/subject.js';
+import { SHAPES_ALIAS } from '../shapes/base.js'
 
 /**
  * @implements {ILinkStore}
@@ -43,18 +44,13 @@ export default class LinkStore {
     const curr = { type, shape };
 
     if (this.from?.type) {
-      this.#editor.load([
+      this.#editor.linksLayer.load([
         {
-          order: this.#editor.items.length,
-          items: [
-            {
-              type: 'link',
-              config: {
-                from: { type: this.from.type, shapeId: this.from.shape.uniqueId },
-                to: { type: curr.type, shapeId: curr.shape.uniqueId }
-              }
-            }
-          ]
+          type: SHAPES_ALIAS.link,
+          config: {
+            from: { type: this.from.type, shapeId: this.from.shape.uniqueId },
+            to: { type: curr.type, shapeId: curr.shape.uniqueId }
+          }
         }
       ]);
       this.addLink(curr, this.#editor.last.last);
