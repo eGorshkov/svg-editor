@@ -5,14 +5,21 @@ export const DEFAULT_SELECTS = [
     alias: 'Сетка',
     el: 'input.checkbox',
     type: 'grid',
-    check: () => globalThis.GRID.config.visible,
-    settings: getGridSettings,
+    meta: {
+      check: () => globalThis.GRID.config.visible,
+      settings: getGridSettings
+    },
     separated: true
   },
   { alias: 'Слои', type: 'layers-widget', icon: 'layers', separated: true },
-  ...Object.values(SHAPES_ALIAS)
-    .filter(alias => alias !== SHAPES_ALIAS.link)
-    .map(value => ({ alias: value.toUpperCase(), type: 'shape', value, icon: value }))
+  {
+    alias: 'Шейп',
+    el: 'list',
+    type: 'shape',
+    meta: {
+      data: Object.values(SHAPES_ALIAS).filter(alias => alias !== SHAPES_ALIAS.link)
+    }
+  }
 ];
 
 /**
