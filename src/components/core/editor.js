@@ -12,7 +12,7 @@ export class Editor extends Core {
 
   #EDITOR_TEMPLATE_ID = 'editor-template';
   #config = null;
-  
+
   /**
    * @type {ILayer}
    */
@@ -29,10 +29,14 @@ export class Editor extends Core {
 
   get configuration() {
     return {
+      config: this.#config.config,
       items: this.items,
       layers: this.items.map(layer => layer.getConfiguration()),
       toJson() {
-        return JSON.stringify(this.layers);
+        return JSON.stringify({
+                    config: this.config,
+                    layers: this.layers
+                });
       }
     };
   }
@@ -40,12 +44,13 @@ export class Editor extends Core {
   constructor(config) {
     super('svg');
     this.template.setAttribute('id', this.#EDITOR_TEMPLATE_ID);
-    this.#config = config;
+    this.#config = {config: {}, ...config};
   }
 
   init() {
     this.#setListener();
     this.#initObserver();
+    this.#initStyles();
     if (this.#config?.layers?.length) this.load(this.#config?.layers.sort((a, b) => (a.order - b.order ? 1 : -1)));
 
     this.shapes.filter(shape => shape.type === "link").forEach(link => globalThis.LINK.set.next([link.type, link]));
@@ -91,6 +96,16 @@ export class Editor extends Core {
     );
 
     document.addEventListener(
+        'mousewheel',
+        (evt) => {
+            if (!globalThis.ACTIVE_ITEM_SUBJECT.getValue()) {
+                this.#setStyle('zoom', evt.deltaY * -0.01, 1);
+                this.#initStyles();
+            }
+        }
+    )
+
+    document.addEventListener(
       'keydown',
       evt => {
         const active = globalThis.ACTIVE_ITEM_SUBJECT.getValue();
@@ -105,7 +120,28 @@ export class Editor extends Core {
             default:
               break;
           }
-        }
+        } else {
+          switch (evt.key) {
+            case 'ArrowUp':
+                this.#setStyle('translateY', -10)
+                this.#initStyles();
+                break;
+            case 'ArrowLeft':
+                evt.shiftKey ? this.#setStyle('rotate', -.1) : this.#setStyle('translateX', -10);
+                this.#initStyles();
+                break;
+            case 'ArrowDown':
+                this.#setStyle('translateY', 10)
+                this.#initStyles();
+                break;
+            case 'ArrowRight':
+                evt.shiftKey ? this.#setStyle('rotate', .1) : this.#setStyle('translateX', 10);
+                this.#initStyles();
+                break;
+            default:
+              break;
+            }
+                }
       },
       true
     );
@@ -134,5 +170,32 @@ export class Editor extends Core {
       if (added.length || removed.length) this.onChange.next({ added, removed });
     });
     observer.observe(this.template, { subtree: true, childList: true });
+  }
+
+  #initStyles() {
+    let transform = "";
+    let zoom = 1;
+    Object.entries(this.#config.config).forEach(([key, value]) => {
+      console.log(key, value)
+      switch (key) {
+        case 'zoom':
+            zoom = value;
+            break;
+        case 'rotate':
+          transform += value ? `${key}(calc(${value} * 3.142rad)) ` : ""
+          break;
+        case 'translateX':
+        case 'translateY':
+          transform += value ? `${key}(${value}px) ` : ""
+        default:
+          break;
+      }
+    })
+    this.template.style.transform = transform.trim();
+    this.template.style.zoom = zoom;
+  }
+
+  #setStyle(key, value, def = 0) {
+    this.#config.config[key] = (this.#config.config[key]??def) + value;
   }
 }
