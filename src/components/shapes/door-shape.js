@@ -89,7 +89,7 @@ export function squareSetting(shapeCtx) {
         }
         shapeCtx.draw(shapeCtx.template, shapeCtx.config);
       }
-    }
+    }   
   ];
 }
 
