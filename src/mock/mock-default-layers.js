@@ -2,15 +2,59 @@ export const MOCK_DEFAULT_LAYERS = {
   layers: [
     {
       order: 0,
-      items: [{ type: 'circle', config: { width: 337.07080078125, height: 200, x: 500, y: 200, stroke: '#3fa300' } }]
-    },
-    { order: 1, items: [{ type: 'circle', config: { width: 433.06214904785156, height: 80, x: 508.5, y: 428.5 } }] },
-    { order: 2, items: [{ type: 'square', config: { width: 662, height: 200, x: 179, y: 105, stroke: 'red' } }] },
-    { order: 3, items: [{ type: 'triangle', config: { width: 110, height: 109, x: 444, y: 141, stroke: 'tomato' } }] },
-    {
-      order: 4,
-      items: [{ type: 'text', config: { width: 105.5, height: 31.5, x: 447.5, y: 191.5, value: 'WTF???' } }]
-    },
-    { order: 5, items: [{ type: 'line', config: { width: 80, height: 80, x: 516, y: 220 } }] }
+      name: 'Тест',
+      showable: true,
+      items: [
+        {
+          order: 0,
+          name: 'Спальня',
+          showable: true,
+          items: [
+            {
+              uniqueId: '968341145',
+              order: 0,
+              type: 'square',
+              config: { width: 200, height: 200, x: 500, y: 300, strokeWidth: 0.2 }
+            },
+            { uniqueId: '3269047069', order: 1, type: 'square', config: { width: 200, height: 200, x: 500, y: 600, strokeWidth: 0.2 } },
+            { uniqueId: '4189331679', order: 2, type: 'square', config: { width: 300, height: 200, x: 1000, y: 600, strokeWidth: 0.2 } }
+          ]
+        },
+        {
+          order: 1,
+          name: 'Гостиная + Кухня',
+          showable: true,
+          items: [
+            { uniqueId: '4725691735', order: 0, type: 'square', config: { width: 300, height: 200, x: 700, y: 300, strokeWidth: 0.2 } },
+            { uniqueId: '2964473565', order: 1, type: 'square', config: { width: 300, height: 200, x: 1000, y: 300, strokeWidth: 0.2 } }
+          ]
+        },
+        {
+          order: 2,
+          name: 'Сан узлы',
+          showable: true,
+          items: [
+            { uniqueId: '2214322159', order: 0, type: 'square', config: { width: 100, height: 100, x: 500, y: 500, strokeWidth: 0.2 } },
+            { uniqueId: '2475522294', order: 1, type: 'square', config: { width: 100, height: 100, x: 1200, y: 500, strokeWidth: 0.2 } }
+          ]
+        },
+        {
+          order: 3,
+          name: 'Котельня',
+          showable: true,
+          items: [
+            { uniqueId: '3381000762', order: 0, type: 'square', config: { width: 100, height: 200, x: 700, y: 600, strokeWidth: 0.2 } }
+          ]
+        },
+        {
+          order: 4,
+          name: 'Прихожая',
+          showable: true,
+          items: [
+            { uniqueId: '3680888185', order: 0, type: 'square', config: { width: 200, height: 100, x: 800, y: 600, strokeWidth: 0.2 } }
+          ]
+        }
+      ]
+    }
   ]
 };

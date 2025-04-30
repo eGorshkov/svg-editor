@@ -1,33 +1,48 @@
 import { Shape } from './shape.js';
 import { Core } from './core.js';
 
+/**
+ * @implements {ILayer}
+ */
 export class Layer extends Core {
+  __type = 'layer';
   defaultShapeConfig = null;
-  #order = 0;
+  showable = true;
 
-  get order() {
-    return this.#order;
-  }
+  constructor(config, defaultShapeConfig) {
+    super('g');
 
-  constructor(layerId, shapes, defaultShapeConfig, order) {
-    super('g', shapes);
-    this.#order = order;
-    this.layerId = `layer-${layerId}`;
+    this.name = config.name ?? null;
+    this.showable = config.showable ?? true;
+    this.order = config.order;
+    this.uniqueId = config.uniqueId ?? this.uniqueId;
     this.defaultShapeConfig = defaultShapeConfig;
-    this.template.setAttribute('id', this.layerId);
+
+    if (config.items?.length) this.load(config.items);
   }
 
   /**
    *
-   * @param shape { IShape }
-   * @returns {Shape}
+   * @param item { IShape | ILayer }
+   * @returns {Shape | Layer}
    */
-  create(shape) {
-    this.updateCoreId();
-    return new Shape(shape?.type, this.coreId, this.layerId, { ...this.defaultShapeConfig, ...shape?.config });
+  create(item) {
+    if ('items' in item) {
+      return new Layer(item, {
+        x: this.template.clientWidth / 2,
+        y: this.template.clientHeight / 2
+      });
+    }
+
+    return new Shape(item, { ...this.defaultShapeConfig, ...item?.config }, item?.order || this.items.length);
   }
 
-  updateOrder(newValue) {
-    this.#order = newValue;
+  getConfiguration() {
+    return {
+      order: this.order,
+      name: this.name,
+      showable: this.showable,
+      items: [...this.items.map(shape => shape.getConfiguration())]
+    };
   }
 }
