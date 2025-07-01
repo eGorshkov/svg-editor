@@ -4,6 +4,15 @@ import { ISetting } from './setting';
 import { Base } from './base';
 import { IEditor } from './editor';
 
+/**
+ * Типы и интерфейсы прототипа объектов редактора.
+ * @module types/prototype
+ */
+
+/**
+ * Прототип для всех объектов редактора.
+ * @template T - Тип строки
+ */
 export declare interface IPrototype<T = string> {
   __type: T;
   order: number;

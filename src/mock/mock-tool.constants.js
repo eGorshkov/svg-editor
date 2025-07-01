@@ -1,5 +1,14 @@
 import { SHAPES_ALIAS } from '../components/shapes/base.js';
 
+/**
+ * Мок-константы для инструментов редактора.
+ * @module mockToolConstants
+ */
+
+/**
+ * Массив инструментов по умолчанию для панели выбора.
+ * @type {Array}
+ */
 export const DEFAULT_SELECTS = [
   {
     alias: 'Сетка',
@@ -23,6 +32,7 @@ export const DEFAULT_SELECTS = [
 ];
 
 /**
+ * Возвращает настройки для сетки.
  * @returns {ISetting[]} config
  */
 function getGridSettings() {

@@ -2,6 +2,10 @@ import compose from '../helpers/compose.js';
 import { defaultStrokeSetting, InputAsNumberChange } from '../helpers/settings-callback-functions.js';
 import { ShapeCreator } from '../helpers/shape-creator.js';
 
+/**
+ * Объект positionEnum — перечисление поворотов.
+ * @type {Object}
+ */
 const positionEnum = {
     "↑": 0,
     0:"↑",
@@ -12,6 +16,11 @@ const positionEnum = {
     "←": 270,
     270:"←",
 }
+
+/**
+ * Объект invertionEnum — перечисление инверсий.
+ * @type {Object}
+ */
 const invertionEnum = {
     "-1": "Налево",
     "Налево": -1,
@@ -19,14 +28,20 @@ const invertionEnum = {
     "Направо": 0
 }
  
+/**
+ * Функция получения пути.
+ * @param {Array} points Массив точек
+ * @returns {string} Строка с координатами точек
+ */
 function getPath(points) {
   return points.map(i => `${i.x},${i.y}`).join(' ');
 }
 
 /**
- *
- * @param {SVGAElement} template
- * @param config
+ * Функция отрисовки двери.
+ * @param {SVGAElement} template SVG-элемент
+ * @param {Object} config Конфигурация фигуры
+ * @returns {SVGAElement} SVG-элемент
  */
 export function doorDraw(template, config) {
   template.setAttribute('fill', 'none');
@@ -60,9 +75,9 @@ export function doorDraw(template, config) {
 }
 
 /**
- *
- * @param shapeCtx { IShape }
- * @returns {ISetting[]}
+ * Функция настроек двери (использует настройки квадрата).
+ * @param {IShape} shapeCtx Контекст фигуры
+ * @returns {ISetting[]} Массив настроек
  */
 export function squareSetting(shapeCtx) {
   return [
@@ -130,6 +145,11 @@ export function squareSetting(shapeCtx) {
   ];
 }
 
+/**
+ * Конструктор кастомной фигуры "дверь".
+ * @param {Object} config Конфигурация двери
+ * @returns {Array} Массив с шаблоном и обработчиками
+ */
 export function DoorShape(config) {
   config.stroke = 'black';
   config.strokeWidth = 3;

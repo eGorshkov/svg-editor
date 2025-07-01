@@ -1,3 +1,8 @@
+/**
+ * Композиция функций справа налево.
+ * @param {...Function} fns Функции для композиции
+ * @returns {Function} Результирующая функция-композиция
+ */
 export default function compose(...functions) {
   if (!functions) {
     return x => x;

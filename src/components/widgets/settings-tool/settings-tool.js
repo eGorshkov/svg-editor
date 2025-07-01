@@ -3,6 +3,9 @@ import PrototypeSettings from './items/prototype.settings.js';
 import ShapeSettings from './items/shape.settings.js';
 import ToolSettings from './items/tool.settings.js';
 
+/**
+ * Класс SettingsTool — отвечает за отображение и обработку панели настроек.
+ */
 export class SettingsTool {
   /**
    *
@@ -13,14 +16,18 @@ export class SettingsTool {
   _calls = 0;
   settings = new PrototypeSettings();
 
+  /**
+   * Конструктор SettingsTool.
+   */
   constructor() {
     this.template.classList.add('tool', 'editor__tool');
     this._select.subscribe(({ item, config } = {}) => this.changeTemplate(item, config));
   }
 
   /**
-   * @param {IShape | isLayer | ITool} item
-   * @param {ISetting[]} config
+   * Изменяет содержимое панели настроек в зависимости от выбранного элемента.
+   * @param {IShape|isLayer|ITool} item Элемент (фигура, слой или инструмент)
+   * @param {ISetting[]} config Массив настроек
    */
   changeTemplate(item, config) {
     this._calls++;

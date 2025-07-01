@@ -7,6 +7,11 @@ import {
 } from '../helpers/settings-callback-functions.js';
 import Linker from '../helpers/linker/linker.js';
 
+/**
+ * Функция отрисовки треугольника.
+ * @param {SVGElement} template SVG-элемент
+ * @param {IShapeConfig} config Конфигурация фигуры
+ */
 export function triangleDraw(template, config) {
   template.style.transform = `translate(${config.x}px, ${config.y}px)`;
   template.setAttributeNS(null, 'x', config.x);
@@ -15,18 +20,19 @@ export function triangleDraw(template, config) {
 }
 
 /**
- *
- * @param shapeCtx { IShape }
- * @param pointId { IResizablePointType }
- * @param event {Event}
+ * Функция изменения размера треугольника.
+ * @param {IShape} shapeCtx Контекст фигуры
+ * @param {IResizablePointType} pointId Точка изменения
+ * @param {Event} event Событие
  */
 export function triangleResize(shapeCtx, pointId, event) {
   Resizer.defaultStrategy(shapeCtx.config, shapeCtx.resizable.points[pointId], pointId);
 }
+
 /**
- *
- * @param shapeCtx { IShape }
- * @returns {ISetting[]}
+ * Функция настроек треугольника.
+ * @param {IShape} shapeCtx Контекст фигуры
+ * @returns {ISetting[]} Массив настроек
  */
 export function triangleSetting(shapeCtx) {
   return [
@@ -50,14 +56,19 @@ export function triangleSetting(shapeCtx) {
 }
 
 /**
- *
- * @param shapeCtx { IShape }
- * @returns
+ * Функция линковки треугольника.
+ * @param {IShape} shapeCtx Контекст фигуры
+ * @returns {Object} Стратегия линковки
  */
 function triangleLinking(shapeCtx) {
   return Linker.defaultStrategy(shapeCtx, ['n', 'se', 'sw']);
 }
 
+/**
+ * Конструктор фигуры "Треугольник".
+ * @param {IShapeConfig} config Конфигурация фигуры
+ * @returns {Array} Массив с шаблоном и обработчиками
+ */
 export function TriangleShape(config) {
   return ShapeCreator('polygon', config, triangleDraw, triangleResize, triangleSetting, triangleLinking);
 }

@@ -27,9 +27,10 @@ function getPath(points) {
 }
 
 /**
- *
- * @param {SVGAElement} template
- * @param config
+ * Функция отрисовки линка (соединительной линии).
+ * @param {SVGAElement} template SVG-элемент
+ * @param {Object} config Конфигурация фигуры
+ * @returns {SVGAElement} SVG-элемент
  */
 export function linkDraw(template, config) {
   template.setAttribute('fill', 'none');
@@ -44,9 +45,9 @@ export function linkDraw(template, config) {
 }
 
 /**
- *
- * @param shapeCtx { IShape }
- * @returns {ISetting[]}
+ * Функция настроек линка (использует настройки квадрата).
+ * @param {IShape} shapeCtx Контекст фигуры
+ * @returns {ISetting[]} Массив настроек
  */
 export function squareSetting(shapeCtx) {
   return [
@@ -66,6 +67,11 @@ export function squareSetting(shapeCtx) {
   ];
 }
 
+/**
+ * Конструктор фигуры "Линк".
+ * @param {IShapeConfig} config Конфигурация фигуры
+ * @returns {Array} Массив с шаблоном и обработчиками
+ */
 export function LinkShape(config) {
   config.stroke = 'black';
   config.strokeWidth = 3;

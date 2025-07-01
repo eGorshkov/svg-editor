@@ -1,3 +1,6 @@
+/**
+ * Класс ColorTool — компонент выбора цвета для панели настроек.
+ */
 export class ColorTool {
   template = document.createElement('label');
 
@@ -6,8 +9,8 @@ export class ColorTool {
   }
 
   /**
-   *
-   * @param config {ISetting}
+   * Конструктор ColorTool.
+   * @param {ISetting} config Конфиг настройки
    */
   constructor(config) {
     this.template = this.#create(config);
@@ -17,8 +20,10 @@ export class ColorTool {
   }
 
   /**
-   *
-   * @param config {ISetting}
+   * Приватный метод: создаёт шаблон выбора цвета.
+   * @private
+   * @param {ISetting} config Конфиг настройки
+   * @returns {HTMLElement} Элемент label
    */
   #create(config) {
     const label = document.createElement('label'),

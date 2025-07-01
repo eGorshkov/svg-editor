@@ -1,23 +1,21 @@
+/**
+ * Создаёт SVG-элемент с заданным именем.
+ * @param {string} elementName Имя SVG-элемента
+ * @returns {Element} SVG-элемент
+ */
 export function createTemplate(elementName) {
   return document.createElementNS('http://www.w3.org/2000/svg', elementName);
 }
 
 /**
- *
- * @param {string} elementName
- * @param {*} config
- * @param {(template, config) => void} drawCallback
- * @param {(shapeCtx, pointId, event) => void} resizeCallback
- * @param {(shapeCtx) => ISetting[]} settingCallback
- * @param {() => any} linkingCallback
- * @returns {[
- *  HTMLElement,
- *  IShapeConfig,
- * (template, config) => void,
- * (shapeCtx, pointId, event) => void,
- * (shapeCtx) => ISetting[],
- * () => any
- *  ]}
+ * Фабрика для создания фигуры и её обработчиков.
+ * @param {string} elementName Имя SVG-элемента
+ * @param {*} config Конфигурация фигуры
+ * @param {(template, config) => void} drawCallback Функция отрисовки
+ * @param {(shapeCtx, pointId, event) => void} resizeCallback Функция изменения размера
+ * @param {(shapeCtx) => ISetting[]} settingCallback Функция настроек
+ * @param {() => any} linkingCallback Функция линковки
+ * @returns {[HTMLElement, IShapeConfig, Function, Function, Function, Function]} Массив с обработчиками и шаблоном
  */
 export function ShapeCreator(elementName, config, drawCallback, resizeCallback, settingCallback, linkingCallback) {
   const template = createTemplate(elementName);
@@ -37,17 +35,17 @@ export function ShapeCreator(elementName, config, drawCallback, resizeCallback, 
 }
 
 /**
- *
- * @param { IShape } shapeCtx
- * @param { * } event
- * @param { string } activePointId
+ * Стандартная функция изменения размера (заглушка).
+ * @param {IShape} shapeCtx Контекст фигуры
+ * @param {*} event Событие
+ * @param {string} activePointId Активная точка
  */
 function defaultResize(shapeCtx, event, activePointId) {}
 
 /**
- *
- * @param {HTMLElement} template
- * @param {IShapeConfig} config
+ * Стандартная функция отрисовки фигуры.
+ * @param {HTMLElement} template Шаблон фигуры
+ * @param {IShapeConfig} config Конфигурация фигуры
  */
 export function defaultDraw(template, config) {
   template.setAttributeNS(null, 'x', config.x);

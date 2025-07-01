@@ -1,9 +1,22 @@
 import between from '../between.js';
 import { ShapeCreator } from '../shape-creator.js';
 
+/**
+ * Константа STEP — шаг для связи между фигурами.
+ * @type {number}
+ */
 const STEP = 20;
+
+/**
+ * Константа CIRCLE_WIDTH — ширина круга для связи.
+ * @type {number}
+ */
 const CIRCLE_WIDTH = 15;
 
+/**
+ * Объект COORDS_BY_TYPE — координаты для связи между фигурами.
+ * @type {Object}
+ */
 const COORDS_BY_TYPE = {
   e: coords => ({
     x: coords.x + coords.width,
@@ -38,6 +51,10 @@ const COORDS_BY_TYPE = {
   }
 };
 
+/**
+ * Объект COORDS_BY_TYPE_WITH_STEP — координаты для связи между фигурами с шагом.
+ * @type {Object}
+ */
 const COORDS_BY_TYPE_WITH_STEP = {
   e: coords => ({
     x: coords.x + coords.width + STEP,
@@ -80,6 +97,10 @@ const COORDS_BY_TYPE_WITH_STEP = {
   }
 };
 
+/**
+ * Объект GET_POINT — координаты для связи между фигурами.
+ * @type {Object}
+ */
 const GET_POINT = {
   vertical: {
     findAwayPoint(isLeft, isUpper) {
@@ -140,10 +161,22 @@ const GET_POINT = {
   }
 };
 
+/**
+ * Функция проверяет, является ли тип горизонтальным.
+ * @param {string} type Тип фигуры
+ * @returns {boolean} true, если тип горизонтальный
+ */
 function isHorizontalType(type) {
   return ['w', 'sw', 'nw', 'e', 'se', 'sw'].includes(type);
 }
 
+/**
+ * Функция получает координаты для связи между фигурами.
+ * @param {string} type Тип фигуры
+ * @param {Object} coords Координаты фигуры
+ * @param {boolean} isCircle true, если фигура круглая
+ * @returns {Object} Координаты для связи между фигурами
+*/
 function getter(type, coords, isCircle) {
   if (!this[type]) return { x: 0, y: 0 };
   coords = {
@@ -159,14 +192,35 @@ function getter(type, coords, isCircle) {
     : config;
 }
 
+/**
+ * Функция получает дополнительные точки для связи между фигурами.
+ * @param {string} startProp Тип фигуры
+ * @param {string} endProp Тип фигуры
+ * @param {Object} start Координаты фигуры
+ * @param {Object} end Координаты фигуры
+ * @returns {Object} Дополнительные точки для связи между фигурами
+*/
 function getAdditionalPoints(startProp, endProp, start, end) {
   return GET_POINT.get(startProp, endProp, start, end, start.x < end.x, start.y < end.y);
 }
 
+/**
+ * Функция получает координаты для связи между фигурами.
+ * @param {string} type Тип фигуры
+ * @param {Object} coords Координаты фигуры
+ * @param {boolean} isCircle true, если фигура круглая
+ * @returns {Object} Координаты для связи между фигурами
+*/
 function getCoords(type, coords, isCircle) {
   return [COORDS_BY_TYPE.get(...arguments), COORDS_BY_TYPE_WITH_STEP.get(...arguments)];
 }
 
+/**
+ * Функция получает координаты для связи между фигурами.
+ * @param {Object} shapeCtx Контекст фигуры
+ * @param {Array} types Типы фигур
+ * @returns {Object} Координаты для связи между фигурами
+*/
 function defaultStrategy(shapeCtx, types) {
   let points = {};
   const templates = Array(types.length)
@@ -221,6 +275,10 @@ function defaultStrategy(shapeCtx, types) {
   };
 }
 
+/**
+ * Объект Linker — управляет связями между фигурами.
+ * @type {Object}
+ */
 const Linker = {
   getCoords,
   getAdditionalPoints,

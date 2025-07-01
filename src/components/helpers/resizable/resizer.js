@@ -1,4 +1,9 @@
-//#region Стратегия ресайза общих фигур
+/**
+ * Стратегия изменения размера для прямоугольных фигур.
+ * @param {Object} config Конфигурация фигуры
+ * @param {Object} point Координаты точки
+ * @returns {Function} Функция для изменения размера
+ */
 function defaultStrategyCalculate(config, point) {
   const calculate = {
     e: () => {
@@ -18,15 +23,28 @@ function defaultStrategyCalculate(config, point) {
   };
   return pointId => calculate[pointId]();
 }
+
+/**
+ * Стратегия изменения размера для прямоугольных фигур.
+ * @param {Object} shapeConfig Конфигурация фигуры
+ * @param {Object} point Координаты точки
+ * @param {string} pointId Идентификатор точки
+ */
 function defaultStrategy(shapeConfig, point, pointId) {
   if (!pointId) {
     return;
   }
   pointId.match(/[\w]/gi).forEach(defaultStrategyCalculate(shapeConfig, point));
 }
-//#endregion
 
 //#region Стратегия ресайза круга
+/**
+ * Стратегия изменения размера для круга.
+ * @param {Object} shapeConfig Конфигурация фигуры
+ * @param {SVGElement} shapeTemplate SVG шаблон фигуры
+ * @param {Object} point Координаты точки
+ * @param {string} pointId Идентификатор точки
+ */
 function circleStrategy(shapeConfig, shapeTemplate, point, pointId) {
   switch (pointId) {
     case 'se':
@@ -52,6 +70,13 @@ function circleStrategy(shapeConfig, shapeTemplate, point, pointId) {
 //#endregion
 
 //#region Стратегия ресайза линии
+/**
+ * Стратегия изменения размера для линии.
+ * @param {Object} shapeConfig Конфигурация фигуры
+ * @param {SVGElement} shapeTemplate SVG шаблон фигуры
+ * @param {Object} point Координаты точки
+ * @param {string} pointId Идентификатор точки
+ */
 function lineStrategy(shapeConfig, shapeTemplate, point, pointId) {
   switch (pointId) {
     case 'l1':      
@@ -71,6 +96,9 @@ function lineStrategy(shapeConfig, shapeTemplate, point, pointId) {
 }
 //#endregion
 
+/**
+ * Объект Resizer — содержит стратегии изменения размера для разных фигур.
+ */
 const Resizer = {
   defaultStrategy,
   circleStrategy,

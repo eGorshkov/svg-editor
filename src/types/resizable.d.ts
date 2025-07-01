@@ -2,16 +2,30 @@ import { Base } from './base';
 import { IShapeConfig } from './shape';
 import { ISubject } from './subject';
 
+/**
+ * Типы и интерфейсы для изменения размера объектов.
+ * @module types/resizable
+ */
+
+/**
+ * Интерфейс точки изменения размера.
+ * @interface IResizablePoint
+ */
 export interface IResizablePoint {
+  /** X-координата точки */
+  x: number;
+  /** Y-координата точки */
+  y: number;
   width: number;
   height: number;
-  x: number;
-  y: number;
   fill: string;
   stroke: string;
   cursor?: string;
 }
 
+/**
+ * Интерфейс для всех точек изменения размера.
+ */
 export interface IResizablePoints {
   w: IResizablePoint;
   e: IResizablePoint;
@@ -25,8 +39,14 @@ export interface IResizablePoints {
   circlesNames: Array<IResizablePointType>;
 }
 
+/**
+ * Типы точек изменения размера.
+ */
 export type IResizablePointType = 'w' | 'e' | 's' | 'n' | 'nw' | 'ne' | 'sw' | 'se';
 
+/**
+ * Интерфейс для объектов, поддерживающих изменение размера.
+ */
 export declare interface IResizable extends Base<IShapeConfig> {
   show(template: HTMLElement | SVGElement, config: IShapeConfig): void;
   hide(): void;

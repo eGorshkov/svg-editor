@@ -1,6 +1,9 @@
 import { Subject } from '../../helpers/custom-rx/subject.js';
 import { DEFAULT_SELECTS } from '../../../mock/mock-tool.constants.js';
 
+/**
+ * Класс SelectTool — отвечает за отображение и обработку инструментов выбора.
+ */
 export class SelectTool {
   tools = [];
   _select = new Subject('hand');
@@ -11,11 +14,18 @@ export class SelectTool {
     this.createTools();
   }
 
+  /**
+   * Создаёт элементы инструментов и добавляет их в шаблон.
+   */
   createTools() {
     this.template.classList.add('editor__tool');
     this.tools.forEach(tool => this.createToolElement(tool));
   }
 
+  /**
+   * Создаёт HTML-элемент для отдельного инструмента.
+   * @param {Object} tool Описание инструмента
+   */
   createToolElement(tool) {
     let toolTemplate = null;
     const [tag, type] = (tool.el??"").split('.');
@@ -55,6 +65,14 @@ export class SelectTool {
     }
   }
 
+  /**
+   * Инициализирует input-элемент для инструмента.
+   * @param {Object} tool Описание инструмента
+   * @param {HTMLElement} toolTemplate Шаблон
+   * @param {string} id id элемента
+   * @param {string} type Тип input
+   * @returns {HTMLElement} Элемент label с input
+   */
   #initInput(tool, toolTemplate, id, type) {
         const inputEl = document.createElement("input");
         const inputId = id+'-input';
@@ -75,6 +93,14 @@ export class SelectTool {
         return toolTemplate
   }
   
+  /**
+   * Инициализирует select-элемент для инструмента.
+   * @param {Object} tool Описание инструмента
+   * @param {HTMLElement} toolTemplate Шаблон
+   * @param {string} id id элемента
+   * @param {string} type Тип select
+   * @returns {HTMLElement} Элемент select
+   */
   #initList(tool, toolTemplate, id, type) {
     const select = document.createElement('select');
     const nullOptionEl = document.createElement('option');
@@ -100,6 +126,11 @@ export class SelectTool {
     return select;
   }
   
+  /**
+   * Обрабатывает выбор инструмента.
+   * @param {Event|null} e Событие
+   * @param {Object} tool Описание инструмента
+   */
   select(e, tool) {
     this._select.next(tool);
   }

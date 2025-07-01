@@ -1,3 +1,6 @@
+/**
+ * Класс ListTool — компонент выпадающего списка для панели настроек.
+ */
 export class ListTool {
   template = document.createElement('label');
 
@@ -6,8 +9,8 @@ export class ListTool {
   }
 
   /**
-   *
-   * @param config {ISetting}
+   * Конструктор ListTool.
+   * @param {ISetting} config Конфиг настройки
    */
   constructor(config) {
     this.template = this.#create(config);
@@ -16,8 +19,10 @@ export class ListTool {
   }
 
   /**
-   *
-   * @param config {ISetting}
+   * Приватный метод: создаёт шаблон select.
+   * @private
+   * @param {ISetting} config Конфиг настройки
+   * @returns {HTMLElement} Элемент label
    */
   #create(config) {
     const label = document.createElement('label'),

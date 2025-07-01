@@ -1,3 +1,6 @@
+/**
+ * Класс ResizablePoints — вычисляет координаты точек изменения размера для разных фигур.
+ */
 export class ResizablePoints {
   #defaultPointTemplate = {
     width: 15,
@@ -30,14 +33,26 @@ export class ResizablePoints {
     cursor: 'se-resize'
   });
 
-  constructor(template, coords, shapeType) {
-    this.shapeType = shapeType;
-    switch (shapeType) {
+  /**
+   * Массив точек.
+   * @type {Array}
+   */
+  points = [];
+
+  /**
+   * Конструктор ResizablePoints.
+   * @param {SVGElement} template SVG-элемент фигуры
+   * @param {Object} config Конфигурация фигуры
+   * @param {string} type Тип фигуры
+   */
+  constructor(template, config, type) {
+    this.shapeType = type;
+    switch (type) {
       case 'line':
-        this.#lineStrategy(template, coords);
+        this.#lineStrategy(template, config);
         break;
       default:
-        this.#defaultStrategy(template, coords);
+        this.#defaultStrategy(template, config);
         break;
     }
   }

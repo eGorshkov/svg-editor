@@ -3,45 +3,57 @@ import { SHAPES, SHAPES_ALIAS } from '../shapes/base.js';
 import moveListener from '../helpers/move-listener.js';
 
 /**
+ * Класс фигуры (Shape), реализующий интерфейс IShape.
  * @implements {IShape}
  */
 export class Shape extends Prototype {
+  /**
+   * Тип объекта (shape).
+   * @type {string}
+   */
   __type = 'shape';
   /**
-   * Функция рисвоки шаблона
-   * @param template - шаблон фигуры
-   * @param config - конфигурация фигуры
-   * @type {IShape.draw}
+   * Функция отрисовки фигуры.
+   * @type {Function}
    */
   draw = (template, config) => {};
   /**
-   *
-   * @param shapeCtx
-   * @param pointId
-   * @param event
+   * Функция изменения размера фигуры.
+   * @type {Function}
    */
   resize = (shapeCtx, pointId, event) => {};
   /**
-   *
-   * @param shapeCtx
+   * Функция настроек фигуры.
+   * @type {Function}
    */
   setting = shapeCtx => {};
   /**
-   *
-   * @param shapeCtx
+   * Функция линковки фигуры.
+   * @type {Function}
    */
   linking = shapeCtx => {};
+  /**
+   * Ссылка на объект линка (соединения).
+   * @type {Object|null}
+   */
   link = null;
+  /**
+   * Связи фигуры (to — входящие, from — исходящие).
+   * @type {{to: Array, from: Array}}
+   */
   links = {
     to: [],
     from: []
   };
   /**
-   *  Тип фигуры
-   * @type {ShapesType}
+   * Тип фигуры (square, circle, ...).
+   * @type {ShapesType|null}
    */
   type = null;
-
+  /**
+   * Объект слушателей для drag&drop фигуры.
+   * @type {{start: Function, move: Function, end: Function}}
+   */
   listener = moveListener(
     evt => {
       this.dragging = true;
@@ -68,13 +80,17 @@ export class Shape extends Prototype {
       this.dragOffsetX = this.dragOffsetY = null;
     }
   );
-
-  _updateFn = this.#updateFn.bind(this);
-
   /**
-   *
-   * @param { Partial<IShape> } item
-   * @param { IShapeConfig } config
+   * Приватный метод: функция-обработчик для ресайза.
+   * @type {Function}
+   * @private
+   */
+  _updateFn = this.#updateFn.bind(this);
+  /**
+   * Конструктор Shape.
+   * @param {Partial<IShape>} item Данные фигуры
+   * @param {IShapeConfig} config Конфигурация фигуры
+   * @param {number} order Порядок фигуры
    */
   constructor(item, config, order) {
     super(null);
@@ -82,32 +98,27 @@ export class Shape extends Prototype {
     this.order = order;
     this.type = item?.type;
     this.config = config;
-
     [this.template, this.config, this.draw, this.resize, this.setting, this.linking] = this.#create(this.type, config);
     this.template.setAttribute('id', this.uniqueId);
     this.type === 'link' ? null : this.init(); 
   }
-
+  /**
+   * Инициализирует фигуру (отрисовка и слушатели).
+   */
   init() {
     this.draw(this.template, this.config);
     this.#setListeners();
   }
-
   /**
-   * Функция активации фигуры
-   * 1. Активируется resizable - возможность изменения размера фигуры
-   * 2. Добавляется возможность переноса фигуры
+   * Активирует фигуру (делает resizable, drag&drop и т.д.).
    */
   activate() {
     super.activate(this.setting ? this.setting(this) : null);
     this.setDraggable();
     this.setResizable(this.#updateFn);
   }
-
   /**
-   * Функция деактивации фигуры
-   * 1. Отключает resizable - возможность изменения размера фигуры
-   * 2. Убирает возможность переноса фигуры
+   * Деактивирует фигуру (отключает resizable, drag&drop и т.д.).
    */
   deactivate() {
     super.deactivate();
@@ -115,7 +126,9 @@ export class Shape extends Prototype {
     this.removeResizable();
     this.removeSettings();
   }
-
+  /**
+   * Удаляет фигуру из родителя и связей.
+   */
   kill() {
     this.deactivate();
     globalThis.LINK.remove.next(this);
@@ -125,11 +138,18 @@ export class Shape extends Prototype {
     }
     this.parent.killChild(this);
   }
-
+  /**
+   * Устанавливает связь (линк) для фигуры.
+   * @param {string} type Тип точки связи
+   */
   setLink(type) {
     globalThis.LINK.set.next([type, this]);
   }
-
+  /**
+   * Приватный метод: обработчик ресайза и обновления.
+   * @private
+   * @param {Array} param0 Массив [pointId, event]
+   */
   #updateFn([pointId, event]) {
     this.resize(this, pointId, event);
     this.draw(this.template, this.config);
@@ -138,7 +158,10 @@ export class Shape extends Prototype {
     this.link?.hide();
     globalThis.LINK.update.next(this);
   }
-
+  /**
+   * Приватный метод: инициализирует слушатели событий для фигуры.
+   * @private
+   */
   #setListeners() {
     this.template.addEventListener('click', e => {
       if (e.shiftKey) {
@@ -157,7 +180,13 @@ export class Shape extends Prototype {
     });
     this.template.addEventListener('mouseout', e => this.link?.hide());
   }
-
+  /**
+   * Приватный метод: создаёт шаблон и обработчики для фигуры по типу.
+   * @private
+   * @param {string} toolType Тип фигуры
+   * @param {IShapeConfig} config Конфигурация фигуры
+   * @returns {Array} Массив [template, config, draw, resize, setting, linking]
+   */
   #create(toolType, config) {
     config = { width: 80, height: 80, ...config };
     if (!SHAPES[toolType]) {
@@ -165,7 +194,10 @@ export class Shape extends Prototype {
     }
     return new SHAPES[toolType](config);
   }
-
+  /**
+   * Получает конфигурацию фигуры (для экспорта/сохранения).
+   * @returns {Object} Конфигурация фигуры
+   */
   getConfiguration() {
     return { uniqueId: this.uniqueId, order: this.order, type: this.type, config: this.config }
   }

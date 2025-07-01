@@ -7,6 +7,11 @@ import {
 } from '../helpers/settings-callback-functions.js';
 import Linker from '../helpers/linker/linker.js';
 
+/**
+ * Функция отрисовки круга.
+ * @param {SVGElement} template SVG-элемент
+ * @param {IShapeConfig} config Конфигурация фигуры
+ */
 export function circleDraw(template, config) {
   template.setAttributeNS(null, 'cx', config.x);
   template.setAttributeNS(null, 'cy', config.y);
@@ -15,18 +20,19 @@ export function circleDraw(template, config) {
 }
 
 /**
- *
- * @param shapeCtx { IShape }
- * @param pointId { IResizablePointType }
- * @param event {Event}
+ * Функция изменения размера круга.
+ * @param {IShape} shapeCtx Контекст фигуры
+ * @param {IResizablePointType} pointId Точка изменения
+ * @param {Event} event Событие
  */
 export function circleResize(shapeCtx, pointId, event) {
   Resizer.circleStrategy(shapeCtx.config, shapeCtx.template, shapeCtx.resizable.points[pointId], pointId);
 }
+
 /**
- *
- * @param shapeCtx { IShape }
- * @returns {ISetting[]}
+ * Функция настроек круга.
+ * @param {IShape} shapeCtx Контекст фигуры
+ * @returns {ISetting[]} Массив настроек
  */
 export function circleSetting(shapeCtx) {
   return [
@@ -43,10 +49,20 @@ export function circleSetting(shapeCtx) {
   ];
 }
 
+/**
+ * Функция линковки круга.
+ * @param {IShape} shapeCtx Контекст фигуры
+ * @returns {Object} Стратегия линковки
+ */
 export function circleLinking(shapeCtx) {
   return Linker.defaultStrategy(shapeCtx, ['n', 'e', 's', 'w']);
 }
 
+/**
+ * Конструктор фигуры "Круг".
+ * @param {IShapeConfig} config Конфигурация фигуры
+ * @returns {Array} Массив с шаблоном и обработчиками
+ */
 export function CircleShape(config) {
   return ShapeCreator('circle', config, circleDraw, circleResize, circleSetting, circleLinking);
 }

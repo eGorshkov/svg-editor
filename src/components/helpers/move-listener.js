@@ -1,3 +1,10 @@
+/**
+ * Создаёт слушателей событий для drag&drop.
+ * @param {Function} onStart Колбэк начала
+ * @param {Function} onMove Колбэк перемещения
+ * @param {Function} onEnd Колбэк завершения
+ * @returns {{start: Function, move: Function, end: Function}} Объект слушателей
+ */
 export default function moveListener(startCb, moveCb, endCb) {
   let l = {
     start(e) {

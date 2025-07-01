@@ -2,15 +2,22 @@ import { IResizable, IResizablePointType } from './resizable';
 import { IPrototype } from './prototype';
 import { ShapesType } from './base';
 
+/**
+ * Типы и интерфейсы для фигур редактора.
+ * @module types/shape
+ */
+
+/**
+ * Интерфейс фигуры.
+ * @interface IShape
+ */
 export declare interface IShape extends IPrototype<'shape'> {
-  /**
-   *
-   */
-  config: IShapeConfig;
-  /**
-   * Тип фигуры
-   */
+  /** Уникальный идентификатор фигуры */
+  uniqueId: string;
+  /** Тип фигуры */
   type: ShapesType;
+  /** Конфигурация фигуры */
+  config: IShapeConfig;
 
   /**
    *
