@@ -340,7 +340,6 @@ export default class LayerItem {
       this.#reactivateShape(SOURCE, PARENT_LAYER, IS_SOURCE_SHAPE_WAS_ACTIVE, LINKS);
     }
   }
-
   #isInSameLayer(sourceOrders, targetOrders) {
     return (
       sourceOrders.slice(0, sourceOrders.length - 1).toString() ===

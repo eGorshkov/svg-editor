@@ -212,7 +212,8 @@ export class Core extends Prototype {
     else {
       this.items = this.items.filter(x => x[byKey] !== child[byKey]);
     }
-  }
+  };
+  
   /**
    * Удаляет все дочерние элементы.
    */
