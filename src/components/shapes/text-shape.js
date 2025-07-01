@@ -66,9 +66,9 @@ function setAttributesToCustomTemplate(template, config, points) {
 }
 
 /**
- *
- * @param shapeCtx { IShape }
- * @returns {ISetting[]}
+ * Функция настроек текстовой фигуры.
+ * @param {IShape} shapeCtx Контекст фигуры
+ * @returns {ISetting[]} Массив настроек
  */
 export function textSetting(shapeCtx) {
   return [
@@ -90,6 +90,11 @@ export function textSetting(shapeCtx) {
   ];
 }
 
+/**
+ * Конструктор фигуры "Текст".
+ * @param {IShapeConfig} config Конфигурация фигуры
+ * @returns {Array} Массив с шаблоном и обработчиками
+ */
 export function TextShape(config) {
   const [template] = ShapeCreator('foreignObject', config);
   listenTextTemplate(template, config);

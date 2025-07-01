@@ -1,7 +1,29 @@
+/**
+ * Базовые типы и интерфейсы для SVG-редактора.
+ * @module types/base
+ */
+
+/**
+ * Интерфейс базового объекта редактора.
+ * @interface IBase
+ */
+export interface IBase {
+  /** Уникальный идентификатор */
+  uniqueId: string;
+  /** Имя объекта */
+  name?: string;
+}
+
 import { SHAPES } from '../components/shapes/base';
 import { IPrototype } from './prototype';
 import { IShapeConfig } from './shape';
 
+/**
+ * Базовый интерфейс для всех сущностей редактора.
+ * @template C - Тип конфигурации
+ * @template I - Тип элементов
+ * @template T - Тип строки
+ */
 export declare interface Base<C = any, I = any, T = string> extends IPrototype<T> {
   /**
    *  Конфигурация фигуры
@@ -37,4 +59,7 @@ export declare interface Base<C = any, I = any, T = string> extends IPrototype<T
   changeChildPosition(change: IShapeConfig): void;
 }
 
+/**
+ * Типы фигур, поддерживаемые редактором.
+ */
 export type ShapesType = keyof typeof SHAPES;

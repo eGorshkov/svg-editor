@@ -1,3 +1,6 @@
+/**
+ * Класс LayerItem — элемент панели слоёв (слой или фигура).
+ */
 export default class LayerItem {
   template = null;
   /**
@@ -19,12 +22,20 @@ export default class LayerItem {
   draw = null;
   template = null;
 
+  /**
+   * Конструктор LayerItem.
+   * @param {ILayer|IShape} item Слой или фигура
+   * @param {LayerTool} widget Родительский виджет
+   */
   constructor(item, widget) {
     this.#item = item;
     this.#widget = widget;
     this.#init();
   }
 
+  /**
+   * Удаляет все обработчики событий и очищает элемент.
+   */
   kill() {
     this.template.removeEventListener('dragstart', this.#bindedDragstart);
     this.template.removeEventListener('dragover', this.#bindedDragover);
@@ -32,6 +43,10 @@ export default class LayerItem {
     this.template.removeEventListener('dblclick', this.#bindedDblClick);
   }
 
+  /**
+   * Инициализация шаблона элемента.
+   * @private
+   */
   #init() {
     this.template = document.createElement('button');
     this.template.classList.add('layer-tool-item');
@@ -46,7 +61,8 @@ export default class LayerItem {
     this.template.addEventListener('drop', this.#bindedDrop);
     this.template.addEventListener('dblclick', this.#bindedDblClick);
 
-    this.#item.__type === 'layer' ? this.#setLayer() : this.#setShape();
+    this.#item.isLayer ? this.#setLayer() : this.#setShape();
+    this.template.appendChild(this.#createWrapButton());
     this.template.appendChild(this.#createCopyButton());
     this.template.appendChild(this.#createKillButton());
 
@@ -54,7 +70,8 @@ export default class LayerItem {
   }
 
   /**
-   * @returns
+   * Устанавливает отображение для слоя.
+   * @private
    */
   #setLayer() {
     this.template.appendChild(
@@ -65,7 +82,8 @@ export default class LayerItem {
   }
 
   /**
-   * @returns
+   * Устанавливает отображение для фигуры.
+   * @private
    */
   #setShape() {
     this.template.appendChild(
@@ -75,6 +93,12 @@ export default class LayerItem {
     );
   }
 
+  /**
+   * Создаёт текстовый элемент для отображения информации.
+   * @private
+   * @param {string} text Текст
+   * @returns {HTMLElement} Элемент p
+   */
   #createTextElement(text) {
     const textEl = document.createElement('p');
     textEl.style.flex = '1';
@@ -83,6 +107,11 @@ export default class LayerItem {
     return textEl;
   }
 
+  /**
+   * Создаёт кнопку удаления.
+   * @private
+   * @returns {HTMLElement} Кнопка
+   */
   #createKillButton() {
     const killButton = document.createElement('button');
     killButton.classList.add('layer-tool-kill-button');
@@ -94,6 +123,37 @@ export default class LayerItem {
     return killButton;
   }
 
+  /**
+   * Создаёт кнопку-обёртку.
+   * @private
+   * @returns {HTMLElement} Кнопка
+   */
+  #createWrapButton() {
+    const wrapButton = document.createElement('button');
+    wrapButton.classList.add('layer-tool-kill-button');
+    wrapButton.innerText = '❒';
+    wrapButton.addEventListener('click', () => {
+      const parent = this.#item.parent;
+      const orders = this.#item.orders;
+      parent.load([{ order: this.#item.parent.items.length, items: [{ type: '__wrap' }] }]);
+      const layer = this.#item.parent.last;
+
+      this.#replaceItems(this.#item.orders, layer.last.orders);
+      parent.reorder();
+      this.#replaceItems(layer.orders, orders);
+      layer.items[0].kill();
+
+      parent.items.sort((a, b) => a.order - b.order);
+      this.#widget.draw();
+    });
+    return wrapButton;
+  }
+
+  /**
+   * Создаёт кнопку копирования.
+   * @private
+   * @returns {HTMLElement} Кнопка
+   */
   #createCopyButton() {
     const copyButton = document.createElement('button');
     copyButton.classList.add('layer-tool-copy-button');
@@ -121,6 +181,12 @@ export default class LayerItem {
     return copyButton;
   }
 
+  /**
+   * Линкует новые фигуры после копирования.
+   * @private
+   * @param {IShape} shape Новая фигура
+   * @param {Array} links Ссылки
+   */
   #linkNewShape(shape, links) {
     links.forEach(link => {
       const donorShape = this.#item.orders.every((o, i) => o === link.fromShape.orders[i])
@@ -134,6 +200,12 @@ export default class LayerItem {
     });
   }
 
+  /**
+   * Линкует новые слои после копирования.
+   * @private
+   * @param {ILayer} layer Новый слой
+   * @param {Array} links Ссылки
+   */
   #linkNewLayer(layer, links) {
     links.forEach(link => {
       const lf = this.#item.orders.every((o, i) => o === link.fromShape.orders[i]) && layer;
@@ -147,6 +219,13 @@ export default class LayerItem {
     });
   }
 
+  /**
+   * Дублирует конфигурацию элемента.
+   * @private
+   * @param {Object} configuration Конфигурация
+   * @param {Array} links Ссылки
+   * @returns {Object} Новая конфигурация
+   */
   #duplicateConfiguration(configuration, links) {
     if (configuration.items) {
       const items = configuration.items.reduce((acc, x) => [...acc, this.#duplicateConfiguration(x, links)], []);
@@ -158,9 +237,11 @@ export default class LayerItem {
     configuration.config.y += 10;
     return configuration;
   }
+
   /**
-   *
-   * @param {DragEvent} ev
+   * Обработчик начала drag&drop.
+   * @private
+   * @param {DragEvent} ev Событие
    */
   #dragstartHandler(ev) {
     ev.dataTransfer.dropEffect = 'copy';
@@ -175,8 +256,9 @@ export default class LayerItem {
   }
 
   /**
-   *
-   * @param {DragEvent} ev
+   * Обработчик dragover.
+   * @private
+   * @param {DragEvent} ev Событие
    */
   #dragoverHandler(ev) {
     ev.preventDefault();
@@ -185,8 +267,9 @@ export default class LayerItem {
   }
 
   /**
-   *
-   * @param {DragEvent} ev
+   * Обработчик dragleave.
+   * @private
+   * @param {DragEvent} ev Событие
    */
   #dragleaveHandler(ev) {
     ev.preventDefault();
@@ -194,8 +277,9 @@ export default class LayerItem {
   }
 
   /**
-   *
-   * @param {DragEvent} ev
+   * Обработчик drop.
+   * @private
+   * @param {DragEvent} ev Событие
    */
   #dropHandler(ev) {
     ev.preventDefault();
@@ -204,6 +288,10 @@ export default class LayerItem {
     this.#replaceItems(source.orders, targetOrders);
   }
 
+  /**
+   * Обработчик двойного клика по элементу.
+   * @param {Event} ev Событие
+   */
   dblClick(ev) {
     ev.preventDefault();
     ev.stopPropagation();
@@ -221,6 +309,12 @@ export default class LayerItem {
     }
   }
 
+  /**
+   * Заменяет элементы между слоями/фигурами.
+   * @private
+   * @param {Array} sourceOrders Путь источника
+   * @param {Array} targetOrders Путь цели
+   */
   #replaceItems(sourceOrders, targetOrders) {
     const SOURCE = this.#widget.editor.get(sourceOrders, 'order');
     const TARGET = this.#widget.editor.get(targetOrders, 'order');

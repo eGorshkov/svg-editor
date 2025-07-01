@@ -2,6 +2,12 @@ import { Subject } from '../helpers/custom-rx/subject.js';
 import { SHAPES_ALIAS } from '../shapes/base.js'
 
 /**
+ * Хранилище связей между фигурами.
+ * @module linkStore
+ */
+
+/**
+ * Класс LinkStore — хранилище связей между фигурами.
  * @implements {ILinkStore}
  */
 export default class LinkStore {
@@ -14,10 +20,17 @@ export default class LinkStore {
 
   #editor = null;
 
+  /**
+   * Конструктор LinkStore.
+   * @param {IEditor} editor Экземпляр редактора
+   */
   constructor(editor) {
     this.#editor = editor;
   }
 
+  /**
+   * Инициализирует глобальные Subjects для управления связями.
+   */
   init() {
     globalThis.LINK = {
       set: new Subject(null, false),
@@ -32,6 +45,11 @@ export default class LinkStore {
     globalThis.LINK.clear.subscribe(_ => this.clear());
   }
 
+  /**
+   * Устанавливает связь или добавляет новую.
+   * @param {string} type Тип точки связи
+   * @param {IShape} shape Фигура
+   */
   set(type, shape) {
     if (type === 'link') {
       const fromShape = this.#editor.find(shape.config.from.shapeId, 'uniqueId');
@@ -59,6 +77,10 @@ export default class LinkStore {
     }
   }
 
+  /**
+   * Обновляет связи для фигуры.
+   * @param {IShape} shape Фигура
+   */
   update(shape) {
     ['to', 'from'].forEach(type =>
       shape.links[type].forEach(linkShape => {
@@ -70,6 +92,10 @@ export default class LinkStore {
     );
   }
 
+  /**
+   * Удаляет все связи, связанные с фигурой.
+   * @param {IShape} shape Фигура
+   */
   remove(shape) {
     if (shape.type === 'link') return;
 
@@ -85,6 +111,11 @@ export default class LinkStore {
     );
   }
 
+  /**
+   * Добавляет новую связь.
+   * @param {Object} curr Текущая точка
+   * @param {IShape} linkShape Фигура-связь
+   */
   addLink(curr, linkShape) {
     this.from.shape.links.from.push(linkShape);
     curr.shape.links.to.push(linkShape);
@@ -101,6 +132,10 @@ export default class LinkStore {
     this.from = { ...this.initFrom };
   }
 
+  /**
+   * Удаляет связь по её уникальному идентификатору.
+   * @param {string} linkId Уникальный id связи
+   */
   removeLinkById(linkId) {
     const linkIndex = this.links.findIndex(x => x.linkShape.uniqueId === linkId),
       link = this.links[linkIndex];
@@ -115,6 +150,12 @@ export default class LinkStore {
     }
   }
 
+  /**
+   * Получает связи по id фигуры и типу.
+   * @param {string} shapeId id фигуры
+   * @param {string} [type] Тип ('from' или 'to')
+   * @returns {Array} Массив связей
+   */
   getByShapeId(shapeId, type) {
     switch (type) {
       case 'from':
@@ -126,6 +167,9 @@ export default class LinkStore {
     }
   }
 
+  /**
+   * Очищает все связи.
+   */
   clear() {
     this.links.forEach(link => this.removeLinkById(link.linkShape.uniqueId));
   }

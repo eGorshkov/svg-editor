@@ -9,20 +9,29 @@ import LinkStore from './components/stores/link.store.js';
 
 //#region CREATORS
 
+/**
+ * Создаёт основной элемент редактора.
+ * @returns {HTMLElement} Главный элемент редактора
+ */
 function createMain() {
   const main = document.getElementById('main');
   main.classList.add('editor');
   return main;
 }
 
+/**
+ * Создаёт контейнеры редактора (шапка и основная область).
+ * @param {Editor} editor Экземпляр редактора
+ * @returns {HTMLElement[]} Массив контейнеров
+ */
 function createContainers(editor) {
   return [createHeader(editor), createContainer(editor)];
 }
 
 /**
- *
- * @param {Editor} editor
- * @returns
+ * Создаёт шапку редактора с кнопками.
+ * @param {Editor} editor Экземпляр редактора
+ * @returns {HTMLElement} Элемент шапки
  */
 function createHeader(editor) {
   const headerContainer = document.createElement('div');
@@ -35,6 +44,11 @@ function createHeader(editor) {
   return headerContainer;
 }
 
+/**
+ * Создаёт основной контейнер редактора.
+ * @param {Editor} editor Экземпляр редактора
+ * @returns {HTMLElement} Элемент контейнера
+ */
 function createContainer(editor) {
   const container = document.createElement('section'),
     customTemplate = createCustomTemplate();
@@ -46,16 +60,21 @@ function createContainer(editor) {
   return container;
 }
 
+/**
+ * Создаёт инструменты редактора.
+ * @param {Editor} editor Экземпляр редактора
+ * @returns {Array} Массив инструментов
+ */
 function createTools(editor) {
   const layerTool = new LayerTool(editor);
   return [layerTool, createSettingsTool(editor), createSelectTool(editor, layerTool)];
 }
 
 /**
- *
- * @param {Editor} editor
- * @param {LayerTool} layerTool
- * @returns
+ * Создаёт инструмент выбора.
+ * @param {Editor} editor Экземпляр редактора
+ * @param {LayerTool} layerTool Инструмент слоёв
+ * @returns {SelectTool} Инструмент выбора
  */
 function createSelectTool(editor, layerTool) {
   const selectTool = new SelectTool();
@@ -93,6 +112,10 @@ function createSelectTool(editor, layerTool) {
   return selectTool;
 }
 
+/**
+ * Создаёт инструмент настроек.
+ * @returns {SettingsTool} Инструмент настроек
+ */
 function createSettingsTool() {
   const settingsTool = new SettingsTool();
   settingsTool.template.classList.add('editor__tool--right');
@@ -101,11 +124,20 @@ function createSettingsTool() {
 
 //#endregion
 
+/**
+ * Добавляет контейнеры и инструменты в основной элемент.
+ * @param {[HTMLElement, HTMLElement[], Array]} param0 Массив с главным элементом, контейнерами и инструментами
+ */
 function createUI([main, containers, tools]) {
   containers.forEach(container => main.appendChild(container));
   tools.forEach(tool => main.appendChild(tool.template));
 }
 
+/**
+ * Инициализирует глобальные переменные и создаёт шаблоны редактора.
+ * @param {Editor} editor Экземпляр редактора
+ * @returns {Array} Массив с главным элементом, контейнерами и инструментами
+ */
 function createTemplates(editor) {
   globalThis.EDITOR = editor;
   globalThis.LINK_STORE = new LinkStore(editor);
@@ -116,6 +148,11 @@ function createTemplates(editor) {
   return [createMain(), createContainers(editor), createTools(editor)];
 }
 
+/**
+ * Добавляет метод toCapitalizeCase к String и возвращает конфиг.
+ * @param {Object} config Конфигурация
+ * @returns {Object} Конфигурация
+ */
 function createCommon(config) {
   String.prototype.toCapitalizeCase = function() {
     const [first, ...other] = this;
@@ -124,6 +161,11 @@ function createCommon(config) {
   return config;
 }
 
+/**
+ * Создаёт экземпляр редактора и глобальные Subject.
+ * @param {Object} config Конфигурация редактора
+ * @returns {Editor} Экземпляр редактора
+ */
 function createEditor(config) {
   globalThis.SETTINGS_TOOL_SUBJECT = new Subject(null, false);
   globalThis.ACTIVE_ITEM_SUBJECT = new Subject(null, false);
@@ -134,9 +176,9 @@ function createEditor(config) {
 }
 
 /**
- *
- * @param {Editor} editor
- * @returns {HTMLElement}
+ * Кнопка копирования конфигурации редактора.
+ * @param {Editor} editor Экземпляр редактора
+ * @returns {HTMLElement} Кнопка
  */
 function getCopyConfigurationButton(editor) {
   const configurationButton = document.createElement('button');
@@ -148,9 +190,9 @@ function getCopyConfigurationButton(editor) {
 }
 
 /**
- *
- * @param {Editor} editor
- * @returns {HTMLElement}
+ * Кнопка экспорта SVG.
+ * @param {Editor} editor Экземпляр редактора
+ * @returns {HTMLElement} Кнопка
  */
 function getExportButton(editor) {
   const exportButton = document.createElement('button');
@@ -162,9 +204,9 @@ function getExportButton(editor) {
 }
 
 /**
- *
- * @param {Editor} editor
- * @returns {void}
+ * Обработчик экспорта SVG.
+ * @param {Editor} editor Экземпляр редактора
+ * @returns {Function} Функция-обработчик
  */
 function handleExport(editor) {
   function changeValue(el, x, y) {

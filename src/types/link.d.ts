@@ -1,14 +1,27 @@
 import { IResizablePointType } from './resizable';
 import { IShape } from './shape';
 
-export declare interface ILink {
-  fromType: IResizablePointType;
-  fromShape: IShape;
-  toType: IResizablePointType;
-  toShape: IShape;
-  linkShape: IShape;
+/**
+ * Типы и интерфейсы связей SVG-редактора.
+ * @module types/link
+ */
+
+/**
+ * Интерфейс связи между фигурами.
+ * @interface ILink
+ */
+export interface ILink {
+  /** Уникальный идентификатор связи */
+  uniqueId: string;
+  /** Идентификатор начальной фигуры */
+  fromId: string;
+  /** Идентификатор конечной фигуры */
+  toId: string;
 }
 
+/**
+ * Интерфейс хранилища связей.
+ */
 export declare interface ILinkStore {
   links: ILink[];
   initFrom: SubscribeFrom;

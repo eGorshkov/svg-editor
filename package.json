@@ -23,9 +23,9 @@
   "devDependencies": {
     "husky": "4.2.5",
     "lint-staged": "10.2.13",
+    "nodemon": "2.0.4",
     "prettier": "^2.1.1",
-    "pretty-quick": "^3.0.0",
-    "nodemon": "2.0.4"
+    "pretty-quick": "^3.0.0"
   },
   "husky": {
     "hooks": {
@@ -34,7 +34,7 @@
   },
   "lint-staged": {
     "*.{js,json,css,scss,less,md,ts,html,component.html}": [
-      "prettier --write",
+      "prettier . --write",
       "git add"
     ]
   }

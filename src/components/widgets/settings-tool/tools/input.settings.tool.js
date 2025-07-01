@@ -1,3 +1,6 @@
+/**
+ * Класс InputTool — компонент текстового/числового поля для панели настроек.
+ */
 export class InputTool {
   template = document.createElement('label');
 
@@ -6,8 +9,8 @@ export class InputTool {
   }
 
   /**
-   *
-   * @param config {ISetting}
+   * Конструктор InputTool.
+   * @param {ISetting} config Конфиг настройки
    */
   constructor(config) {
     this.template = this.#create(config);
@@ -16,8 +19,10 @@ export class InputTool {
   }
 
   /**
-   *
-   * @param config {ISetting}
+   * Приватный метод: создаёт шаблон input.
+   * @private
+   * @param {ISetting} config Конфиг настройки
+   * @returns {HTMLElement} Элемент label
    */
   #create(config) {
     const label = document.createElement('label'),
@@ -31,11 +36,19 @@ export class InputTool {
   }
 }
 
+/**
+ * Класс InputNumberTool — компонент числового поля для панели настроек.
+ * @extends InputTool
+ */
 export class InputNumberTool extends InputTool {
   get #input() {
     return this.template.querySelector('input');
   }
 
+  /**
+   * Конструктор InputNumberTool.
+   * @param {ISetting} config Конфиг настройки
+   */
   constructor(config) {
     super(config);
     this.#input.type = 'number';

@@ -1,19 +1,43 @@
 import PrototypeSettings from './prototype.settings.js';
 
+/**
+ * Класс ShapeSettings — настройки для фигуры.
+ * @extends PrototypeSettings
+ */
 export default class ShapeSettings extends PrototypeSettings {
+  /**
+   * Конструктор ShapeSettings.
+   * @param {IShape} item Фигура
+   * @param {ISetting[]} config Массив настроек
+   */
   constructor(item, config) {
     super(item, config);
   }
 
+  /**
+   * Создаёт информационный блок для фигуры, включая список связей.
+   * @returns {Array} Массив элементов
+   */
   createInformationBlock() {
     return [...super.createInformationBlock(), this.#createLinksList()].filter(Boolean);
   }
 
+  /**
+   * Получает элемент с подписью для фигуры.
+   * @returns {HTMLElement} Элемент label
+   */
   getLabelElement() {
     const { type, order } = this.item;
     return super.getLabelElement(`Type: ${type.toCapitalizeCase()} | Order: ${order}`);
   }
 
+  /**
+   * Приватный метод: создаёт элемент связи.
+   * @private
+   * @param {Object} link Связь
+   * @param {string} type Тип связи ('from' или 'to')
+   * @returns {HTMLElement} Элемент связи
+   */
   #setSubItem(link, type) {
     const { linkShape, toType, toShape, fromType, fromShape } = link;
     const linkWith = type === 'from' ? toShape : fromShape;
@@ -43,6 +67,11 @@ export default class ShapeSettings extends PrototypeSettings {
     return el;
   }
 
+  /**
+   * Приватный метод: создаёт список связей фигуры.
+   * @private
+   * @returns {HTMLElement|null} Список связей или null
+   */
   #createLinksList() {
     if (this.item.links.from.length + this.item.links.to.length === 0) return null;
 

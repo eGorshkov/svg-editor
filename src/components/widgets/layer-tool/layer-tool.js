@@ -1,5 +1,8 @@
 import LayerItem from './layer-item.js';
 
+/**
+ * Класс LayerTool — отвечает за отображение и управление слоями редактора.
+ */
 export class LayerTool {
   /**
    * @type {IEditor}
@@ -30,11 +33,17 @@ export class LayerTool {
     });
   }
 
+  /**
+   * Открывает/закрывает панель слоёв.
+   */
   change() {
     this.#isOpen = !this.#isOpen;
     this.draw();
   }
 
+  /**
+   * Перерисовывает панель слоёв.
+   */
   draw() {
     this.template.style.visibility = this.#isOpen ? '' : 'hidden';
 
@@ -52,6 +61,11 @@ export class LayerTool {
     }
   }
 
+  /**
+   * Рекурсивно создаёт список слоёв и фигур.
+   * @param {ILayer|IShape} item Слой или фигура
+   * @returns {HTMLElement} Элемент details
+   */
   #createLayerList(item) {
     const detailsEl = document.createElement('details');
     this.#prevMapperSelector.get(item.uniqueId) && detailsEl.setAttribute('open', '');
@@ -86,15 +100,19 @@ export class LayerTool {
     return detailsEl;
   }
 
+  /**
+   * Инициализирует шаблон панели слоёв.
+   * @private
+   */
   #init() {
     this.template.classList.add('editor__tool', 'layer-tool-container');
     this.template.style.visibility = 'hidden';
   }
 
   /**
-   *
-   * @param {ILayer | IShape} item
-   * @returns
+   * Создаёт шаблон для отдельного элемента (слоя или фигуры).
+   * @param {ILayer|IShape} item Слой или фигура
+   * @returns {HTMLElement} Кнопка элемента
    */
   #createItemTemplate(item) {
     this.#items.set(item.uniqueId, new LayerItem(item, this));
@@ -111,6 +129,10 @@ export class LayerTool {
     return this.#items.get(item.uniqueId)?.template;
   }
 
+  /**
+   * Удаляет шаблон элемента из панели.
+   * @param {HTMLElement} item Элемент для удаления
+   */
   #removeItemTemplate(item) {
     this.#items.get(item.uniqueId)?.kill();
     this.template.removeChild(item);

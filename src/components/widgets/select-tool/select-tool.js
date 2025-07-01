@@ -1,6 +1,9 @@
 import { Subject } from '../../helpers/custom-rx/subject.js';
 import { DEFAULT_SELECTS } from '../../../mock/mock-tool.constants.js';
 
+/**
+ * Класс SelectTool — отвечает за отображение и обработку инструментов выбора.
+ */
 export class SelectTool {
   tools = [];
   _select = new Subject('hand');
@@ -11,33 +14,28 @@ export class SelectTool {
     this.createTools();
   }
 
+  /**
+   * Создаёт элементы инструментов и добавляет их в шаблон.
+   */
   createTools() {
     this.template.classList.add('editor__tool');
     this.tools.forEach(tool => this.createToolElement(tool));
   }
 
+  /**
+   * Создаёт HTML-элемент для отдельного инструмента.
+   * @param {Object} tool Описание инструмента
+   */
   createToolElement(tool) {
-    let toolTemplate;
+    let toolTemplate = null;
     const [tag, type] = (tool.el??"").split('.');
     const id = `${tool.type}-${this.#TOOL_NAME}`;
     switch(tag) {
       case "input":
-        const inputEl = document.createElement("input");
-        const inputId = id+'-input';
-
-        toolTemplate = document.createElement("label");
-        toolTemplate.setAttribute("for", inputId);
-        toolTemplate.innerText = tool.alias
-
-        inputEl.id = inputId;        
-        inputEl.setAttribute("type", type ?? "text");
-
-        if (type === "checkbox") {
-          tool.check() && inputEl.setAttribute("checked", "");
-          inputEl.addEventListener('change', e => this.select(e, tool));
-        } else toolTemplate.addEventListener('click', e => this.select(e, tool));
-
-        toolTemplate.appendChild(inputEl);
+        toolTemplate = this.#initInput(tool, toolTemplate, id, type);
+        break;
+      case "list":
+        toolTemplate = this.#initList(tool, toolTemplate, id, type);
         break;
       default:
         toolTemplate = document.createElement("button");
@@ -48,12 +46,12 @@ export class SelectTool {
     
     toolTemplate.id = id;
 
-    if (tool.settings) {
+    if (tool.meta?.settings) {
       const settingsEl = document.createElement('button');
       settingsEl.innerText = '◯';
       settingsEl.addEventListener('click', e => {
         e.preventDefault();
-        globalThis.SETTINGS_TOOL_SUBJECT.next({ item: tool, config: tool.settings() });
+        globalThis.SETTINGS_TOOL_SUBJECT.next({ item: tool, config: tool.meta.settings() });
       })
       toolTemplate.appendChild(settingsEl);
     }
@@ -67,6 +65,72 @@ export class SelectTool {
     }
   }
 
+  /**
+   * Инициализирует input-элемент для инструмента.
+   * @param {Object} tool Описание инструмента
+   * @param {HTMLElement} toolTemplate Шаблон
+   * @param {string} id id элемента
+   * @param {string} type Тип input
+   * @returns {HTMLElement} Элемент label с input
+   */
+  #initInput(tool, toolTemplate, id, type) {
+        const inputEl = document.createElement("input");
+        const inputId = id+'-input';
+
+        toolTemplate = document.createElement("label");
+        toolTemplate.setAttribute("for", inputId);
+        toolTemplate.innerText = tool.alias
+
+        inputEl.id = inputId;        
+        inputEl.setAttribute("type", type ?? "text");
+
+        if (type === "checkbox") {
+          tool.meta.check() && inputEl.setAttribute("checked", "");
+          inputEl.addEventListener('change', e => this.select(e, tool));
+        } else toolTemplate.addEventListener('click', e => this.select(e, tool));
+
+        toolTemplate.appendChild(inputEl);
+        return toolTemplate
+  }
+  
+  /**
+   * Инициализирует select-элемент для инструмента.
+   * @param {Object} tool Описание инструмента
+   * @param {HTMLElement} toolTemplate Шаблон
+   * @param {string} id id элемента
+   * @param {string} type Тип select
+   * @returns {HTMLElement} Элемент select
+   */
+  #initList(tool, toolTemplate, id, type) {
+    const select = document.createElement('select');
+    const nullOptionEl = document.createElement('option');
+    nullOptionEl.value = '';
+    nullOptionEl.innerText = tool.alias;
+    nullOptionEl.selected = true;
+    nullOptionEl.disabled = true;
+    nullOptionEl.hidden = true;
+    select.appendChild(nullOptionEl);
+    tool.meta?.data?.forEach(option => {
+      const optionEL = document.createElement('option');
+      optionEL.value = optionEL.innerText = option;
+      select.appendChild(optionEL);
+    });
+
+
+    select.addEventListener('change', x => {
+        const value = x.target.value;
+        x.target.value = "";
+        this.select(null, { type: "shape", value })
+    });
+
+    return select;
+  }
+  
+  /**
+   * Обрабатывает выбор инструмента.
+   * @param {Event|null} e Событие
+   * @param {Object} tool Описание инструмента
+   */
   select(e, tool) {
     this._select.next(tool);
   }

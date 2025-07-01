@@ -2,14 +2,46 @@ import compose from '../helpers/compose.js';
 import { defaultStrokeSetting, InputAsNumberChange } from '../helpers/settings-callback-functions.js';
 import { ShapeCreator } from '../helpers/shape-creator.js';
 
+/**
+ * Объект positionEnum — перечисление поворотов.
+ * @type {Object}
+ */
+const positionEnum = {
+    "↑": 0,
+    0:"↑",
+    "→": 90,
+    90:"→",
+    "↓": 180,
+    180:"↓",
+    "←": 270,
+    270:"←",
+}
+
+/**
+ * Объект invertionEnum — перечисление инверсий.
+ * @type {Object}
+ */
+const invertionEnum = {
+    "-1": "Налево",
+    "Налево": -1,
+    0:"Направо",
+    "Направо": 0
+}
+ 
+/**
+ * Функция получения пути.
+ * @param {Array} points Массив точек
+ * @returns {string} Строка с координатами точек
+ */
 function getPath(points) {
   return points.map(i => `${i.x},${i.y}`).join(' ');
 }
 
 /**
- *
- * @param {SVGAElement} template
- * @param config
+ * Функция отрисовки двери.
+ * @param {SVGAElement} template SVG-элемент
+ * @param {Object} config Конфигурация фигуры
+ * @returns {SVGAElement} SVG-элемент
  */
 export function doorDraw(template, config) {
   template.setAttribute('fill', 'none');
@@ -25,6 +57,8 @@ export function doorDraw(template, config) {
            case 'rotate':
                 acc += ' '.concat(`${fn}(${value}deg)`)
                 break;
+            case 'scaleX':
+                acc += ' '.concat(`${fn}(${value})`)
            default:
                 break
         }
@@ -41,9 +75,9 @@ export function doorDraw(template, config) {
 }
 
 /**
- *
- * @param shapeCtx { IShape }
- * @returns {ISetting[]}
+ * Функция настроек двери (использует настройки квадрата).
+ * @param {IShape} shapeCtx Контекст фигуры
+ * @returns {ISetting[]} Массив настроек
  */
 export function squareSetting(shapeCtx) {
   return [
@@ -77,26 +111,49 @@ export function squareSetting(shapeCtx) {
     {
       type: 'list',
       label: "Ротация",
-      currentValue: "↑",
+      currentValue: positionEnum[shapeCtx?.config?.transform?.rotate ?? 0],
       options: ["↑", "→", "↓", "←"],
       cb: (e) => {
         switch (e.target.value) {
-            case "↑": shapeCtx.config.transform.rotate = 0; break; 
-            case "→": shapeCtx.config.transform.rotate = 90; break; 
-            case "↓": shapeCtx.config.transform.rotate = 180; break;
-            case "←": shapeCtx.config.transform.rotate = 270; break;
+            case "→":  
+            case "↓": 
+            case "←": 
+            case "↑": 
+                shapeCtx.config.transform.rotate = positionEnum[e.target.value]; 
+                break; 
             default: break;
         }
         shapeCtx.draw(shapeCtx.template, shapeCtx.config);
       }
-    }   
+    },
+    {
+      type: 'list',
+      label: "Инверсия",
+      currentValue: invertionEnum[shapeCtx?.config?.transform?.scaleX ?? 0],
+      options: ["Налево", "Направо"],
+      cb: (e) => {
+        switch (e.target.value) {
+            case "Налево":
+            case "Направо":
+                shapeCtx.config.transform.scaleX = invertionEnum[e.target.value]; 
+                break; 
+            default: break;
+        }
+        shapeCtx.draw(shapeCtx.template, shapeCtx.config);
+      }
+    }
   ];
 }
 
+/**
+ * Конструктор кастомной фигуры "дверь".
+ * @param {Object} config Конфигурация двери
+ * @returns {Array} Массив с шаблоном и обработчиками
+ */
 export function DoorShape(config) {
   config.stroke = 'black';
   config.strokeWidth = 3;
   config.strokeDasharray = 0;
-  config.transform = {};
+  config.transform = config.transform ?? {};
   return ShapeCreator('polyline', config, doorDraw, null, squareSetting, null);
 }

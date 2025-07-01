@@ -4,19 +4,42 @@ import { RESIZABLE_POINT_ATTRIBUTE } from '../helpers/resizable/resizable.js';
 import { Subject } from '../helpers/custom-rx/subject.js';
 
 /**
+ * Класс редактора (Editor), реализующий интерфейс IEditor.
  * @implements {IEditor}
  */
 export class Editor extends Core {
-  __type = 'editor';
-  onChange = new Subject(null, false);
-
-  #EDITOR_TEMPLATE_ID = 'editor-template';
-  #config = null;
-
   /**
-   * @type {ILayer}
+   * Тип объекта (editor).
+   * @type {string}
+   */
+  __type = 'editor';
+  /**
+   * Subject для отслеживания изменений редактора.
+   * @type {Subject}
+   */
+  onChange = new Subject(null, false);
+  /**
+   * Приватный id SVG-элемента редактора.
+   * @type {string}
+   * @private
+   */
+  #EDITOR_TEMPLATE_ID = 'editor-template';
+  /**
+   * Приватная конфигурация редактора.
+   * @type {Object|null}
+   * @private
+   */
+  #config = null;
+  /**
+   * Приватный слой для связей.
+   * @type {ILayer|undefined}
+   * @private
    */
   #linksLayer;
+  /**
+   * Геттер: возвращает слой для связей (создаёт при необходимости).
+   * @returns {ILayer}
+   */
   get linksLayer() {
     if (this.#linksLayer && this.get(this.#linksLayer.uniqueId)) {
       return this.#linksLayer;
@@ -26,7 +49,10 @@ export class Editor extends Core {
     this.#linksLayer = this.last;
     return this.#linksLayer;
   }
-
+  /**
+   * Геттер: возвращает текущую конфигурацию редактора (для экспорта/сохранения).
+   * @returns {Object}
+   */
   get configuration() {
     return {
       config: this.#config.config,
@@ -40,26 +66,29 @@ export class Editor extends Core {
       }
     };
   }
-
+  /**
+   * Конструктор Editor.
+   * @param {Object} config Конфигурация редактора
+   */
   constructor(config) {
     super('svg');
     this.template.setAttribute('id', this.#EDITOR_TEMPLATE_ID);
     this.#config = {config: {}, ...config};
   }
-
+  /**
+   * Инициализирует редактор: слушатели, стили, загрузка слоёв.
+   */
   init() {
     this.#setListener();
     this.#initObserver();
     this.#initStyles();
     if (this.#config?.layers?.length) this.load(this.#config?.layers.sort((a, b) => (a.order - b.order ? 1 : -1)));
-
     this.shapes.filter(shape => shape.type === "link").forEach(link => globalThis.LINK.set.next([link.type, link]));
   }
-
   /**
-   *
-   * @param layer { ILayer }
-   * @param toolType { ShapesType }
+   * Создаёт новый слой (Layer) для редактора.
+   * @param {ILayer} layer Данные слоя
+   * @param {ShapesType} toolType Тип фигуры (не используется)
    * @returns {Layer}
    */
   create(layer) {
@@ -71,7 +100,10 @@ export class Editor extends Core {
       }
     );
   }
-
+  /**
+   * Приватный метод: инициализирует слушатели событий редактора.
+   * @private
+   */
   #setListener() {
     this.template.addEventListener(
       'click',
@@ -80,13 +112,11 @@ export class Editor extends Core {
           return;
         }
         const active = globalThis.ACTIVE_ITEM_SUBJECT.getValue();
-
         if (this.#isActiveLayer(active, evt.target) || this.#isActiveShape(active, evt.target)) {
           evt.preventDefault();
           evt.stopPropagation();
           return;
         }
-
         if (active) {
           active.deactivate();
           globalThis.SETTINGS_TOOL_SUBJECT.next();
@@ -94,17 +124,15 @@ export class Editor extends Core {
       },
       true
     );
-
     document.addEventListener(
         'mousewheel',
         (evt) => {
-            if (!globalThis.ACTIVE_ITEM_SUBJECT.getValue()) {
+            if (!globalThis.ACTIVE_ITEM_SUBJECT.getValue() && evt.shiftKey) {
                 this.#setStyle('zoom', evt.deltaY * -0.01, 1);
                 this.#initStyles();
             }
         }
     )
-
     document.addEventListener(
       'keydown',
       evt => {
@@ -146,32 +174,47 @@ export class Editor extends Core {
       true
     );
   }
-
+  /**
+   * Приватный метод: проверяет, активен ли слой.
+   * @private
+   * @param {*} active Активный элемент
+   * @param {*} target Целевой элемент
+   * @returns {boolean}
+   */
   #isActiveLayer(active, target) {
     return active?.isLayer && target.id !== this.#EDITOR_TEMPLATE_ID && active.find(target.id, 'uniqueId');
   }
-
+  /**
+   * Приватный метод: проверяет, активна ли фигура.
+   * @private
+   * @param {*} active Активный элемент
+   * @param {*} target Целевой элемент
+   * @returns {boolean}
+   */
   #isActiveShape(active, target) {
     return active?.isShape && target.id === active.id;
   }
-
+  /**
+   * Приватный метод: инициализирует MutationObserver для отслеживания изменений DOM.
+   * @private
+   */
   #initObserver() {
     const observer = new MutationObserver(entries => {
       let added = [];
       let removed = [];
-
       console.log(entries);
-
       entries.forEach(entry => {
         added = [...added, ...entry.addedNodes];
         removed = [...removed, ...entry.removedNodes];
       });
-
       if (added.length || removed.length) this.onChange.next({ added, removed });
     });
     observer.observe(this.template, { subtree: true, childList: true });
   }
-
+  /**
+   * Приватный метод: применяет стили трансформации и масштабирования к редактору.
+   * @private
+   */
   #initStyles() {
     let transform = "";
     let zoom = 1;
@@ -194,7 +237,13 @@ export class Editor extends Core {
     this.template.style.transform = transform.trim();
     this.template.style.zoom = zoom;
   }
-
+  /**
+   * Приватный метод: изменяет стиль (трансформацию/масштаб) редактора.
+   * @private
+   * @param {string} key Ключ стиля
+   * @param {number} value Значение
+   * @param {number} [def=0] Значение по умолчанию
+   */
   #setStyle(key, value, def = 0) {
     this.#config.config[key] = (this.#config.config[key]??def) + value;
   }

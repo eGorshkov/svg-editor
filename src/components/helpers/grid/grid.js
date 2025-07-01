@@ -3,13 +3,30 @@ import { createTemplate } from '../shape-creator.js';
 const GRID_TEMPLATE_ID = 'editor-grid-template';
 const GRID_SETTINGS = 'grid-settings';
 
+/**
+ * Класс Grid для отображения и управления сеткой на редакторе.
+ */
 export default class Grid {
+  /**
+   * Конфигурация сетки.
+   * @type {Object}
+   */
   #config = localStorage.getItem(GRID_SETTINGS) ? JSON.parse(localStorage.getItem(GRID_SETTINGS)) : { visible: 'hidden', size: 8 };
 
   get config() {
     return this.#config;
   }
 
+  /**
+   * SVG-элемент сетки.
+   * @type {SVGElement|null}
+   */
+  template = null;
+
+  /**
+   * Конструктор Grid.
+   * @param {Object} config Конфигурация сетки
+   */
   constructor() {
     this.template = createTemplate('svg');
 
@@ -28,6 +45,9 @@ export default class Grid {
     this.updateGridTemplate(this.config.size);
   }
 
+  /**
+   * Отрисовывает сетку.
+   */
   updateGridTemplate(size = 8) {
     this.template.innerHTML = `
       <defs>

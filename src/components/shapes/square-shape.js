@@ -8,9 +8,9 @@ import {
 } from '../helpers/settings-callback-functions.js';
 
 /**
- *
- * @param template
- * @param config
+ * Функция отрисовки квадрата.
+ * @param {SVGElement} template SVG-элемент
+ * @param {IShapeConfig} config Конфигурация фигуры
  */
 export function squareDraw(template, config) {
   template.setAttributeNS(null, 'x', config.x);
@@ -21,23 +21,28 @@ export function squareDraw(template, config) {
 }
 
 /**
- *
- * @param shapeCtx { IShape }
- * @param pointId { IResizablePointType }
- * @param event {Event}
+ * Функция изменения размера квадрата.
+ * @param {IShape} shapeCtx Контекст фигуры
+ * @param {IResizablePointType} pointId Точка изменения
+ * @param {Event} event Событие
  */
 export function squareResize(shapeCtx, pointId, event) {
   Resizer.defaultStrategy(shapeCtx.config, shapeCtx.resizable.points[pointId], pointId);
 }
 
+/**
+ * Функция линковки квадрата.
+ * @param {IShape} shapeCtx Контекст фигуры
+ * @returns {Object} Стратегия линковки
+ */
 export function squareLinking(shapeCtx) {
   return Linker.defaultStrategy(shapeCtx, ['n', 'e', 's', 'w']);
 }
 
 /**
- *
- * @param shapeCtx { IShape }
- * @returns {ISetting[]}
+ * Функция настроек квадрата.
+ * @param {IShape} shapeCtx Контекст фигуры
+ * @returns {ISetting[]} Массив настроек
  */
 export function squareSetting(shapeCtx) {
   return [
@@ -61,6 +66,11 @@ export function squareSetting(shapeCtx) {
   ];
 }
 
+/**
+ * Конструктор фигуры "Квадрат".
+ * @param {IShapeConfig} config Конфигурация фигуры
+ * @returns {Array} Массив с шаблоном и обработчиками
+ */
 export function SquareShape(config) {
   return ShapeCreator('rect', config, squareDraw, squareResize, squareSetting, squareLinking);
 }
